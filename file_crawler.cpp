@@ -882,10 +882,10 @@ int main() {
                         entity_tile = 'M';
                     } else if (monsters[entity].health > 10) {
                         entity_tile = 'm';
-                    } else if (monsters[entity].health > 3) {
+                    } else if (monsters[entity].health > 5) {
                         entity_tile = 'n';
                     } else {
-                        entity_tile = 'i';
+                        entity_tile = 'r';
                     }
                     draw_buffer.push_back(make_pair(entity_tile, make_pair(position.y, position.x)));
                 }
