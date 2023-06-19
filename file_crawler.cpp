@@ -47,7 +47,7 @@ const int FOV_RADIUS = 27;
 const int MEMORY_RADIUS = 54;
 
 const vector<char> ground_tiles = {'.',',','`','"'};
-const vector<char> wall_tiles = {'[',']','{','}','=','|','&','#'};
+const vector<char> wall_tiles = {'[',']','{','}','=','|'};
 const vector<char> trap_tiles = {'&','#'};
 const vector<char> void_tiles = {' '};
 
@@ -164,10 +164,10 @@ vector<vector<char>> generate_map() {
 
             if (value < 0.2)
                 map[x][y] = get_random_character(ground_tiles);
-            else if (value < 0.6)
-                map[x][y] = get_random_character(wall_tiles);
-            else if (value < 0.8)
+            else if (value < 0.21)
                 map[x][y] = get_random_character(trap_tiles);
+            else if (value < 0.8)
+                map[x][y] = get_random_character(wall_tiles);
         }
     }
 
@@ -550,7 +550,7 @@ void render_buffer(
         if (check_if_in(wall_tiles, ch)) {
             color_pair = palette[1];
         } else if (check_if_in(trap_tiles, ch)) {
-            color_pair = palette[2];
+            color_pair = palette[1];
         } else if (check_if_in(ground_tiles, ch)) {
             color_pair = palette[0];
         } else if (ch == '@') {
@@ -597,6 +597,42 @@ void draw_UI(const PlayerStats& playerStats) {
         mvprintw(y + i, x, combat_log[combat_log.size() - log_size + i].c_str());
     }
 }
+
+pair<int,int> move_player(EntityManager& entityManager,
+                          PlayerStats& playerStats,
+                          const vector<vector<char>>& map,
+                          const pair<int,int> direction,
+                          const bool sprinting) {
+
+    pair<int,int> delta = {0, 0};
+    int distance = 1;
+    if (sprinting) {
+        distance = playerStats.speed;
+    }
+
+    auto& positions = entityManager.getPositions();
+    PositionComponent& playerPosition = positions[0];
+
+    for (int i = 0; i < distance; i++) {
+        int dx = delta.first + direction.first;
+        int dy = delta.second + direction.second;
+        if (check_if_in(ground_tiles, map[playerPosition.x+dx][playerPosition.y+dy])) {
+            delta = {dx, dy};
+        } else if (check_if_in(trap_tiles, map[playerPosition.x+dx][playerPosition.y+dy])) {
+            int damage = get_random_int(1,5);
+            playerStats.health -= damage;
+            add_combat_log("Player took " + to_string(damage) + " damage from a trap.");
+            break;
+        }
+        else {
+            break; // Stop the loop if the player hits a wall
+        }
+    }
+
+    return delta;
+
+}
+
 
 int main() {
     initscr();
@@ -765,58 +801,50 @@ int main() {
 
         int key = getch();
 
+        pair<int,int> delta = {0,0};
         if (key == 'w') {
-            if (!check_if_in(wall_tiles, map[player_x][player_y - 1])) {
-                    player_y -= 1;
-                }
+            pair<int,int> direction = {0,-1};
+            //bool represents whether or not the player is sprinting
+            delta = move_player(entityManager, playerStats, map, direction, false);
+            player_x += delta.first;
+            player_y += delta.second;
+
         } else if (key == 'W') {
-            for (int i = 0; i < playerStats.speed; i++) {
-                if (!check_if_in(wall_tiles, map[player_x][player_y - 1])) {
-                    player_y -= 1;
-                }
-                else {
-                    break; // Stop the loop if the player hits a wall
-                }
-            }
+            pair<int,int> direction = {0,-1};
+            delta = move_player(entityManager, playerStats, map, direction, true);
+            player_x += delta.first;
+            player_y += delta.second;
         } else if (key == 's') {
-            if (!check_if_in(wall_tiles, map[player_x][player_y + 1])) {
-                    player_y += 1;
-                }
+            pair<int,int> direction = {0,1};
+            //bool represents whether or not the player is sprinting
+            delta = move_player(entityManager, playerStats, map, direction, false);
+            player_x += delta.first;
+            player_y += delta.second;
         } else if (key == 'S') {
-            for (int i = 0; i < playerStats.speed; i++) {
-                if (!check_if_in(wall_tiles, map[player_x][player_y + 1])) {
-                    player_y += 1;
-                }
-                else {
-                    break; // Stop the loop if the player hits a wall
-                }
-            }
+            pair<int,int> direction = {0,1};
+            delta = move_player(entityManager, playerStats, map, direction, true);
+            player_x += delta.first;
+            player_y += delta.second;
         } else if (key == 'a') {
-            if (!check_if_in(wall_tiles, map[player_x - 1][player_y])) {
-                    player_x -= 1;
-                }
+            pair<int,int> direction = {-1,0};
+            delta = move_player(entityManager, playerStats, map, direction, false);
+            player_x += delta.first;
+            player_y += delta.second;
         } else if (key == 'A') {
-            for (int i = 0; i < playerStats.speed; i++) {
-                if (!check_if_in(wall_tiles, map[player_x - 1][player_y])) {
-                    player_x -= 1;
-                }
-                else {
-                    break; // Stop the loop if the player hits a wall
-                }
-            }
+            pair<int,int> direction = {-1,0};
+            delta = move_player(entityManager, playerStats, map, direction, true);
+            player_x += delta.first;
+            player_y += delta.second;
         } else if (key == 'd') {
-            if (!check_if_in(wall_tiles, map[player_x + 1][player_y])) {
-                    player_x += 1;
-                }
+            pair<int,int> direction = {1,0};
+            delta = move_player(entityManager, playerStats, map, direction, false);
+            player_x += delta.first;
+            player_y += delta.second;
         } else if (key == 'D') {
-            for (int i = 0; i < playerStats.speed; i++) {
-                if (!check_if_in(wall_tiles, map[player_x + 1][player_y])) {
-                    player_x += 1;
-                }
-                else {
-                    break; // Stop the loop if the player hits a wall
-                }
-            }
+            pair<int,int> direction = {1,0};
+            delta = move_player(entityManager, playerStats, map, direction, true);
+            player_x += delta.first;
+            player_y += delta.second;
         } else if (key == 'q') {
             break;
         } else if (key == ' ') {
