@@ -862,7 +862,7 @@ int main() {
         }
         
         entityManager.getPlayerStats()[playerEntity] = playerStats;
-        int memory_radius = pow(PLAYER_FOV_RADIUS, 2) * playerStats.speed   ;
+        int memory_radius = pow(PLAYER_FOV_RADIUS, 2) * playerStats.defense   ;
 
         // Forget distant visited tiles
         visited.erase(remove_if(visited.begin(), visited.end(),
@@ -907,10 +907,6 @@ int main() {
                 }
             }
         }
-
-
-        movementSystem.update();
-        monsterSystem.update();
 
 
         palette[3] = get_player_color(playerStats);
@@ -1016,14 +1012,21 @@ int main() {
             }
         }
 
-        entityManager.getPositions()[playerEntity] = {player_x, player_y};
 
-        draw_buffer.clear();
+
+        movementSystem.update();
+        monsterSystem.update();
+
 
         for (auto& entry : monsters) {
             MonsterComponent& monster = entry.second;
             monster.cooldown = max(0, monster.cooldown - 1); // Decrement the cooldown of the monster's attack
         }
+
+        entityManager.getPositions()[playerEntity] = {player_x, player_y};
+
+        draw_buffer.clear();
+
 
         if (playerStats.health <= 0) {
             add_combat_log("Game Over. Player has died.");
