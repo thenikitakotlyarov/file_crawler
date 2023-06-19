@@ -732,14 +732,43 @@ int main() {
 
     while(true) {
         clear();
-        printw("Please select a class:\n");
-        printw("1. Fighter\n");
-        printw("2. Rogue\n");
-        printw("3. Ranger\n");
-        printw("4. Sorcerer\n");
-        printw("5. Wizard\n");
-        printw("6. Cleric\n");
-        printw("7. Adventurer\n");
+        printw("Please select a class:\n\n");
+
+        printw("1.  ");
+        attron(COLOR_PAIR(2));
+        printw("Fighter\n");
+        attroff(COLOR_PAIR(2));
+
+        printw("2.  ");
+        attron(COLOR_PAIR(4));
+        printw("Rogue\n");
+        attroff(COLOR_PAIR(4));
+
+        printw("3.  ");
+        attron(COLOR_PAIR(3));
+        printw("Ranger\n");
+        attroff(COLOR_PAIR(3));
+
+        printw("4.  ");
+        attron(COLOR_PAIR(7));
+        printw("Sorcerer\n");
+        attroff(COLOR_PAIR(7));
+
+        printw("5.  ");
+        attron(COLOR_PAIR(5));
+        printw("Wizard\n");
+        attroff(COLOR_PAIR(5));
+
+        printw("6.  ");
+        attron(COLOR_PAIR(6));
+        printw("Cleric\n");
+        attroff(COLOR_PAIR(6));
+
+        printw("7.  ");
+        attron(COLOR_PAIR(8));
+        printw("Adventurer\n");
+        attroff(COLOR_PAIR(8));
+
         refresh();
 
         classChoice = getch() - '0';
