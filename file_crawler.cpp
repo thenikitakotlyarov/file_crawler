@@ -104,6 +104,8 @@ bool is_in_set(const T& element, const Container<T>& set) {
 vector<string> combat_log;
 
 void add_combat_log(const string& message) {
+    log(DEV_LOG_FILE, message);
+    log(GAME_LOG_FILE, message);
     combat_log.push_back(message);
     if (combat_log.size() > UI_LOG_COUNT) {
         combat_log.erase(combat_log.begin());
@@ -117,6 +119,7 @@ short get_color_pair_index(short foreground, short background) {
 }
 
 void init_all_color_pairs() {
+    log(DEV_LOG_FILE, "called init_all_color_pairs");
     const vector<int> all_colors = {
         COLOR_BLACK, COLOR_RED,     COLOR_GREEN, COLOR_YELLOW,
         COLOR_BLUE,  COLOR_MAGENTA, COLOR_CYAN,  COLOR_WHITE
@@ -127,12 +130,11 @@ void init_all_color_pairs() {
         init_pair(
             get_color_pair_index(foreground, background),
             foreground, background);
-        log(DEV_LOG_FILE, "get_color_pair_index(", foreground, ", ", background, ") = ",
-                           get_color_pair_index(   foreground   ,    background   ));
     }
 }
 
 vector<short> generate_palette(int seed) {
+    log(DEV_LOG_FILE, "called generate_palette with seed as ", seed);
     // Assumes all color pairs have been initialized.
     vector<short> palette(5);
 
@@ -156,6 +158,7 @@ vector<short> generate_palette(int seed) {
 }
 
 vector<vector<char>> generate_map() {
+    log(DEV_LOG_FILE, "called generate_map");
     vector<vector<char>> map(WIDTH, vector<char>(HEIGHT));
 
     // Generate open areas using Perlin noise
@@ -228,6 +231,17 @@ vector<vector<char>> generate_map() {
         }
     }
 
+    // Draw a border around the map
+    for (int x = 0; x < WIDTH; ++x) {
+        map[x][0] = get_random_character(wall_tiles);
+        map[x][HEIGHT - 1] = get_random_character(wall_tiles);
+    }
+    for (int y = 0; y < HEIGHT; ++y) {
+        map[0][y] = get_random_character(wall_tiles);
+        map[WIDTH - 1][y] = get_random_character(wall_tiles);
+    }
+
+
     return map;
 }
 
@@ -235,9 +249,10 @@ set<pair<int, int>> calculate_fov(
         vector<vector<char>>& map,
         int center_x, int center_y,
         int radius) {
-    
+    log(DEV_LOG_FILE, "called calculate_fov with at center x", center_x, ",y", center_y, "and radius ", radius);
+
     set<pair<int, int>> fov;
-    
+
     for (int i = 0; i < 360; ++i) {
         double rad = i * (M_PI / 180.0);
         double dx = cos(rad), dy = sin(rad);
@@ -278,14 +293,14 @@ struct PositionComponent {
 struct AIComponent {
     int chaseRadius;
     int attackRadius;
-    int cooldown; // New member to track the monster's attack cooldown
+    int cooldown;
 };
 
 struct MonsterComponent {
     int attackPower;
     int attackRadius;
-    int cooldown; // New member to track the monster's attack cooldown
-    int health;   // New member to track the monster's health
+    int cooldown;
+    int health;
 };
 
 
@@ -427,6 +442,7 @@ public:
             double distance = sqrt(dx * dx + dy * dy);
 
             if (distance <= ai.chaseRadius) {
+                log(DEV_LOG_FILE, "monster", entity, " chases player");
                 int new_x = monsterPosition.x;
                 int new_y = monsterPosition.y;
 
@@ -442,19 +458,26 @@ public:
                     new_y++;
                 }
 
+
+                if (new_x > 0 && new_x < WIDTH && new_y > 0 && new_y < HEIGHT && check_if_in(ground_tiles, map[new_x][new_y])) {
+                    monsterPosition.x = new_x;
+                    monsterPosition.y = new_y;
+                }
+
+                log(DEV_LOG_FILE, "checking monster", entity, "'s attack range");
                 set<pair<int, int>> monster_attack_range =
                     calculate_fov(
                         map,
                         monsterPosition.x, monsterPosition.y,
                         monster.attackRadius
                     );
+                log(DEV_LOG_FILE, "monster", entity, "'s attack range set");
 
-                if (new_x >= 0 && new_x < WIDTH && new_y >= 0 && new_y < HEIGHT && check_if_in(ground_tiles, map[new_x][new_y])) {
-                    monsterPosition.x = new_x;
-                    monsterPosition.y = new_y;
-                }
+
                 if (distance <= ai.attackRadius && monster.cooldown == 0
                     && is_in_set({playerPosition.x, playerPosition.y}, monster_attack_range) ) {
+                    log(DEV_LOG_FILE, "monster", entity, " attacks player");
+
                     int damage = get_random_int(0, monster.attackPower - get_random_int(0,playerStats.defense));
                     playerStats.health -= damage;
                     monster.cooldown = get_random_int(3,7);
@@ -472,6 +495,7 @@ public:
 
 
 void spawnItems(EntityManager& entityManager, vector<vector<char>>& map) {
+    log(DEV_LOG_FILE, "spawning items");
     vector<ItemComponent> itemTemplates = {
         {ItemType::Potion, 'o',
             [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP, stats.health + 5);}},
@@ -501,6 +525,7 @@ void spawnItems(EntityManager& entityManager, vector<vector<char>>& map) {
 }
 
 void spawnMonsters(int monster_count, EntityManager& entityManager, vector<vector<char>>& map) {
+    log(DEV_LOG_FILE, "spawning monsters");
     for (int i = 0; i < monster_count; ++i) {
         int x, y;
         do {
@@ -538,6 +563,8 @@ void render_buffer(
         const vector<pair<int, int>>& visited,
         int start_x, int start_y) {
     
+    log(DEV_LOG_FILE, "rendering buffer");
+
     short color_pair = get_color_pair_index(8, COLOR_BLACK);
     attron(COLOR_PAIR(color_pair));
 
@@ -678,6 +705,7 @@ pair<int,int> move_player(EntityManager& entityManager,
                           const vector<vector<char>>& map,
                           const pair<int,int> direction,
                           const bool sprinting) {
+    log(DEV_LOG_FILE, "player opts to move x", direction.first, ",y", direction.second);
 
     pair<int,int> delta = {0, 0};
     int distance = 1;
@@ -697,6 +725,7 @@ pair<int,int> move_player(EntityManager& entityManager,
             int damage = get_random_int(1,5);
             playerStats.health -= damage;
             add_combat_log("Player took " + to_string(damage) + " damage from a trap.");
+            delta = {dx, dy};
             break;
         }
         else {
@@ -710,30 +739,17 @@ pair<int,int> move_player(EntityManager& entityManager,
 
 
 int main() {
+    log(DEV_LOG_FILE, "Running file_crawler");
     initscr();
     start_color();
     curs_set(0);
     noecho();
+    log(DEV_LOG_FILE, "started curses");
 
-    int seed = get_random_int(0, 255);
+
 
     init_all_color_pairs();
-    vector<short> palette = generate_palette(seed);
-
-    perlin.SetSeed(seed);
-
-    vector<vector<char>> map = generate_map();
-
-    int player_x = WIDTH / 2;
-    int player_y = HEIGHT / 2;
-
-    vector<pair<int, int>> visited = {};
-
-    EntityManager entityManager;
-
-    Entity playerEntity = entityManager.createEntity();
-    entityManager.getPositions()[playerEntity] = {player_x, player_y};
-
+    log(DEV_LOG_FILE, "hit character select");
     // Player class selection menu
     int classChoice;
 
@@ -823,16 +839,44 @@ int main() {
             break;
     }
 
+    log(DEV_LOG_FILE, "selected player class");
+
     PlayerStats playerStats = {PLAYER_MAX_HP, playerAttack, playerDefense, playerSpeed};
+
+    int seed = get_random_int(0, 255);
+    log(DEV_LOG_FILE, "generated seed ", seed, " for rngesus");
+    perlin.SetSeed(seed);
+    log(DEV_LOG_FILE, "rngesus gives us his blessing");
+
+    vector<short> palette = generate_palette(seed);
+    log(DEV_LOG_FILE, "generated palette");
+
+
+    EntityManager entityManager;
+    log(DEV_LOG_FILE, "generated entity manager");
+
+
+    //TODO: spawn player in sensible location
+    int player_x = WIDTH / 2;
+    int player_y = HEIGHT / 2;
+
+    Entity playerEntity = entityManager.createEntity();
+    entityManager.getPositions()[playerEntity] = {player_x, player_y};
     entityManager.getPlayerStats()[playerEntity] = playerStats;
+    log(DEV_LOG_FILE, "initialized entity manager");
+
+    vector<vector<char>> map = generate_map();
+    vector<pair<int, int>> visited = {};
+    log(DEV_LOG_FILE, "generated map");
 
     spawnItems(entityManager, map);
     spawnMonsters(2048,entityManager, map);
-
-
     MovementSystem movementSystem(entityManager, map);
     MonsterSystem monsterSystem(entityManager, map, playerStats);
+    log(DEV_LOG_FILE, "spawned items and monsters");
 
+
+    log(DEV_LOG_FILE, "starting game loop");
     while (true) {
         clear();
 
