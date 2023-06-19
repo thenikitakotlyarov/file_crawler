@@ -40,6 +40,8 @@ using namespace std;
 const string DEV_LOG_FILE = "dev_log.txt";
 const string GAME_LOG_FILE = "game_log.txt";
 
+const int UI_LOG_COUNT = 7;
+
 const int WIDTH = 1024, HEIGHT = 1024;
 const int PLAYER_COLOR = COLOR_WHITE;
 const char PLAYER = '@';
@@ -103,7 +105,7 @@ vector<string> combat_log;
 
 void add_combat_log(const string& message) {
     combat_log.push_back(message);
-    if (combat_log.size() > 3) {
+    if (combat_log.size() > UI_LOG_COUNT) {
         combat_log.erase(combat_log.begin());
     }
 }
@@ -846,7 +848,17 @@ int main() {
             if (monsters.find(entity) != monsters.end()) {
                 const PositionComponent& position = entry.second;
                 if (is_in_set({position.x, position.y}, fov)) {
-                    draw_buffer.push_back(make_pair('M', make_pair(position.y, position.x)));
+                    char entity_tile;
+                    if (monsters[entity].health > 20) {
+                        entity_tile = 'M';
+                    } else if (monsters[entity].health > 10) {
+                        entity_tile = 'm';
+                    } else if (monsters[entity].health > 3) {
+                        entity_tile = 'n';
+                    } else {
+                        entity_tile = 'i';
+                    }
+                    draw_buffer.push_back(make_pair(entity_tile, make_pair(position.y, position.x)));
                 }
             } else if (items.find(entity) != items.end()) {
                 const PositionComponent& position = entry.second;
