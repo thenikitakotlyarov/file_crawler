@@ -507,18 +507,21 @@ void spawnMonsters(int monster_count, EntityManager& entityManager, vector<vecto
 }
 
 
-void render_buffer(const vector<pair<char, pair<int, int>>>& draw_buffer, const vector<vector<char>>& map,
-                   const vector<short>& palette, const vector<vector<bool>>& visited, int start_x, int start_y) {
-    short color_pair = palette[3];
-    attron(COLOR_PAIR(get_color_pair_index(8, COLOR_BLACK)));
+void render_buffer(
+        const vector<pair<char, pair<int, int>>>& draw_buffer,
+        const vector<vector<char>>& map,
+        const vector<short>& palette,
+        const vector<pair<int, int>>& visited,
+        int start_x, int start_y) {
+    
+    short color_pair = get_color_pair_index(8, COLOR_BLACK);
+    attron(COLOR_PAIR(color_pair));
 
-    for (int x = 0; x < visited.size(); ++x) {
-        for (int y = 0; y < visited[x].size(); ++y) {
-            if (visited[x][y]) {
-                char ch = map[x][y];
-                mvaddch(y - start_y, x - start_x, ch);
-            }
-        }
+    for (const auto& position : visited) {
+        int x = position.first;
+        int y = position.second;
+        char ch = map[x][y];
+        mvaddch(y - start_y, x - start_x, ch);
     }
 
     attroff(COLOR_PAIR(color_pair));
@@ -598,7 +601,7 @@ int main() {
     int player_x = WIDTH / 2;
     int player_y = HEIGHT / 2;
 
-    vector<vector<bool>> visited(WIDTH, vector<bool>(HEIGHT, false));
+    vector<pair<int, int>> visited = {};
 
     EntityManager entityManager;
 
@@ -694,21 +697,20 @@ int main() {
                 if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT && fov[x][y]) {
                     char ch = map[x][y];
                     draw_buffer.push_back(make_pair(ch, make_pair(y, x)));
-                    visited[x][y] = true;
+                    visited.push_back(make_pair(x, y));
                 }
             }
         }
-
-        for (int dy = -MEMORY_RADIUS; dy <= MEMORY_RADIUS; ++dy) {
-            for (int dx = -MEMORY_RADIUS; dx <= MEMORY_RADIUS; ++dx) {
-                if (pow(dx,2)+pow(dy,2) >= pow(MEMORY_RADIUS,2) ) {
-                visited[max(0,min(WIDTH,player_x+dx))][max(0,min(HEIGHT,player_y+dy))] = false;
-                }
-
-            }
-        }
-
-
+        
+        // Forget distant visited tiles
+        visited.erase(remove_if(visited.begin(), visited.end(),
+            [player_x, player_y](const auto& position) {
+                int dx = position.first  - player_x;
+                int dy = position.second - player_y;
+                return pow(dx, 2) + pow(dy, 2) >= pow(MEMORY_RADIUS, 2);
+            }),
+            visited.end()
+        );
 
 
 
