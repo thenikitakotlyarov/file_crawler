@@ -862,7 +862,7 @@ int main() {
         }
         
         entityManager.getPlayerStats()[playerEntity] = playerStats;
-        int memory_radius = pow(PLAYER_FOV_RADIUS, 2) * playerStats.speed;
+        int memory_radius = pow(PLAYER_FOV_RADIUS, 2) * playerStats.speed   ;
 
         // Forget distant visited tiles
         visited.erase(remove_if(visited.begin(), visited.end(),
@@ -973,19 +973,6 @@ int main() {
             // Player attack
             auto& playerPosition = positions[playerEntity];
             auto& monsters = entityManager.getMonsterComponents();
-            auto& items = entityManager.getItemComponents();
-
-            for (const auto& entry : items) {
-                Entity itemEntity = entry.first;
-                PositionComponent& itemPosition = positions[itemEntity];
-                ItemComponent& item = items[itemEntity];
-                if (playerPosition.x == itemPosition.x && playerPosition.y == itemPosition.y) {
-                    item.effect(playerStats);
-                    entityManager.destroyEntity(itemEntity);
-                    add_combat_log("Picked up " + ItemTypeToString(item.type));
-                    break;
-                }
-            }
 
             for (const auto& entry : monsters) {
                 Entity monsterEntity = entry.first;
@@ -1008,6 +995,22 @@ int main() {
                         add_combat_log("Player has defeated a monster.");
                         entityManager.destroyEntity(monsterEntity);
                     }
+                    break;
+                }
+            }
+        } else if (key == 'e' ) {
+            //player interact
+            auto& playerPosition = positions[playerEntity];
+            auto& items = entityManager.getItemComponents();
+
+            for (const auto& entry : items) {
+                Entity itemEntity = entry.first;
+                PositionComponent& itemPosition = positions[itemEntity];
+                ItemComponent& item = items[itemEntity];
+                if (playerPosition.x == itemPosition.x && playerPosition.y == itemPosition.y) {
+                    item.effect(playerStats);
+                    entityManager.destroyEntity(itemEntity);
+                    add_combat_log("Picked up " + ItemTypeToString(item.type));
                     break;
                 }
             }
