@@ -43,10 +43,10 @@ const string GAME_LOG_FILE = "game_log.txt";
 const int UI_LOG_COUNT = 7;
 
 const int WIDTH = 1024, HEIGHT = 1024;
-const int PLAYER_COLOR = COLOR_WHITE;
 const char PLAYER = '@';
-const int FOV_RADIUS = 27;
-const int MEMORY_RADIUS = 54;
+const int  PLAYER_MAX_HP = 100;
+const int  PLAYER_FOV_RADIUS = 27;
+const int  PLAYER_MEMORY_RADIUS = 54;
 
 const vector<char> ground_tiles = {'.',',','`','"'};
 const vector<char> wall_tiles = {'[',']','{','}','=','|'};
@@ -300,6 +300,7 @@ enum class ItemType {
 
 struct ItemComponent {
     ItemType type;
+    char character;
     function<void(PlayerStats&)> effect;
 };
 
@@ -472,12 +473,18 @@ public:
 
 void spawnItems(EntityManager& entityManager, vector<vector<char>>& map) {
     vector<ItemComponent> itemTemplates = {
-        {ItemType::Potion, [](PlayerStats& stats) { stats.health += 5; }},
-        {ItemType::MidPotion, [](PlayerStats& stats) { stats.health += 10; }},
-        {ItemType::StrongPotion, [](PlayerStats& stats) { stats.health += 25; }},
-        {ItemType::WeaponBits, [](PlayerStats& stats) { stats.attack += 1; }},
-        {ItemType::ArmorBits, [](PlayerStats& stats) { stats.defense += 1; }},
-        {ItemType::SpeedBoost, [](PlayerStats& stats) { stats.speed += 1; }}
+        {ItemType::Potion, 'o',
+            [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP, stats.health + 5);}},
+        {ItemType::MidPotion, 'O',
+            [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP,stats.health + 10);}},
+        {ItemType::StrongPotion, '0',
+            [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP,stats.health + 25);}},
+        {ItemType::WeaponBits, 'a',
+            [](PlayerStats& stats) { stats.attack += 1; }},
+        {ItemType::ArmorBits, 'd',
+            [](PlayerStats& stats) { stats.defense += 1; }},
+        {ItemType::SpeedBoost, 's',
+            [](PlayerStats& stats) { stats.speed += 1; }}
     };
     for (int i = 0; i < 512; ++i) {
         for (const auto& item : itemTemplates) {
@@ -816,7 +823,7 @@ int main() {
             break;
     }
 
-    PlayerStats playerStats = {100, playerAttack, playerDefense, playerSpeed};
+    PlayerStats playerStats = {PLAYER_MAX_HP, playerAttack, playerDefense, playerSpeed};
     entityManager.getPlayerStats()[playerEntity] = playerStats;
 
     spawnItems(entityManager, map);
@@ -837,7 +844,7 @@ int main() {
         int end_y = start_y + LINES;
 
         set<pair<int, int>> fov = calculate_fov(
-            map, player_x, player_y, FOV_RADIUS
+            map, player_x, player_y, PLAYER_FOV_RADIUS
         );
 
         vector<pair<char, pair<int, int>>> draw_buffer;
@@ -859,7 +866,7 @@ int main() {
             [player_x, player_y](const auto& position) {
                 int dx = position.first  - player_x;
                 int dy = position.second - player_y;
-                return pow(dx, 2) + pow(dy, 2) >= pow(MEMORY_RADIUS, 2);
+                return pow(dx, 2) + pow(dy, 2) >= pow(PLAYER_MEMORY_RADIUS, 2);
             }),
             visited.end()
         );
@@ -892,7 +899,8 @@ int main() {
             } else if (items.find(entity) != items.end()) {
                 const PositionComponent& position = entry.second;
                 if (is_in_set({position.x, position.y}, fov)) {
-                    draw_buffer.push_back(make_pair('o', make_pair(position.y, position.x)));
+                    char entity_tile = items[entity].character;
+                    draw_buffer.push_back(make_pair(entity_tile, make_pair(position.y, position.x)));
                 }
             }
         }
