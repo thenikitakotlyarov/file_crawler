@@ -12,6 +12,8 @@
 #include <cstdio>
 #include <memory>
 #include <queue>
+#include <set>
+#include <utility>
 
 using namespace std;
 
@@ -91,6 +93,10 @@ bool check_if_in(const vector<char>& vec, const char compare) {
     return find(vec.begin(), vec.end(), compare) != vec.end();
 }
 
+template <typename T, template<typename...> class Container>
+bool is_in_set(const T& element, const Container<T>& set) {
+    return set.find(element) != set.end();
+}
 
 
 vector<string> combat_log;
@@ -223,9 +229,13 @@ vector<vector<char>> generate_map() {
     return map;
 }
 
-vector<vector<bool>> calculate_fov(vector<vector<char>>& map, int player_x, int player_y, int radius) {
-    vector<vector<bool>> fov(WIDTH, vector<bool>(HEIGHT, false));
-
+set<pair<int, int>> calculate_fov(
+        vector<vector<char>>& map,
+        int player_x, int player_y,
+        int radius) {
+    
+    set<pair<int, int>> fov;
+    
     for (int i = 0; i < 360; ++i) {
         double rad = i * (M_PI / 180.0);
         double dx = cos(rad), dy = sin(rad);
@@ -239,7 +249,7 @@ vector<vector<bool>> calculate_fov(vector<vector<char>>& map, int player_x, int 
             if (ix < 0 || iy < 0 || ix >= WIDTH || iy >= HEIGHT)
                 break;
 
-            fov[ix][iy] = true;
+            fov.insert({ix, iy});
 
             if (check_if_in(wall_tiles, map[ix][iy]))
                 break;
@@ -429,14 +439,19 @@ public:
                     new_y++;
                 }
 
-                vector<vector<bool>> monster_attack_range = calculate_fov(map, monsterPosition.x, monsterPosition.y, monster.attackRadius);
+                set<pair<int, int>> monster_attack_range =
+                    calculate_fov(
+                        map,
+                        monsterPosition.x, monsterPosition.y,
+                        monster.attackRadius
+                    );
 
                 if (new_x >= 0 && new_x < WIDTH && new_y >= 0 && new_y < HEIGHT && check_if_in(ground_tiles, map[new_x][new_y])) {
                     monsterPosition.x = new_x;
                     monsterPosition.y = new_y;
                 }
                 if (distance <= ai.attackRadius && monster.cooldown == 0
-                    && monster_attack_range[playerPosition.x][playerPosition.y]) {
+                    && is_in_set({playerPosition.x, playerPosition.y}, monster_attack_range) ) {
                     int damage = get_random_int(0, monster.attackPower - get_random_int(0,playerStats.defense));
                     playerStats.health -= damage;
                     monster.cooldown = get_random_int(3,7);
@@ -688,17 +703,21 @@ int main() {
         start_y = min(start_y, HEIGHT - LINES);
         int end_y = start_y + LINES;
 
-        vector<vector<bool>> fov = calculate_fov(map, player_x, player_y, FOV_RADIUS);
+        set<pair<int, int>> fov = calculate_fov(
+            map, player_x, player_y, FOV_RADIUS
+        );
 
         vector<pair<char, pair<int, int>>> draw_buffer;
 
         for (int y = start_y; y < end_y; ++y) {
             for (int x = start_x; x < end_x; ++x) {
-                if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT && fov[x][y]) {
-                    char ch = map[x][y];
-                    draw_buffer.push_back(make_pair(ch, make_pair(y, x)));
-                    visited.push_back(make_pair(x, y));
-                }
+                if (x < 0 || x >= WIDTH)     continue;
+                if (y < 0 || y >= HEIGHT)    continue;
+                if (!is_in_set({x, y}, fov)) continue;
+                
+                char ch = map[x][y];
+                draw_buffer.push_back(make_pair(ch, make_pair(y, x)));
+                visited.push_back(make_pair(x, y));
             }
         }
         
@@ -724,12 +743,12 @@ int main() {
             Entity entity = entry.first;
             if (monsters.find(entity) != monsters.end()) {
                 const PositionComponent& position = entry.second;
-                if (fov[position.x][position.y]) {
+                if (is_in_set({position.x, position.y}, fov)) {
                     draw_buffer.push_back(make_pair('M', make_pair(position.y, position.x)));
                 }
             } else if (items.find(entity) != items.end()) {
                 const PositionComponent& position = entry.second;
-                if (fov[position.x][position.y]) {
+                if (is_in_set({position.x, position.y}, fov)) {
                     draw_buffer.push_back(make_pair('o', make_pair(position.y, position.x)));
                 }
             }
@@ -829,7 +848,7 @@ int main() {
 
                 if (abs(playerPosition.x - monsterPosition.x) <= playerStats.speed
                  && abs(playerPosition.y - monsterPosition.y) <= playerStats.speed
-                 && fov[monsterPosition.x][monsterPosition.y]) {
+                 && is_in_set({monsterPosition.x, monsterPosition.y}, fov) ) {
                     int damage = get_random_int(0, playerStats.attack);
                     monster.health -= damage;
 
