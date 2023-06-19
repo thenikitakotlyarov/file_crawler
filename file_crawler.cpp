@@ -577,18 +577,83 @@ string ItemTypeToString(ItemType type) {
 }
 
 
-void draw_UI(const PlayerStats& playerStats) {
+int get_player_color(PlayerStats& playerStats) {
+    int color_index;
+
+    if (playerStats.attack > playerStats.defense
+        && playerStats.attack > playerStats.speed) {
+        color_index = 2;//red
+    } else if (playerStats.defense == playerStats.attack
+               && playerStats.defense > playerStats.speed) {
+        color_index = 6;//magenta
+    } else if (playerStats.defense > playerStats.attack
+               && playerStats.defense > playerStats.speed) {
+        color_index = 5;//blue
+    } else if (playerStats.defense == playerStats.speed
+               && playerStats.defense > playerStats.attack) {
+        color_index = 7;//cyan
+    } else if (playerStats.speed > playerStats.attack
+               && playerStats.speed > playerStats.defense) {
+        color_index = 3;//green
+    } else if (playerStats.speed == playerStats.attack
+               && playerStats.speed > playerStats.defense) {
+        color_index = 4;//yellow
+    } else if (playerStats.defense == playerStats.attack
+               && playerStats.defense == playerStats.speed) {
+        color_index = 8;//white
+    }
+
+    return color_index;
+}
+
+string get_player_class_name(PlayerStats& playerStats) {
+    string class_name;
+
+    if (playerStats.attack > playerStats.defense
+        && playerStats.attack > playerStats.speed) {
+        class_name = "Fighter";//red
+    } else if (playerStats.defense == playerStats.attack
+               && playerStats.defense > playerStats.speed) {
+        class_name = "Cleric";//magenta
+    } else if (playerStats.defense > playerStats.attack
+               && playerStats.defense > playerStats.speed) {
+        class_name = "Wizard";//blue
+    } else if (playerStats.defense == playerStats.speed
+               && playerStats.defense > playerStats.attack) {
+        class_name = "Sorcerer";//cyan
+    } else if (playerStats.speed > playerStats.attack
+               && playerStats.speed > playerStats.defense) {
+        class_name = "Ranger";//green
+    } else if (playerStats.speed == playerStats.attack
+               && playerStats.speed > playerStats.defense) {
+        class_name = "Rogue";//yellow
+    } else if (playerStats.defense == playerStats.attack
+               && playerStats.defense == playerStats.speed) {
+        class_name = "Adventurer";//white
+    }
+
+    return class_name;
+}
+
+void draw_UI(PlayerStats& playerStats) {
     int x = 2;
     int y = 1;
-    mvprintw(y, x, "HP: %d ATT: %d DEF: %d SPD: %d",
-        playerStats.health,
-        playerStats.attack,
-        playerStats.defense,
-        playerStats.speed
-    );
+    int player_color = get_player_color(playerStats);
+    string player_class = get_player_class_name(playerStats);
+    attron(COLOR_PAIR(player_color));
+    mvprintw(y, x, "%s",
+             player_class.c_str()
+            );
+    attroff(COLOR_PAIR(player_color));
+    mvprintw(y,x+player_class.length()+2, "HP: %d", playerStats.health);
+    mvprintw(y+1, x, "ATT: %d DEF: %d SPD: %d",
+             playerStats.attack,
+             playerStats.defense,
+             playerStats.speed
+            );
 
     y += 2;
-    mvprintw(y, x, "Combat Log:");
+    // mvprintw(y, x, "Combat Log:");
     y++;
 
     int log_size = min(LINES - 3, static_cast<int>(combat_log.size()));
@@ -597,6 +662,7 @@ void draw_UI(const PlayerStats& playerStats) {
         mvprintw(y + i, x, combat_log[combat_log.size() - log_size + i].c_str());
     }
 }
+
 
 pair<int,int> move_player(EntityManager& entityManager,
                           PlayerStats& playerStats,
@@ -789,6 +855,8 @@ int main() {
                 }
             }
         }
+
+        palette[3] = get_player_color(playerStats);
 
         render_buffer(draw_buffer, map, palette, visited, start_x, start_y);
 
