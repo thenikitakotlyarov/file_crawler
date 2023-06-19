@@ -897,6 +897,11 @@ int main() {
             }
         }
 
+
+        movementSystem.update();
+        monsterSystem.update();
+
+
         palette[3] = get_player_color(playerStats);
 
         render_buffer(draw_buffer, map, palette, visited, start_x, start_y);
@@ -904,9 +909,6 @@ int main() {
         refresh();
 
         draw_UI(playerStats);
-
-        movementSystem.update();
-        monsterSystem.update();
 
         int key = getch();
 
@@ -973,10 +975,6 @@ int main() {
                     break;
                 }
             }
-
-
-
-
 
             for (const auto& entry : monsters) {
                 Entity monsterEntity = entry.first;
