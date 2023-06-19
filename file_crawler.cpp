@@ -77,10 +77,14 @@ void log(const string filename, Args&&... args) {
     logfile.close();
 }
 
+int get_random_int(const int min, const int max) {
+    uniform_int_distribution<> distr(min, max);
+    return distr(gen);
+
+}
+
 char get_random_character(const vector<char>& vec) {
-    uniform_int_distribution<> distr(0, vec.size() - 1);
-    int randomIndex = distr(gen);
-    return vec[randomIndex];
+    return vec[get_random_int(0,vec.size() - 1)];
 }
 
 bool check_if_in(const vector<char>& vec, const char compare) {
@@ -131,8 +135,7 @@ vector<short> generate_palette(int seed) {
     //{COLOR_RED, COLOR_GREEN, COLOR_YELLOW, COLOR_BLUE, COLOR_MAGENTA, COLOR_CYAN};
 
     for (int i = 0; i < 5; ++i) {
-        uniform_int_distribution<> dis(0, available_colors.size() - 1);
-        int color_index = dis(gen);
+        int color_index = get_random_int(0, available_colors.size() - 1);
         short foreground = available_colors[color_index];
         short background = COLOR_BLACK;
 
@@ -276,6 +279,8 @@ struct MonsterComponent {
 
 enum class ItemType {
     Potion,
+    MidPotion,
+    StrongPotion,
     WeaponBits,
     ArmorBits,
     SpeedBoost
@@ -363,9 +368,8 @@ public:
                 PositionComponent& position = positions[entity];
                 AIComponent& ai = entityManager.getAIComponents()[entity];
 
-                uniform_int_distribution<> dis(-1, 1);
-                int new_x = position.x + dis(gen);
-                int new_y = position.y + dis(gen);
+                int new_x = position.x + get_random_int(-1, 1);
+                int new_y = position.y + get_random_int(-1, 1);
 
                 if (new_x >= 0 && new_x < WIDTH
                     && new_y >= 0 && new_y < HEIGHT
@@ -433,9 +437,9 @@ public:
                 }
                 if (distance <= ai.attackRadius && monster.cooldown == 0
                     && monster_attack_range[playerPosition.x][playerPosition.y]) {
-                    int damage = max(0, monster.attackPower - playerStats.defense);
+                    int damage = get_random_int(0, monster.attackPower - get_random_int(0,playerStats.defense));
                     playerStats.health -= damage;
-                    monster.cooldown = 3;
+                    monster.cooldown = get_random_int(3,7);
 
                     if (damage > 0) {
                         add_combat_log("Player took " + to_string(damage) + " damage from a monster.");
@@ -450,9 +454,10 @@ public:
 
 
 void spawnItems(EntityManager& entityManager, vector<vector<char>>& map) {
-    uniform_int_distribution<> disX(0, WIDTH - 1), disY(0, HEIGHT - 1);
     vector<ItemComponent> itemTemplates = {
-        {ItemType::Potion, [](PlayerStats& stats) { stats.health += 10; }},
+        {ItemType::Potion, [](PlayerStats& stats) { stats.health += 5; }},
+        {ItemType::MidPotion, [](PlayerStats& stats) { stats.health += 10; }},
+        {ItemType::StrongPotion, [](PlayerStats& stats) { stats.health += 25; }},
         {ItemType::WeaponBits, [](PlayerStats& stats) { stats.attack += 1; }},
         {ItemType::ArmorBits, [](PlayerStats& stats) { stats.defense += 1; }},
         {ItemType::SpeedBoost, [](PlayerStats& stats) { stats.speed += 1; }}
@@ -461,8 +466,8 @@ void spawnItems(EntityManager& entityManager, vector<vector<char>>& map) {
         for (const auto& item : itemTemplates) {
             int x, y;
             do {
-                x = disX(gen);
-                y = disY(gen);
+                x = get_random_int(0, WIDTH - 1);
+                y = get_random_int(0, HEIGHT - 1);
             } while (!check_if_in(ground_tiles, map[x][y]));
             Entity itemEntity = entityManager.createEntity();
             entityManager.getPositions()[itemEntity] = {x, y};
@@ -472,32 +477,31 @@ void spawnItems(EntityManager& entityManager, vector<vector<char>>& map) {
 }
 
 void spawnMonsters(int monster_count, EntityManager& entityManager, vector<vector<char>>& map) {
-    uniform_int_distribution<> disX(0, WIDTH - 1), disY(0, HEIGHT - 1);
     for (int i = 0; i < monster_count; ++i) {
         int x, y;
         do {
-            x = disX(gen);
-            y = disY(gen);
+            x = get_random_int(0, WIDTH - 1);
+            y = get_random_int(0, HEIGHT - 1);
         } while (!check_if_in(ground_tiles, map[x][y]));
         Entity monsterEntity = entityManager.createEntity();
         entityManager.getPositions()[monsterEntity] = {x, y};
         
-        uniform_int_distribution<int> chase_dis(7, 25);
-        uniform_int_distribution<int> attack_range_dis(1, 7);
-        uniform_int_distribution<int> attack_power_dis(1, 20);
-        uniform_int_distribution<int> cooldown_dis(1, 5);
-        uniform_int_distribution<int> health_dis(5, 25);
+        pair<int, int> chase_dis = {7, 25};
+        pair<int, int> attack_range_dis = {1, 7};
+        pair<int, int> attack_power_dis = {1, 20};
+        pair<int, int> cooldown_dis = {1, 5};
+        pair<int, int> health_dis = {5, 25};
         
         entityManager.getAIComponents()[monsterEntity] = {
-            chase_dis(gen),
-            attack_range_dis(gen),
-            cooldown_dis(gen)
+            get_random_int(chase_dis.first,chase_dis.second),
+            get_random_int(attack_range_dis.first,attack_range_dis.second),
+            get_random_int(cooldown_dis.first,cooldown_dis.second)
         };
         entityManager.getMonsterComponents()[monsterEntity] = {
-            attack_power_dis(gen),
-            attack_range_dis(gen),
-            cooldown_dis(gen),
-            health_dis(gen)
+            get_random_int(attack_power_dis.first,attack_power_dis.second),
+            get_random_int(attack_range_dis.first,attack_range_dis.second),
+            get_random_int(cooldown_dis.first,cooldown_dis.second),
+            get_random_int(health_dis.first,health_dis.second)
         };
     }
 }
@@ -544,6 +548,8 @@ void render_buffer(const vector<pair<char, pair<int, int>>>& draw_buffer, const 
 string ItemTypeToString(ItemType type) {
     switch (type) {
         case ItemType::Potion: return "Potion";
+        case ItemType::MidPotion: return "Medium Potion";
+        case ItemType::StrongPotion: return "Strong Potion";
         case ItemType::WeaponBits: return "Weapon Bits";
         case ItemType::ArmorBits: return "Armor Bits";
         case ItemType::SpeedBoost: return "Speed Boost";
@@ -580,8 +586,7 @@ int main() {
     curs_set(0);
     noecho();
 
-    uniform_int_distribution<> dis(0, 255);
-    int seed = dis(gen);
+    int seed = get_random_int(0, 255);
 
     init_all_color_pairs();
     vector<short> palette = generate_palette(seed);
@@ -823,7 +828,7 @@ int main() {
                 if (abs(playerPosition.x - monsterPosition.x) <= playerStats.speed
                  && abs(playerPosition.y - monsterPosition.y) <= playerStats.speed
                  && fov[monsterPosition.x][monsterPosition.y]) {
-                    int damage = max(0, playerStats.attack);
+                    int damage = get_random_int(0, playerStats.attack);
                     monster.health -= damage;
 
                     if (damage > 0) {
