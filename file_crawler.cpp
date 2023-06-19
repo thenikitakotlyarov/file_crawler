@@ -45,8 +45,8 @@ const int UI_LOG_COUNT = 7;
 const int WIDTH = 1024, HEIGHT = 1024;
 const char PLAYER = '@';
 const int  PLAYER_MAX_HP = 100;
-const int  PLAYER_FOV_RADIUS = 27;
-const int  PLAYER_MEMORY_RADIUS = 54;
+const int  PLAYER_FOV_RADIUS = 3;
+const int  PLAYER_MEMORY_RADIUS = pow(PLAYER_FOV_RADIUS,2);
 
 const vector<char> ground_tiles = {'.',',','`','"'};
 const vector<char> wall_tiles = {'[',']','{','}','=','|'};
@@ -233,7 +233,7 @@ vector<vector<char>> generate_map() {
 
 set<pair<int, int>> calculate_fov(
         vector<vector<char>>& map,
-        int player_x, int player_y,
+        int center_x, int center_y,
         int radius) {
     
     set<pair<int, int>> fov;
@@ -241,14 +241,14 @@ set<pair<int, int>> calculate_fov(
     for (int i = 0; i < 360; ++i) {
         double rad = i * (M_PI / 180.0);
         double dx = cos(rad), dy = sin(rad);
-        double x = player_x, y = player_y;
+        double x = center_x, y = center_y;
 
         for (int j = 0; j < radius; ++j) {
             x += dx;
             y += dy;
             int ix = round(x), iy = round(y);
 
-            if (ix < 0 || iy < 0 || ix >= WIDTH || iy >= HEIGHT)
+            if (ix <= 0 || iy <= 0 || ix >= WIDTH || iy >= HEIGHT)
                 break;
 
             fov.insert({ix, iy});
@@ -384,8 +384,8 @@ public:
                 int new_x = position.x + get_random_int(-1, 1);
                 int new_y = position.y + get_random_int(-1, 1);
 
-                if (new_x >= 0 && new_x < WIDTH
-                    && new_y >= 0 && new_y < HEIGHT
+                if (new_x > 0 && new_x < WIDTH
+                    && new_y > 0 && new_y < HEIGHT
                     && check_if_in(ground_tiles, map[new_x][new_y]))
                 {
                     position.x = new_x;
@@ -844,7 +844,7 @@ int main() {
         int end_y = start_y + LINES;
 
         set<pair<int, int>> fov = calculate_fov(
-            map, player_x, player_y, PLAYER_FOV_RADIUS
+            map, player_x, player_y, PLAYER_FOV_RADIUS * playerStats.speed
         );
 
         vector<pair<char, pair<int, int>>> draw_buffer;
@@ -861,12 +861,15 @@ int main() {
             }
         }
         
+        entityManager.getPlayerStats()[playerEntity] = playerStats;
+        int memory_radius = pow(PLAYER_FOV_RADIUS, 2) * playerStats.speed;
+
         // Forget distant visited tiles
         visited.erase(remove_if(visited.begin(), visited.end(),
-            [player_x, player_y](const auto& position) {
+            [player_x, player_y, memory_radius](const auto& position) {
                 int dx = position.first  - player_x;
                 int dy = position.second - player_y;
-                return pow(dx, 2) + pow(dy, 2) >= pow(PLAYER_MEMORY_RADIUS, 2);
+                return pow(dx, 2) + pow(dy, 2) >= pow(memory_radius, 2);
             }),
             visited.end()
         );
