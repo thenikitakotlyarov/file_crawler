@@ -481,10 +481,24 @@ void spawnMonsters(int monster_count, EntityManager& entityManager, vector<vecto
         } while (!check_if_in(ground_tiles, map[x][y]));
         Entity monsterEntity = entityManager.createEntity();
         entityManager.getPositions()[monsterEntity] = {x, y};
-        uniform_int_distribution<int> dis(5, 25);
-
-        entityManager.getAIComponents()[monsterEntity] = {dis(gen), dis(gen), dis(gen)};
-        entityManager.getMonsterComponents()[monsterEntity] = {dis(gen), dis(gen), dis(gen), dis(gen)};
+        
+        uniform_int_distribution<int> chase_dis(7, 25);
+        uniform_int_distribution<int> attack_range_dis(1, 7);
+        uniform_int_distribution<int> attack_power_dis(1, 20);
+        uniform_int_distribution<int> cooldown_dis(1, 5);
+        uniform_int_distribution<int> health_dis(5, 25);
+        
+        entityManager.getAIComponents()[monsterEntity] = {
+            chase_dis(gen),
+            attack_range_dis(gen),
+            cooldown_dis(gen)
+        };
+        entityManager.getMonsterComponents()[monsterEntity] = {
+            attack_power_dis(gen),
+            attack_range_dis(gen),
+            cooldown_dis(gen),
+            health_dis(gen)
+        };
     }
 }
 
