@@ -49,8 +49,8 @@ const string GAME_LOG_FILE = "game_log.txt";
 
 const int UI_LOG_COUNT = 7;
 
-const int FPS = 15;
-const int WIDTH = 2048, HEIGHT = 2048;
+const int FPS = 60;
+const int WIDTH = 256, HEIGHT = 256;
 const char PLAYER = '@';
 const int  PLAYER_MAX_HP = 100;
 const int  PLAYER_FOV_RADIUS = 3;
@@ -575,7 +575,7 @@ public:
 
                     int damage = max(0,get_random_int(1, monster.attackPower) - get_random_int(0,playerStats.defense));
                     playerStats.health -= damage;
-                    monster.cooldown = get_random_int(5,20);
+                    monster.cooldown = get_random_int(FPS / 3, FPS * 4 / 3);
 
                     if (damage > 0) {
                         add_combat_log("Player took " + to_string(damage) + " damage from a monster.");
@@ -604,18 +604,17 @@ void spawnMonsters(int monster_count, EntityManager& entityManager, vector<vecto
         pair<int, int> chase_dis = {7, 25};
         pair<int, int> attack_range_dis = {1, 7};
         pair<int, int> attack_power_dis = {1, 20};
-        pair<int, int> cooldown_dis = {1, 5};
         pair<int, int> health_dis = {5, 25};
         
         entityManager.getAIComponents()[monsterEntity] = {
             get_random_int(chase_dis.first,chase_dis.second),
             get_random_int(attack_range_dis.first,attack_range_dis.second),
-            get_random_int(cooldown_dis.first,cooldown_dis.second)
+            FPS * 3
         };
         entityManager.getMonsterComponents()[monsterEntity] = {
             get_random_int(attack_power_dis.first,attack_power_dis.second),
             get_random_int(attack_range_dis.first,attack_range_dis.second),
-            get_random_int(cooldown_dis.first,cooldown_dis.second),
+            FPS * 3,
             get_random_int(health_dis.first,health_dis.second)
         };
     }
@@ -1034,7 +1033,7 @@ int main() {
 
 
     spawnItems(entityManager, map);
-    spawnMonsters(1.314*(HEIGHT + WIDTH),entityManager, map);
+    spawnMonsters(HEIGHT * WIDTH / 2048.0, entityManager, map);
     MonsterSystem monsterSystem(entityManager, map, playerStats);
     log(DEV_LOG_FILE, "spawned items and monsters");
 
@@ -1070,7 +1069,10 @@ int main() {
                 
                 char ch = map[x][y];
                 draw_buffer.push_back(make_pair(ch, make_pair(y, x)));
-                visited.push_back(make_pair(x, y));
+                
+                // Memorize walls
+                if (check_if_in(wall_tiles, map[x][y]))
+                    visited.push_back(make_pair(x, y));
             }
         }
         
