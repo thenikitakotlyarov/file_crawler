@@ -53,8 +53,12 @@ const char PLAYER = '@';
 const int  PLAYER_MAX_HP = 100;
 const int  PLAYER_FOV_RADIUS = 3;
 const int  PLAYER_MEMORY_RADIUS = pow(PLAYER_FOV_RADIUS,2);
-Mix_Chunk* PLAYER_FOOTSTEP_SOUND = nullptr;
-const int PLAYER_FOOTSTEP_SOUND_COUNT = 6;
+
+const bool sound = false;
+if (sound) {
+    Mix_Chunk* PLAYER_FOOTSTEP_SOUND = nullptr;
+    const int PLAYER_FOOTSTEP_SOUND_COUNT = 6;
+}
 
 const vector<char> ground_tiles = {'.',',','`','"'};
 const vector<char> wall_tiles = {'[',']','{','}','=','|'};
@@ -847,7 +851,10 @@ pair<int,int> move_player(EntityManager& entityManager,
             break; // Stop the loop if the player hits a wall
         }
     }
-    playFootstepSound();
+
+    if (sound) {
+        playFootstepSound();
+    }
 
     return delta;
 
@@ -864,37 +871,39 @@ int main() {
     init_all_color_pairs();
     log(DEV_LOG_FILE, "initialized color");
 
-    // Initialize SDL (audio)
-    Mix_FreeChunk(PLAYER_FOOTSTEP_SOUND);
-    Mix_CloseAudio();
-    Mix_Quit();
-    SDL_Quit();
-    SDL_Init(SDL_INIT_AUDIO);
 
-    // Initialize SDL Mixer
-    int mixerFlags = MIX_INIT_MP3 | MIX_INIT_OGG; // Flags for the audio formats you want to support
-    int initResult = Mix_Init(mixerFlags);
-    if ((initResult & mixerFlags) != mixerFlags) {
-        // Handle initialization error
-        // Example: std::cerr << "Failed to initialize SDL Mixer: " << Mix_GetError() << std::endl;
-        return 1;
+    if (sound) {
+        // Initialize SDL (audio)
+        Mix_FreeChunk(PLAYER_FOOTSTEP_SOUND);
+        Mix_CloseAudio();
+        Mix_Quit();
+        SDL_Quit();
+        SDL_Init(SDL_INIT_AUDIO);
+
+        // Initialize SDL Mixer
+        int mixerFlags = MIX_INIT_MP3 | MIX_INIT_OGG; // Flags for the audio formats you want to support
+        int initResult = Mix_Init(mixerFlags);
+        if ((initResult & mixerFlags) != mixerFlags) {
+            // Handle initialization error
+            // Example: std::cerr << "Failed to initialize SDL Mixer: " << Mix_GetError() << std::endl;
+            return 1;
+        }
+
+        // Open the audio device
+        if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 4096) < 0) {
+            // Handle audio device opening error
+            // Example: std::cerr << "Failed to open audio device: " << Mix_GetError() << std::endl;
+            return 1;
+        }
+
+        PLAYER_FOOTSTEP_SOUND = Mix_LoadWAV("data/sound/footstep.wav");  // Replace "footstep.wav" with the path to your sound file
+        if (!PLAYER_FOOTSTEP_SOUND) {
+            // Handle sound loading error
+            // Example: std::cerr << "Failed to load footstep sound: " << Mix_GetError() << std::endl;
+            return 1;
+        }
+        log(DEV_LOG_FILE, "initialized audio");
     }
-
-    // Open the audio device
-    if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 4096) < 0) {
-        // Handle audio device opening error
-        // Example: std::cerr << "Failed to open audio device: " << Mix_GetError() << std::endl;
-        return 1;
-    }
-
-    PLAYER_FOOTSTEP_SOUND = Mix_LoadWAV("data/sound/footstep.wav");  // Replace "footstep.wav" with the path to your sound file
-    if (!PLAYER_FOOTSTEP_SOUND) {
-        // Handle sound loading error
-        // Example: std::cerr << "Failed to load footstep sound: " << Mix_GetError() << std::endl;
-        return 1;
-    }
-    log(DEV_LOG_FILE, "initialized audio");
-
 
     curs_set(0);
     noecho();
@@ -1258,11 +1267,14 @@ int main() {
         }
 
     }
-    //release audio
-    Mix_FreeChunk(PLAYER_FOOTSTEP_SOUND);
-    Mix_CloseAudio();
-    Mix_Quit();
-    SDL_Quit();
+
+    if (sound) {
+        //release audio
+        Mix_FreeChunk(PLAYER_FOOTSTEP_SOUND);
+        Mix_CloseAudio();
+        Mix_Quit();
+        SDL_Quit();
+    }
     //release screen
     endwin();
     return 0;
