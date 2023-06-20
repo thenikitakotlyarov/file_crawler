@@ -821,13 +821,13 @@ pair<int,int> move_player(EntityManager& entityManager,
                           PlayerStats& playerStats,
                           const vector<vector<char>>& map,
                           const pair<int,int> direction,
-                          const bool sprinting) {
+                          const int sprinting) {
     log(DEV_LOG_FILE, "player opts to move x", direction.first, ",y", direction.second);
 
     pair<int,int> delta = {0, 0};
     int distance = 1;
     if (sprinting) {
-        distance = playerStats.speed;
+        distance = min(playerStats.speed,int(pow(sprinting,1.2)));
     }
 
     auto& positions = entityManager.getPositions();
@@ -1058,6 +1058,7 @@ int main() {
     nodelay(stdscr, TRUE);
     auto timePerFrame = std::chrono::milliseconds(1000 / FPS); // Approximately 15 FPS
 
+    int sprinting = 0;
 
     log(DEV_LOG_FILE, "starting game loop");
     while (true) {
@@ -1151,46 +1152,54 @@ int main() {
         if (key != ERR) {
             pair<int,int> delta = {0,0};
             if (key == 'w') {
+                sprinting = 0;
                 pair<int,int> direction = {0,-1};
                 //bool represents whether or not the player is sprinting
-                delta = move_player(entityManager, playerStats, map, direction, false);
+                delta = move_player(entityManager, playerStats, map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
 
             } else if (key == 'W') {
+                sprinting += 1;
                 pair<int,int> direction = {0,-1};
-                delta = move_player(entityManager, playerStats, map, direction, true);
+                delta = move_player(entityManager, playerStats, map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 's') {
+                sprinting = 0;
                 pair<int,int> direction = {0,1};
                 //bool represents whether or not the player is sprinting
-                delta = move_player(entityManager, playerStats, map, direction, false);
+                delta = move_player(entityManager, playerStats, map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 'S') {
+                sprinting += 1;
                 pair<int,int> direction = {0,1};
-                delta = move_player(entityManager, playerStats, map, direction, true);
+                delta = move_player(entityManager, playerStats, map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 'a') {
+                sprinting = 0;
                 pair<int,int> direction = {-1,0};
-                delta = move_player(entityManager, playerStats, map, direction, false);
+                delta = move_player(entityManager, playerStats, map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 'A') {
+                sprinting += 1;
                 pair<int,int> direction = {-1,0};
-                delta = move_player(entityManager, playerStats, map, direction, true);
+                delta = move_player(entityManager, playerStats, map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 'd') {
+                sprinting = 0;
                 pair<int,int> direction = {1,0};
-                delta = move_player(entityManager, playerStats, map, direction, false);
+                delta = move_player(entityManager, playerStats, map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 'D') {
+                sprinting += 1;
                 pair<int,int> direction = {1,0};
-                delta = move_player(entityManager, playerStats, map, direction, true);
+                delta = move_player(entityManager, playerStats, map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 'q') {
