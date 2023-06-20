@@ -595,7 +595,7 @@ public:
 
                     int damage = max(0,get_random_int(1, monster.attackPower) - get_random_int(0,playerStats.defense));
                     playerStats.health -= damage;
-                    monster.cooldown = FPS * get_random_int(1,2);
+                    monster.cooldown = get_random_int(5,20);
 
                     if (damage > 0) {
                         add_combat_log("Player took " + to_string(damage) + " damage from a monster.");
@@ -872,10 +872,10 @@ int main() {
 
     if (sound) {
         // Initialize SDL (audio)
-        Mix_FreeChunk(PLAYER_FOOTSTEP_SOUND);
-        Mix_CloseAudio();
-        Mix_Quit();
-        SDL_Quit();
+        // Mix_FreeChunk(PLAYER_FOOTSTEP_SOUND);
+        // Mix_CloseAudio();
+        // Mix_Quit();
+        // SDL_Quit();
         SDL_Init(SDL_INIT_AUDIO);
 
         // Initialize SDL Mixer
