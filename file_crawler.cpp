@@ -38,7 +38,7 @@ using namespace std;
 #+#    #+# #+#    #+# #+#     #+#  #+#+# #+#+#  #+#        #+#        #+#    #+#
  ########  ###    ### ###     ###   ###   ###   ########## ########## ###    ###
 */
-// v0.4x
+// v0.5x
 
 const string DEV_LOG_FILE = "dev_log.txt";
 const string GAME_LOG_FILE = "game_log.txt";
@@ -46,7 +46,7 @@ const string GAME_LOG_FILE = "game_log.txt";
 const int UI_LOG_COUNT = 7;
 
 const int FPS = 15;
-const int WIDTH = 1024, HEIGHT = 1024;
+const int WIDTH = 4096, HEIGHT = 4096;
 const char PLAYER = '@';
 const int  PLAYER_MAX_HP = 100;
 const int  PLAYER_FOV_RADIUS = 3;
@@ -590,7 +590,7 @@ void spawnItems(EntityManager& entityManager, vector<vector<char>>& map) {
         {ItemType::SpeedBoost, 's',
             [](PlayerStats& stats) { stats.speed += 1; }}
     };
-    for (int i = 0; i < 512; ++i) {
+    for (int i = 0; i < HEIGHT * WIDTH / 2048; ++i) {
         for (const auto& item : itemTemplates) {
             int x, y;
             do {
@@ -967,7 +967,7 @@ int main() {
     log(DEV_LOG_FILE, "generated map");
 
     spawnItems(entityManager, map);
-    spawnMonsters(2048,entityManager, map);
+    spawnMonsters( HEIGHT + WIDTH,entityManager, map);
     MonsterSystem monsterSystem(entityManager, map, playerStats);
     log(DEV_LOG_FILE, "spawned items and monsters");
 
