@@ -48,7 +48,7 @@ const string GAME_LOG_FILE = "game_log.txt";
 const int UI_LOG_COUNT = 7;
 
 const int FPS = 15;
-const int WIDTH = 4096, HEIGHT = 4096;
+const int WIDTH = 2048, HEIGHT = 2048;
 const char PLAYER = '@';
 const int  PLAYER_MAX_HP = 100;
 const int  PLAYER_FOV_RADIUS = 3;
@@ -484,8 +484,8 @@ vector<Node> aStar(const PositionComponent& start, const PositionComponent& goal
 
         for (int dx = -1; dx <= 1; dx++) {
             for (int dy = -1; dy <= 1; dy++) {
-                int x = current->x + dx;
-                int y = current->y + dy;
+                int x = current->x + dx + get_random_int(-1,1);
+                int y = current->y + dy + get_random_int(-1,1);
 
                 if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT && !closedSet[x][y]) {
                     double tentativeG = current->g + cost(map, x, y);
@@ -554,8 +554,8 @@ public:
                 int new_x,new_y;
                 // Move the monster to the next node in the path if it exists
                 if (!path.empty()) {
-                    new_x = path[1].x + get_random_int(-1,1);
-                    new_y = path[1].y + get_random_int(-1,1);
+                    new_x = path[1].x;
+                    new_y = path[1].y;
                 }
 
 
@@ -574,7 +574,7 @@ public:
                 }
 
                 // Only move the monster to the new position if it's not occupied
-                if (!is_occupied) {
+                if (!is_occupied and check_if_in(ground_tiles, map[new_x][new_y])) {
                     monsterPosition.x = new_x;
                     monsterPosition.y = new_y;
                 }
@@ -1043,7 +1043,7 @@ int main() {
     log(DEV_LOG_FILE, "generated map");
 
     spawnItems(entityManager, map);
-    spawnMonsters( HEIGHT + WIDTH,entityManager, map);
+    spawnMonsters(1.314*(HEIGHT + WIDTH),entityManager, map);
     MonsterSystem monsterSystem(entityManager, map, playerStats);
     log(DEV_LOG_FILE, "spawned items and monsters");
 
