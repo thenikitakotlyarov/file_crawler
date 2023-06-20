@@ -1025,22 +1025,30 @@ int main() {
     log(DEV_LOG_FILE, "generated palette");
 
 
+    vector<vector<char>> map = generate_map();
+    vector<pair<int, int>> visited = {};
+    //TODO: spawn player in sensible location
+    int player_x = get_random_int(1, WIDTH-1);
+    int player_y = get_random_int(1, HEIGHT-1);
+
+    while (!check_if_in(ground_tiles,map[player_x][player_y])) {
+
+        player_x += get_random_int(-1,1);
+        player_y += get_random_int(-1,1);
+    }
+    log(DEV_LOG_FILE, "generated map");
+
+
     EntityManager entityManager;
     log(DEV_LOG_FILE, "generated entity manager");
 
 
-    //TODO: spawn player in sensible location
-    int player_x = WIDTH / 2;
-    int player_y = HEIGHT / 2;
 
     Entity playerEntity = entityManager.createEntity();
     entityManager.getPositions()[playerEntity] = {player_x, player_y};
     entityManager.getPlayerStats()[playerEntity] = playerStats;
     log(DEV_LOG_FILE, "initialized entity manager");
 
-    vector<vector<char>> map = generate_map();
-    vector<pair<int, int>> visited = {};
-    log(DEV_LOG_FILE, "generated map");
 
     spawnItems(entityManager, map);
     spawnMonsters(1.314*(HEIGHT + WIDTH),entityManager, map);
@@ -1049,6 +1057,7 @@ int main() {
 
     nodelay(stdscr, TRUE);
     auto timePerFrame = std::chrono::milliseconds(1000 / FPS); // Approximately 15 FPS
+
 
     log(DEV_LOG_FILE, "starting game loop");
     while (true) {
