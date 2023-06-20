@@ -386,6 +386,7 @@ public:
         : entityManager(entityManager), map(map) {}
 
     void update() {
+        log(DEV_LOG_FILE, "updating movement system");
         auto& positions = entityManager.getPositions();
         auto& monsters = entityManager.getMonsterComponents();
 
@@ -422,6 +423,7 @@ public:
         : entityManager(entityManager), map(map), playerStats(playerStats) {}
 
     void update() {
+        log(DEV_LOG_FILE, "updating monster system");
         auto& positions = entityManager.getPositions();
         auto& monsters = entityManager.getMonsterComponents();
 
@@ -436,6 +438,8 @@ public:
             PositionComponent& playerPosition = positions[0];
             AIComponent& ai = entityManager.getAIComponents()[entity];
             MonsterComponent& monster = monsters[entity];
+
+            monster.cooldown = max(0, monster.cooldown - 1);
 
             int dx = monsterPosition.x - playerPosition.x;
             int dy = monsterPosition.y - playerPosition.y;
@@ -675,14 +679,16 @@ void draw_UI(PlayerStats& playerStats) {
     int x = 2;
     int y = 1;
     int player_color = get_player_color(playerStats);
+    int player_level = round((playerStats.attack + playerStats.defense + playerStats.speed)/10);
     string player_class = get_player_class_name(playerStats);
     attron(COLOR_PAIR(player_color));
-    mvprintw(y, x, "%s",
+    mvprintw(y, x, "LVL%d %s",
+             player_level,
              player_class.c_str()
             );
     attroff(COLOR_PAIR(player_color));
-    mvprintw(y,x+player_class.length()+2, "HP: %d", playerStats.health);
-    mvprintw(y+1, x, "ATT: %d DEF: %d SPD: %d",
+    mvprintw(y+1, x, "HP: %d", playerStats.health);
+    mvprintw(y+2, x, "ATT: %d DEF: %d SPD: %d",
              playerStats.attack,
              playerStats.defense,
              playerStats.speed
@@ -799,43 +805,56 @@ int main() {
             break;
     }
 
+    int a, b;
     int playerAttack, playerDefense, playerSpeed;
 
     switch(classChoice) {
         case 1: // Fighter
-            playerAttack  = 10;
-            playerDefense = 3;
-            playerSpeed   = 3;
+            a = get_random_int(2,3);
+            b = 13 - 2 * a;
+            playerAttack  = b;
+            playerDefense = a;
+            playerSpeed   = a;
             break;
         case 2: // Rogue
-            playerAttack  = 7;
-            playerDefense = 2;
-            playerSpeed   = 7;
+            a = get_random_int(5,6);
+            b = 13 - 2 * a;
+            playerAttack  = a;
+            playerDefense = b;
+            playerSpeed   = a;
             break;
         case 3: // Ranger
-            playerAttack  = 3;
-            playerDefense = 3;
-            playerSpeed   = 10;
+            a = get_random_int(2,3);
+            b = 13 - 2 * a;
+            playerAttack  = a;
+            playerDefense = a;
+            playerSpeed   = b;
             break;
         case 4: // Sorcerer
-            playerAttack  = 2;
-            playerDefense = 7;
-            playerSpeed   = 7;
+            a = get_random_int(5,6);
+            b = 13 - 2 * a;
+            playerAttack  = b;
+            playerDefense = a;
+            playerSpeed   = a;
             break;
         case 5: // Wizard
-            playerAttack  = 3;
-            playerDefense = 10;
-            playerSpeed   = 3;
+            a = get_random_int(2,3);
+            b = 13 - 2 * a;
+            playerAttack  = a;
+            playerDefense = b;
+            playerSpeed   = a;
             break;
         case 6: // Cleric
-            playerAttack  = 7;
-            playerDefense = 7;
-            playerSpeed   = 2;
+            a = get_random_int(5,6);
+            b = 13 - 2 * a;
+            playerAttack  = a;
+            playerDefense = a;
+            playerSpeed   = b;
             break;
         case 7: // Adventurer
-            playerAttack  = 5;
-            playerDefense = 5;
-            playerSpeed   = 5;
+            playerAttack  = 4;
+            playerDefense = 4;
+            playerSpeed   = 4;
             break;
     }
 
@@ -1059,13 +1078,10 @@ int main() {
 
 
         movementSystem.update();
+        log(DEV_LOG_FILE, "updated movement system");
+
         monsterSystem.update();
-
-
-        for (auto& entry : monsters) {
-            MonsterComponent& monster = entry.second;
-            monster.cooldown = max(0, monster.cooldown - 1); // Decrement the cooldown of the monster's attack
-        }
+        log(DEV_LOG_FILE, "updated monster system");
 
         entityManager.getPositions()[playerEntity] = {player_x, player_y};
 
