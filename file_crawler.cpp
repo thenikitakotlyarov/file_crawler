@@ -55,10 +55,8 @@ const int  PLAYER_FOV_RADIUS = 3;
 const int  PLAYER_MEMORY_RADIUS = pow(PLAYER_FOV_RADIUS,2);
 
 const bool sound = false;
-if (sound) {
-    Mix_Chunk* PLAYER_FOOTSTEP_SOUND = nullptr;
-    const int PLAYER_FOOTSTEP_SOUND_COUNT = 6;
-}
+Mix_Chunk* PLAYER_FOOTSTEP_SOUND = nullptr;
+const int PLAYER_FOOTSTEP_SOUND_COUNT = 6;
 
 const vector<char> ground_tiles = {'.',',','`','"'};
 const vector<char> wall_tiles = {'[',']','{','}','=','|'};
