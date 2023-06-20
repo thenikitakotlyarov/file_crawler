@@ -64,6 +64,10 @@ const vector<char> ground_tiles = {'.',',','`','"'};
 const vector<char> wall_tiles = {'[',']','{','}','=','|'};
 const vector<char> trap_tiles = {'&','#'};
 const vector<char> void_tiles = {' '};
+const vector<char> entity_tiles = {'@',//player
+    'M','N','m','n','r','i',//monsters
+    'o','O','0','s','S','7','d','D','8','a','A','9'//items
+};
 
 vector<string> combat_log;
 
@@ -156,23 +160,42 @@ void playFootstepSound() {
 
 
 
+
 // MAP GEN
-vector<vector<char>> generate_map() {
+struct Tile {
+    char ch;
+    short color;
+    bool visited;
+    bool visible;
+};
+
+vector<vector<Tile>> generate_map() {
     log(DEV_LOG_FILE, "called generate_map");
-    vector<vector<char>> map(WIDTH, vector<char>(HEIGHT));
+    vector<vector<Tile>> map(WIDTH, vector<Tile>(HEIGHT));
 
     // Generate open areas using Perlin noise
     for (int y = 0; y < HEIGHT; ++y) {
         for (int x = 0; x < WIDTH; ++x) {
-            map[x][y] = get_random_character(void_tiles);
+            char ch = get_random_character(void_tiles);
+            short color = get_color_pair_index(COLOR_WHITE,COLOR_BLACK);
+            Tile void_tile = {ch, color, false, false};
+            map[x][y] = void_tile;
             double value = perlin.GetValue(x / 10.0, y / 10.0, 0.0);
 
-            if (value < 0.2)
-                map[x][y] = get_random_character(ground_tiles);
-            else if (value < 0.21)
-                map[x][y] = get_random_character(trap_tiles);
-            else if (value < 0.8)
-                map[x][y] = get_random_character(wall_tiles);
+
+            if (value < 0.2) {
+                ch = get_random_character(ground_tiles);
+                color = get_ground_color();
+            } else if (value < 0.21) {
+                ch = get_random_character(trap_tiles);
+                color = get_trap_color();
+            } else if (value < 0.8) {
+                ch = get_random_character(wall_tiles);
+                color = get_wall_color();
+            }
+
+            Tile this_tile = {ch, color, false, false};
+            map[x][y] = this_tile;
         }
     }
 
@@ -214,19 +237,25 @@ vector<vector<char>> generate_map() {
     for (int y = 0; y < HEIGHT; ++y) {
         for (int x = 0; x < WIDTH; ++x) {
             if (!visited[x][y] && check_if_in(ground_tiles, map[x][y])) {
-                map[x][y] = get_random_character(wall_tiles);
+                char ch = get_random_character(wall_tiles);
+                short color = get_wall_color();
+                map[x][y] = {ch, color, false, false};
             }
         }
     }
 
     // Draw a border around the map
     for (int x = 0; x < WIDTH; ++x) {
-        map[x][0] = get_random_character(wall_tiles);
-        map[x][HEIGHT - 1] = get_random_character(wall_tiles);
+        char ch = get_random_character(wall_tiles);
+        short color = get_wall_color();
+        map[x][0] = {ch, color, false, false};
+        map[x][HEIGHT - 1] = {ch, color, false, false};
     }
     for (int y = 0; y < HEIGHT; ++y) {
-        map[0][y] = get_random_character(wall_tiles);
-        map[WIDTH - 1][y] = get_random_character(wall_tiles);
+        char ch = get_random_character(wall_tiles);
+        short color = get_wall_color();
+        map[0][y] = {ch, color, false, false};
+        map[WIDTH - 1][y] = {ch, color, false, false};
     }
 
 
@@ -622,25 +651,12 @@ void spawnMonsters(int monster_count, EntityManager& entityManager, vector<vecto
 
 
 void render_buffer(
-        const vector<pair<char, pair<int, int>>>& draw_buffer,
-        const vector<vector<char>>& map,
+        const vector<vector<char, pair<int, int>>>& draw_buffer,
+        const vector<vector<vector<char, short, bool, bool>>& map,
         const vector<short>& palette,
-        const vector<pair<int, int>>& visited,
         int start_x, int start_y) {
     
     log(DEV_LOG_FILE, "rendering buffer");
-
-    short color_pair = get_color_pair_index(8, COLOR_BLACK);
-    attron(COLOR_PAIR(color_pair));
-
-    for (const auto& position : visited) {
-        int x = position.first;
-        int y = position.second;
-        char ch = map[x][y];
-        mvaddch(y - start_y, x - start_x, ch);
-    }
-
-    attroff(COLOR_PAIR(color_pair));
 
     for (const auto& item : draw_buffer) {
         char ch = item.first;
@@ -648,7 +664,11 @@ void render_buffer(
         int x = item.second.second - start_x;
         short color_pair = 0;
 
-        if (check_if_in(wall_tiles, ch)) {
+        if (!check_if_in(entity_tiles,ch)) {
+            color_pair = 0;
+        } else if (map[x][y][2] && !map[x][y][3]) {
+            color_pair = get_color_pair_index(8, COLOR_BLACK);
+        } else if (check_if_in(wall_tiles, ch)) {
             color_pair = palette[1];
         } else if (check_if_in(trap_tiles, ch)) {
             color_pair = palette[1];
@@ -1007,8 +1027,7 @@ int main() {
     log(DEV_LOG_FILE, "generated palette");
 
 
-    vector<vector<char>> map = generate_map();
-    vector<pair<int, int>> visited = {};
+    vector<vector<vector<char, short, bool ,bool>>> map = generate_map();
     //TODO: spawn player in sensible location
     int player_x = get_random_int(1, WIDTH-1);
     int player_y = get_random_int(1, HEIGHT-1);
@@ -1072,7 +1091,7 @@ int main() {
                 
                 // Memorize walls
                 if (check_if_in(wall_tiles, map[x][y]))
-                    visited.push_back(make_pair(x, y));
+                    map[x][y][2] = true;
             }
         }
         
@@ -1080,14 +1099,19 @@ int main() {
         int memory_radius = pow(PLAYER_FOV_RADIUS, 2) * playerStats.defense   ;
 
         // Forget distant visited tiles
-        visited.erase(remove_if(visited.begin(), visited.end(),
-            [player_x, player_y, memory_radius](const auto& position) {
-                int dx = position.first  - player_x;
-                int dy = position.second - player_y;
-                return pow(dx/2, 2) + pow(dy, 2) >= pow(memory_radius, 2);
-            }),
-            visited.end()
-        );
+        for (int i = 0; i < 360; ++i) {
+            double rad = i * (M_PI / 180.0);
+            double dx = cos(rad), dy = sin(rad);
+            double x = player_x, y = player_y;
+
+            x += dx * memory_radius;
+            y += dy * memory_radius;
+            int ix = round(x), iy = round(y);
+            map[x][y][2] = false;
+
+        }
+
+
 
 
 
@@ -1126,7 +1150,7 @@ int main() {
 
         palette[3] = get_player_color(playerStats);
 
-        render_buffer(draw_buffer, map, palette, visited, start_x, start_y);
+        render_buffer(draw_buffer, map, palette, start_x, start_y);
 
         refresh();
 
