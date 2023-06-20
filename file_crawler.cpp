@@ -538,11 +538,14 @@ public:
                 log(DEV_LOG_FILE, "monster", entity, " chases player");
 
                 // Get the path from the monster to the player
+                log(DEV_LOG_FILE, "monster", entity, " is pathing");
                 vector<Node> path = aStar(monsterPosition, playerPosition, map);
+                log(DEV_LOG_FILE, "monster", entity, " found path");
                 int new_x = monsterPosition.x;
                 int new_y = monsterPosition.y;
                 // Move the monster to the next node in the path if it exists
                 if (!path.empty()) {
+                    log(DEV_LOG_FILE, "monster", entity, " taking path");
                     new_x = path[1].x;
                     new_y = path[1].y;
                 }
@@ -562,6 +565,7 @@ public:
                     }
                 }
 
+                log(DEV_LOG_FILE, "monster", entity, " moving along path");
                 // Only move the monster to the new position if it's not occupied
                 if (!is_occupied and check_if_in(ground_tiles, map[new_x][new_y])) {
                     monsterPosition.x = new_x;
@@ -941,10 +945,33 @@ int main() {
         printw("Adventurer\n");
         attroff(COLOR_PAIR(8));
 
+        printw("8.  ");
+        attron(COLOR_PAIR(2));
+        printw("R");
+        attroff(COLOR_PAIR(2));
+        attron(COLOR_PAIR(4));
+        printw("A");
+        attroff(COLOR_PAIR(4));
+        attron(COLOR_PAIR(3));
+        printw("N");
+        attroff(COLOR_PAIR(3));
+        attron(COLOR_PAIR(7));
+        printw("D");
+        attroff(COLOR_PAIR(7));
+        attron(COLOR_PAIR(5));
+        printw("O");
+        attroff(COLOR_PAIR(5));
+        attron(COLOR_PAIR(6));
+        printw("M");
+        attroff(COLOR_PAIR(6));
+        attron(COLOR_PAIR(8));
+        printw("!");
+        attroff(COLOR_PAIR(8));
+
         refresh();
 
         classChoice = getch() - '0';
-        if (classChoice >= 1 && classChoice <= 7)
+        if (classChoice >= 1 && classChoice <= 8)
             break;
     }
 
@@ -999,6 +1026,13 @@ int main() {
             playerDefense = 4;
             playerSpeed   = 4;
             break;
+        default: //random class choice
+            a = get_random_int(1,6);
+            b = 14 - a - get_random_int(1,6);
+            int c = 14 - a - b;
+            playerAttack  = a;
+            playerDefense = b;
+            playerSpeed   = c;
     }
 
     log(DEV_LOG_FILE, "selected player class");
