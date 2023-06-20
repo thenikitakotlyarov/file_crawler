@@ -546,8 +546,8 @@ public:
                 // Move the monster to the next node in the path if it exists
                 if (!path.empty()) {
                     log(DEV_LOG_FILE, "monster", entity, " taking path");
-                    new_x = path[1].x;
-                    new_y = path[1].y;
+                    new_x = max(1,min(WIDTH-1,path[1].x));
+                    new_y = max(1,min(HEIGHT-1,path[1].y));
                 }
 
 
