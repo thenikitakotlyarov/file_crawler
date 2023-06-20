@@ -19,6 +19,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 
+#include "helpers.cpp"
+
 
 using namespace std;
 
@@ -63,11 +65,9 @@ const vector<char> wall_tiles = {'[',']','{','}','=','|'};
 const vector<char> trap_tiles = {'&','#'};
 const vector<char> void_tiles = {' '};
 
-noise::module::Perlin perlin;
-random_device rd;
-mt19937 gen(rd());
+vector<string> combat_log;
 
-// HELPER FUNCTIONS
+
 
 template<typename... Args>
 void log(const string filename, Args&&... args) {
@@ -91,27 +91,6 @@ void log(const string filename, Args&&... args) {
     logfile.close();
 }
 
-int get_random_int(const int min, const int max) {
-    uniform_int_distribution<> distr(min, max);
-    return distr(gen);
-
-}
-
-char get_random_character(const vector<char>& vec) {
-    return vec[get_random_int(0,vec.size() - 1)];
-}
-
-bool check_if_in(const vector<char>& vec, const char compare) {
-    return find(vec.begin(), vec.end(), compare) != vec.end();
-}
-
-template <typename T, template<typename...> class Container>
-bool is_in_set(const T& element, const Container<T>& set) {
-    return set.find(element) != set.end();
-}
-
-
-vector<string> combat_log;
 
 void add_combat_log(const string& message) {
     log(DEV_LOG_FILE, message);
@@ -122,27 +101,9 @@ void add_combat_log(const string& message) {
     }
 }
 
+
+
 // COLOR SETUP
-
-short get_color_pair_index(short foreground, short background) {
-    return ((background & 7) << 4 | (foreground & 15)) + 1;
-}
-
-void init_all_color_pairs() {
-    log(DEV_LOG_FILE, "called init_all_color_pairs");
-    const vector<int> all_colors = {
-        COLOR_BLACK, COLOR_RED,     COLOR_GREEN, COLOR_YELLOW,
-        COLOR_BLUE,  COLOR_MAGENTA, COLOR_CYAN,  COLOR_WHITE
-    };
-
-    for (short background : all_colors)
-    for (short foreground = 0; foreground < 16; foreground++) {
-        init_pair(
-            get_color_pair_index(foreground, background),
-            foreground, background);
-    }
-}
-
 vector<short> generate_palette(int seed) {
     log(DEV_LOG_FILE, "called generate_palette with seed as ", seed);
     // Assumes all color pairs have been initialized.
@@ -195,7 +156,7 @@ void playFootstepSound() {
 
 
 
-
+// MAP GEN
 vector<vector<char>> generate_map() {
     log(DEV_LOG_FILE, "called generate_map");
     vector<vector<char>> map(WIDTH, vector<char>(HEIGHT));
@@ -272,11 +233,18 @@ vector<vector<char>> generate_map() {
     return map;
 }
 
+
+
+// PATHING
+struct PositionComponent {
+    int x;
+    int y;
+};
+
 set<pair<int, int>> calculate_fov(
         vector<vector<char>>& map,
         int center_x, int center_y,
         int radius) {
-    log(DEV_LOG_FILE, "called calculate_fov with at center x", center_x, ",y", center_y, "and radius ", radius);
 
     set<pair<int, int>> fov;
 
@@ -302,140 +270,6 @@ set<pair<int, int>> calculate_fov(
 
     return fov;
 }
-
-// ENTITIES
-
-struct PlayerStats {
-    int health;
-    int attack;
-    int defense;
-    int speed;
-};
-
-struct PositionComponent {
-    int x;
-    int y;
-};
-
-struct AIComponent {
-    int chaseRadius;
-    int attackRadius;
-    int cooldown;
-};
-
-struct MonsterComponent {
-    int attackPower;
-    int attackRadius;
-    int cooldown;
-    int health;
-};
-
-
-enum class ItemType {
-    Potion,
-    MidPotion,
-    StrongPotion,
-    WeaponBits,
-    ArmorBits,
-    SpeedBoost
-};
-
-struct ItemComponent {
-    ItemType type;
-    char character;
-    function<void(PlayerStats&)> effect;
-};
-
-using Entity = int;
-
-class EntityManager {
-private:
-    vector<Entity> entities;
-    unordered_map<Entity, PositionComponent> positions;
-    unordered_map<Entity, PlayerStats> playerStats;
-    unordered_map<Entity, AIComponent> ais;
-    unordered_map<Entity, MonsterComponent> monsters;
-    unordered_map<Entity, ItemComponent> items;
-    int nextEntityId;
-
-public:
-    EntityManager() : nextEntityId(0) {}
-
-    Entity createEntity() {
-        Entity entity = nextEntityId++;
-        entities.push_back(entity);
-        return entity;
-    }
-
-    void destroyEntity(Entity entity) {
-        auto it = find(entities.begin(), entities.end(), entity);
-        if (it != entities.end()) {
-            entities.erase(it);
-            positions.erase(entity);
-            playerStats.erase(entity);
-            ais.erase(entity);
-            monsters.erase(entity);
-        }
-    }
-
-    vector<Entity>& getEntities() {
-        return entities;
-    }
-
-    unordered_map<Entity, PositionComponent>& getPositions() {
-        return positions;
-    }
-
-    unordered_map<Entity, PlayerStats>& getPlayerStats() {
-        return playerStats;
-    }
-
-    unordered_map<Entity, AIComponent>& getAIComponents() {
-        return ais;
-    }
-
-    unordered_map<Entity, MonsterComponent>& getMonsterComponents() {
-        return monsters;
-    }
-
-    unordered_map<Entity, ItemComponent>& getItemComponents() {
-        return items;
-    }
-};
-
-
-//pathfinding begin
-struct Node {
-    int x, y;
-    double g, h;
-    Node* parent;
-
-    Node(int x, int y, Node* parent = nullptr, double g = 0, double h = 0)
-        : x(x), y(y), parent(parent), g(g), h(h) {}
-
-    double f() const {
-        return g + h;
-    }
-};
-
-class NodePriorityQueue {
-public:
-    bool operator()(const Node* lhs, const Node* rhs) const {
-        return lhs->f() > rhs->f();
-    }
-};
-
-
-double heuristic(const vector<vector<char>>& map, int x1, int y1, int x2, int y2) {
-    // Modify the heuristic function implementation according to your needs
-    return abs(x1 - x2) + abs(y1 - y2);
-}
-
-double cost(const vector<vector<char>>& map, int x2, int y2) {
-    // Modify the cost function implementation according to your needs
-    return 1.0;
-}
-
 vector<Node> aStar(const PositionComponent& start, const PositionComponent& goal,
                    const vector<vector<char>>& map) {
 
@@ -498,9 +332,162 @@ vector<Node> aStar(const PositionComponent& start, const PositionComponent& goal
     return vector<Node>();
 }
 
-//pathfinding end
+
+// ENTITIES
+struct PlayerStats {
+    int health;
+    int attack;
+    int defense;
+    int speed;
+};
+
+// COMPONENTS
+struct AIComponent {
+    int chaseRadius;
+    int attackRadius;
+    int cooldown;
+};
+enum class ItemType {
+    SmallPotion,
+    MediumPotion,
+    LargePotion,
+    WeakAttackSerum,
+    NormalAttackSerum,
+    StrongAttackSerum,
+    WeakDefenseSerum,
+    NormalDefenseSerum,
+    StrongDefenseSerum,
+    WeakSpeedSerum,
+    NormalSpeedSerum,
+    StrongSpeedSerum
+};
+
+struct ItemComponent {
+    ItemType type;
+    char character;
+    string name;
+    float rarity;
+    function<void(PlayerStats&)> effect;
+};
+struct MonsterComponent {
+    int attackPower;
+    int attackRadius;
+    int cooldown;
+    int health;
+};
 
 
+
+
+
+using Entity = int;
+
+class EntityManager {
+private:
+    vector<Entity> entities;
+    unordered_map<Entity, PositionComponent> positions;
+    unordered_map<Entity, PlayerStats> playerStats;
+    unordered_map<Entity, AIComponent> ais;
+    unordered_map<Entity, MonsterComponent> monsters;
+    unordered_map<Entity, ItemComponent> items;
+    int nextEntityId;
+
+public:
+    EntityManager() : nextEntityId(0) {}
+
+    Entity createEntity() {
+        Entity entity = nextEntityId++;
+        entities.push_back(entity);
+        return entity;
+    }
+
+    void destroyEntity(Entity entity) {
+        auto it = find(entities.begin(), entities.end(), entity);
+        if (it != entities.end()) {
+            entities.erase(it);
+            positions.erase(entity);
+            playerStats.erase(entity);
+            ais.erase(entity);
+            monsters.erase(entity);
+        }
+    }
+
+    vector<Entity>& getEntities() {
+        return entities;
+    }
+
+    unordered_map<Entity, PositionComponent>& getPositions() {
+        return positions;
+    }
+
+    unordered_map<Entity, PlayerStats>& getPlayerStats() {
+        return playerStats;
+    }
+
+    unordered_map<Entity, AIComponent>& getAIComponents() {
+        return ais;
+    }
+
+    unordered_map<Entity, MonsterComponent>& getMonsterComponents() {
+        return monsters;
+    }
+
+    unordered_map<Entity, ItemComponent>& getItemComponents() {
+        return items;
+    }
+};
+
+
+// ITEMS
+
+vector<ItemComponent> itemTemplates = {
+        {ItemType::SmallPotion, 'o', "Small Health Potion",//< item identifier
+            1.0, //< item rarity
+            [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP, stats.health + 5);}},
+            //item ability parms^ item ability ^
+        {ItemType::MediumPotion, 'O', "Medium Health Potion", 0.5,
+            [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP,stats.health + 10);}},
+        {ItemType::LargePotion, '0', "Large Health Potion", 0.25,
+            [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP,stats.health + 25);}},
+        {ItemType::WeakAttackSerum, 'a', "Weak ATT-Serum", 1.0,
+            [](PlayerStats& stats) { stats.attack += 1; }},
+        {ItemType::NormalAttackSerum, 'A', "Normal ATT-Serum", 0.5,
+            [](PlayerStats& stats) { stats.attack += 2; }},
+        {ItemType::StrongAttackSerum, '9', "Strong ATT-Serum", 0.25,
+            [](PlayerStats& stats) { stats.attack += 3; }},
+        {ItemType::WeakDefenseSerum, 'd', "Weak DEF-Serum", 1.0,
+            [](PlayerStats& stats) { stats.defense += 1; }},
+        {ItemType::NormalDefenseSerum, 'D', "Normal DEF-Serum", 0.5,
+            [](PlayerStats& stats) { stats.defense += 2; }},
+        {ItemType::StrongDefenseSerum, '8', "Strong DEF-Serum", 0.25,
+            [](PlayerStats& stats) { stats.defense += 3; }},
+        {ItemType::WeakSpeedSerum, 's', "Weak SPD-Serum", 1.0,
+            [](PlayerStats& stats) { stats.speed += 1; }},
+        {ItemType::NormalSpeedSerum, 'S', "Normal SPD-Serum", 0.5,
+            [](PlayerStats& stats) { stats.speed += 2; }},
+        {ItemType::StrongSpeedSerum, '7', "Strong SPD-Serum", 0.25,
+            [](PlayerStats& stats) { stats.speed += 3; }}
+    };
+
+
+void spawnItems(EntityManager& entityManager, vector<vector<char>>& map) {
+    log(DEV_LOG_FILE, "spawning items");
+
+    for (const auto& item : itemTemplates) {
+        for (int i = 0; i < item.rarity * (HEIGHT * WIDTH / 2048); ++i) {
+            int x, y;
+            do {
+                x = get_random_int(0, WIDTH - 1);
+                y = get_random_int(0, HEIGHT - 1);
+            } while (!check_if_in(ground_tiles, map[x][y]));
+            Entity itemEntity = entityManager.createEntity();
+            entityManager.getPositions()[itemEntity] = {x, y};
+            entityManager.getItemComponents()[itemEntity] = item;
+        }
+    }
+}
+
+// MONSTERS
 class MonsterSystem {
 private:
     EntityManager& entityManager;
@@ -602,35 +589,6 @@ public:
 };
 
 
-void spawnItems(EntityManager& entityManager, vector<vector<char>>& map) {
-    log(DEV_LOG_FILE, "spawning items");
-    vector<ItemComponent> itemTemplates = {
-        {ItemType::Potion, 'o',
-            [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP, stats.health + 5);}},
-        {ItemType::MidPotion, 'O',
-            [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP,stats.health + 10);}},
-        {ItemType::StrongPotion, '0',
-            [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP,stats.health + 25);}},
-        {ItemType::WeaponBits, 'a',
-            [](PlayerStats& stats) { stats.attack += 1; }},
-        {ItemType::ArmorBits, 'd',
-            [](PlayerStats& stats) { stats.defense += 1; }},
-        {ItemType::SpeedBoost, 's',
-            [](PlayerStats& stats) { stats.speed += 1; }}
-    };
-    for (int i = 0; i < HEIGHT * WIDTH / 2048; ++i) {
-        for (const auto& item : itemTemplates) {
-            int x, y;
-            do {
-                x = get_random_int(0, WIDTH - 1);
-                y = get_random_int(0, HEIGHT - 1);
-            } while (!check_if_in(ground_tiles, map[x][y]));
-            Entity itemEntity = entityManager.createEntity();
-            entityManager.getPositions()[itemEntity] = {x, y};
-            entityManager.getItemComponents()[itemEntity] = item;
-        }
-    }
-}
 
 void spawnMonsters(int monster_count, EntityManager& entityManager, vector<vector<char>>& map) {
     log(DEV_LOG_FILE, "spawning monsters");
@@ -707,18 +665,6 @@ void render_buffer(
     }
 }
 
-string ItemTypeToString(ItemType type) {
-    switch (type) {
-        case ItemType::Potion: return "Potion";
-        case ItemType::MidPotion: return "Medium Potion";
-        case ItemType::StrongPotion: return "Strong Potion";
-        case ItemType::WeaponBits: return "Weapon Bits";
-        case ItemType::ArmorBits: return "Armor Bits";
-        case ItemType::SpeedBoost: return "Speed Boost";
-        // Include all other possible ItemType values...
-        default: return "Unknown Item";
-    }
-}
 
 
 int get_player_color(PlayerStats& playerStats) {
@@ -851,62 +797,8 @@ pair<int,int> move_player(EntityManager& entityManager,
 
 }
 
+void print_class_menu() {
 
-int main() {
-    log(DEV_LOG_FILE, "Running file_crawler");
-
-    initscr();
-    log(DEV_LOG_FILE, "initialized screen");
-
-    start_color();
-    init_all_color_pairs();
-    log(DEV_LOG_FILE, "initialized color");
-
-
-    if (sound) {
-        // Initialize SDL (audio)
-        // Mix_FreeChunk(PLAYER_FOOTSTEP_SOUND);
-        // Mix_CloseAudio();
-        // Mix_Quit();
-        // SDL_Quit();
-        SDL_Init(SDL_INIT_AUDIO);
-
-        // Initialize SDL Mixer
-        int mixerFlags = MIX_INIT_MP3 | MIX_INIT_OGG; // Flags for the audio formats you want to support
-        int initResult = Mix_Init(mixerFlags);
-        if ((initResult & mixerFlags) != mixerFlags) {
-            // Handle initialization error
-            // Example: std::cerr << "Failed to initialize SDL Mixer: " << Mix_GetError() << std::endl;
-            return 1;
-        }
-
-        // Open the audio device
-        if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 4096) < 0) {
-            // Handle audio device opening error
-            // Example: std::cerr << "Failed to open audio device: " << Mix_GetError() << std::endl;
-            return 1;
-        }
-
-        PLAYER_FOOTSTEP_SOUND = Mix_LoadWAV("data/sound/footstep.wav");  // Replace "footstep.wav" with the path to your sound file
-        if (!PLAYER_FOOTSTEP_SOUND) {
-            // Handle sound loading error
-            // Example: std::cerr << "Failed to load footstep sound: " << Mix_GetError() << std::endl;
-            return 1;
-        }
-        log(DEV_LOG_FILE, "initialized audio");
-    }
-
-    curs_set(0);
-    noecho();
-    log(DEV_LOG_FILE, "initialized curses");
-
-
-
-    log(DEV_LOG_FILE, "hit character select");
-    // Player class selection menu
-    int classChoice;
-
-    while(true) {
         clear();
         printw("Please select a class:\n\n");
 
@@ -969,12 +861,9 @@ int main() {
         attroff(COLOR_PAIR(8));
 
         refresh();
+}
 
-        classChoice = getch() - '0';
-        if (classChoice >= 1 && classChoice <= 8)
-            break;
-    }
-
+vector<int> set_player_class(const int classChoice) {
     int a, b;
     int playerAttack, playerDefense, playerSpeed;
 
@@ -1034,6 +923,77 @@ int main() {
             playerDefense = b;
             playerSpeed   = c;
     }
+
+    return {playerAttack, playerDefense, playerSpeed};
+}
+
+int main() {
+    log(DEV_LOG_FILE, "Running file_crawler");
+
+    initscr();
+    log(DEV_LOG_FILE, "initialized screen");
+
+    start_color();
+    init_all_color_pairs();
+    log(DEV_LOG_FILE, "initialized color");
+
+
+    if (sound) {
+        // Initialize SDL (audio)
+        // Mix_FreeChunk(PLAYER_FOOTSTEP_SOUND);
+        // Mix_CloseAudio();
+        // Mix_Quit();
+        // SDL_Quit();
+        SDL_Init(SDL_INIT_AUDIO);
+
+        // Initialize SDL Mixer
+        int mixerFlags = MIX_INIT_MP3 | MIX_INIT_OGG; // Flags for the audio formats you want to support
+        int initResult = Mix_Init(mixerFlags);
+        if ((initResult & mixerFlags) != mixerFlags) {
+            // Handle initialization error
+            // Example: std::cerr << "Failed to initialize SDL Mixer: " << Mix_GetError() << std::endl;
+            return 1;
+        }
+
+        // Open the audio device
+        if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 4096) < 0) {
+            // Handle audio device opening error
+            // Example: std::cerr << "Failed to open audio device: " << Mix_GetError() << std::endl;
+            return 1;
+        }
+
+        PLAYER_FOOTSTEP_SOUND = Mix_LoadWAV("data/sound/footstep.wav");  // Replace "footstep.wav" with the path to your sound file
+        if (!PLAYER_FOOTSTEP_SOUND) {
+            // Handle sound loading error
+            // Example: std::cerr << "Failed to load footstep sound: " << Mix_GetError() << std::endl;
+            return 1;
+        }
+        log(DEV_LOG_FILE, "initialized audio");
+    }
+
+    curs_set(0);
+    noecho();
+    log(DEV_LOG_FILE, "initialized curses");
+
+
+
+    log(DEV_LOG_FILE, "hit character select");
+    // Player class selection menu
+    int classChoice;
+
+    while(true) {
+        print_class_menu();
+
+        classChoice = getch() - '0';
+        if (classChoice >= 1 && classChoice <= 8)
+            break;
+    }
+
+    vector<int> classStats = set_player_class(classChoice);
+    int playerAttack = classStats[0];
+    int playerDefense = classStats[1];
+    int playerSpeed = classStats[2];
+
 
     log(DEV_LOG_FILE, "selected player class");
 
@@ -1268,7 +1228,7 @@ int main() {
                     if (playerPosition.x == itemPosition.x && playerPosition.y == itemPosition.y) {
                         item.effect(playerStats);
                         entityManager.destroyEntity(itemEntity);
-                        add_combat_log("Picked up " + ItemTypeToString(item.type));
+                        add_combat_log("Picked up " + item.name);
                         break;
                     }
                 }
