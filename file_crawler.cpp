@@ -14,6 +14,9 @@
 #include <queue>
 #include <set>
 #include <utility>
+#include <chrono>
+#include <thread>
+
 
 using namespace std;
 
@@ -42,6 +45,7 @@ const string GAME_LOG_FILE = "game_log.txt";
 
 const int UI_LOG_COUNT = 7;
 
+const int FPS = 15;
 const int WIDTH = 1024, HEIGHT = 1024;
 const char PLAYER = '@';
 const int  PLAYER_MAX_HP = 100;
@@ -376,41 +380,103 @@ public:
     }
 };
 
-class MovementSystem {
-private:
-    EntityManager& entityManager;
-    vector<vector<char>>& map;
 
+//pathfinding begin
+struct Node {
+    int x, y;
+    double g, h;
+    Node* parent;
+
+    Node(int x, int y, Node* parent = nullptr, double g = 0, double h = 0)
+        : x(x), y(y), parent(parent), g(g), h(h) {}
+
+    double f() const {
+        return g + h;
+    }
+};
+
+class NodePriorityQueue {
 public:
-    MovementSystem(EntityManager& entityManager, vector<vector<char>>& map)
-        : entityManager(entityManager), map(map) {}
+    bool operator()(const Node* lhs, const Node* rhs) const {
+        return lhs->f() > rhs->f();
+    }
+};
 
-    void update() {
-        log(DEV_LOG_FILE, "updating movement system");
-        auto& positions = entityManager.getPositions();
-        auto& monsters = entityManager.getMonsterComponents();
 
-        for (const auto& entry : positions) {
-            Entity entity = entry.first;
+double heuristic(const vector<vector<char>>& map, int x1, int y1, int x2, int y2) {
+    // Modify the heuristic function implementation according to your needs
+    return abs(x1 - x2) + abs(y1 - y2);
+}
 
-            if (monsters.find(entity) != monsters.end()) {
-                PositionComponent& position = positions[entity];
-                AIComponent& ai = entityManager.getAIComponents()[entity];
+double cost(const vector<vector<char>>& map, int x2, int y2) {
+    // Modify the cost function implementation according to your needs
+    return 1.0;
+}
 
-                int new_x = position.x + get_random_int(-1, 1);
-                int new_y = position.y + get_random_int(-1, 1);
+vector<Node> aStar(const PositionComponent& start, const PositionComponent& goal,
+                   const vector<vector<char>>& map) {
 
-                if (new_x > 0 && new_x < WIDTH
-                    && new_y > 0 && new_y < HEIGHT
-                    && check_if_in(ground_tiles, map[new_x][new_y]))
-                {
-                    position.x = new_x;
-                    position.y = new_y;
+    vector<vector<bool>> closedSet(WIDTH, vector<bool>(HEIGHT, false));
+    vector<vector<Node*>> openSet(WIDTH, vector<Node*>(HEIGHT, nullptr));
+
+    priority_queue<Node*, vector<Node*>, NodePriorityQueue> queue;
+
+    openSet[start.x][start.y] = new Node(start.x, start.y);
+    queue.push(openSet[start.x][start.y]);
+
+    while (!queue.empty()) {
+        Node* current = queue.top();
+        queue.pop();
+
+        if (current->x == goal.x && current->y == goal.y) {
+            vector<Node> path;
+            while (current != nullptr) {
+                path.push_back(*current);
+                current = current->parent;
+            }
+            reverse(path.begin(), path.end());
+
+            for (int x = 0; x < WIDTH; x++) {
+                for (int y = 0; y < HEIGHT; y++) {
+                    delete openSet[x][y];
+                }
+            }
+
+            return path;
+        }
+
+        closedSet[current->x][current->y] = true;
+
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                int x = current->x + dx;
+                int y = current->y + dy;
+
+                if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT && !closedSet[x][y]) {
+                    double tentativeG = current->g + cost(map, x, y);
+
+                    if (openSet[x][y] == nullptr && tentativeG != INFINITY) {
+                        openSet[x][y] = new Node(x, y, current, tentativeG, heuristic(map, x, y, goal.x, goal.y));
+                        queue.push(openSet[x][y]);
+                    } else if (tentativeG < openSet[x][y]->g) {
+                        openSet[x][y]->g = tentativeG;
+                    }
                 }
             }
         }
     }
-};
+
+    for (int x = 0; x < WIDTH; x++) {
+        for (int y = 0; y < HEIGHT; y++) {
+            delete openSet[x][y];
+        }
+    }
+
+    return vector<Node>();
+}
+
+//pathfinding end
+
 
 class MonsterSystem {
 private:
@@ -447,23 +513,33 @@ public:
 
             if (distance <= ai.chaseRadius) {
                 log(DEV_LOG_FILE, "monster", entity, " chases player");
-                int new_x = monsterPosition.x;
-                int new_y = monsterPosition.y;
 
-                if (playerPosition.x < monsterPosition.x) {
-                    new_x--;
-                } else if (playerPosition.x > monsterPosition.x) {
-                    new_x++;
-                }
-
-                if (playerPosition.y < monsterPosition.y) {
-                    new_y--;
-                } else if (playerPosition.y > monsterPosition.y) {
-                    new_y++;
+                // Get the path from the monster to the player
+                vector<Node> path = aStar(monsterPosition, playerPosition, map);
+                int new_x,new_y;
+                // Move the monster to the next node in the path if it exists
+                if (!path.empty()) {
+                    new_x = path[1].x + get_random_int(-1,1);
+                    new_y = path[1].y + get_random_int(-1,1);
                 }
 
 
-                if (new_x > 0 && new_x < WIDTH && new_y > 0 && new_y < HEIGHT && check_if_in(ground_tiles, map[new_x][new_y])) {
+                // Get all positions
+                const auto& all_positions = entityManager.getPositions();
+
+                // Flag to indicate whether the new position is occupied
+                bool is_occupied = false;
+
+                // Check if the new position is occupied by the player or another monster
+                for (const auto& pos_entry : all_positions) {
+                    if ((pos_entry.second.x == new_x) && (pos_entry.second.y == new_y)) {
+                        is_occupied = true;
+                        break;
+                    }
+                }
+
+                // Only move the monster to the new position if it's not occupied
+                if (!is_occupied) {
                     monsterPosition.x = new_x;
                     monsterPosition.y = new_y;
                 }
@@ -482,9 +558,9 @@ public:
                     && is_in_set({playerPosition.x, playerPosition.y}, monster_attack_range) ) {
                     log(DEV_LOG_FILE, "monster", entity, " attacks player");
 
-                    int damage = get_random_int(0, monster.attackPower - get_random_int(0,playerStats.defense));
+                    int damage = max(0,get_random_int(1, monster.attackPower) - get_random_int(0,playerStats.defense));
                     playerStats.health -= damage;
-                    monster.cooldown = get_random_int(3,7);
+                    monster.cooldown = FPS * get_random_int(1,2);
 
                     if (damage > 0) {
                         add_combat_log("Player took " + to_string(damage) + " damage from a monster.");
@@ -750,6 +826,8 @@ int main() {
     start_color();
     curs_set(0);
     noecho();
+
+
     log(DEV_LOG_FILE, "started curses");
 
 
@@ -890,14 +968,17 @@ int main() {
 
     spawnItems(entityManager, map);
     spawnMonsters(2048,entityManager, map);
-    MovementSystem movementSystem(entityManager, map);
     MonsterSystem monsterSystem(entityManager, map, playerStats);
     log(DEV_LOG_FILE, "spawned items and monsters");
 
+    nodelay(stdscr, TRUE);
+    auto timePerFrame = std::chrono::milliseconds(1000 / FPS); // Approximately 15 FPS
 
     log(DEV_LOG_FILE, "starting game loop");
     while (true) {
         clear();
+        auto frameStart = std::chrono::steady_clock::now();
+
 
         int start_x = max(0, player_x - COLS / 2);
         start_x = min(start_x, WIDTH - COLS);
@@ -932,7 +1013,7 @@ int main() {
             [player_x, player_y, memory_radius](const auto& position) {
                 int dx = position.first  - player_x;
                 int dy = position.second - player_y;
-                return pow(dx, 2) + pow(dy, 2) >= pow(memory_radius, 2);
+                return pow(dx/2, 2) + pow(dy, 2) >= pow(memory_radius, 2);
             }),
             visited.end()
         );
@@ -980,105 +1061,108 @@ int main() {
 
         draw_UI(playerStats);
 
+
         int key = getch();
+        if (key != ERR) {
+            pair<int,int> delta = {0,0};
+            if (key == 'w') {
+                pair<int,int> direction = {0,-1};
+                //bool represents whether or not the player is sprinting
+                delta = move_player(entityManager, playerStats, map, direction, false);
+                player_x += delta.first;
+                player_y += delta.second;
 
-        pair<int,int> delta = {0,0};
-        if (key == 'w') {
-            pair<int,int> direction = {0,-1};
-            //bool represents whether or not the player is sprinting
-            delta = move_player(entityManager, playerStats, map, direction, false);
-            player_x += delta.first;
-            player_y += delta.second;
+            } else if (key == 'W') {
+                pair<int,int> direction = {0,-1};
+                delta = move_player(entityManager, playerStats, map, direction, true);
+                player_x += delta.first;
+                player_y += delta.second;
+            } else if (key == 's') {
+                pair<int,int> direction = {0,1};
+                //bool represents whether or not the player is sprinting
+                delta = move_player(entityManager, playerStats, map, direction, false);
+                player_x += delta.first;
+                player_y += delta.second;
+            } else if (key == 'S') {
+                pair<int,int> direction = {0,1};
+                delta = move_player(entityManager, playerStats, map, direction, true);
+                player_x += delta.first;
+                player_y += delta.second;
+            } else if (key == 'a') {
+                pair<int,int> direction = {-1,0};
+                delta = move_player(entityManager, playerStats, map, direction, false);
+                player_x += delta.first;
+                player_y += delta.second;
+            } else if (key == 'A') {
+                pair<int,int> direction = {-1,0};
+                delta = move_player(entityManager, playerStats, map, direction, true);
+                player_x += delta.first;
+                player_y += delta.second;
+            } else if (key == 'd') {
+                pair<int,int> direction = {1,0};
+                delta = move_player(entityManager, playerStats, map, direction, false);
+                player_x += delta.first;
+                player_y += delta.second;
+            } else if (key == 'D') {
+                pair<int,int> direction = {1,0};
+                delta = move_player(entityManager, playerStats, map, direction, true);
+                player_x += delta.first;
+                player_y += delta.second;
+            } else if (key == 'q') {
+                break;
+            } else if (key == ' ') {
+                // Player attack
+                auto& playerPosition = positions[playerEntity];
+                auto& monsters = entityManager.getMonsterComponents();
 
-        } else if (key == 'W') {
-            pair<int,int> direction = {0,-1};
-            delta = move_player(entityManager, playerStats, map, direction, true);
-            player_x += delta.first;
-            player_y += delta.second;
-        } else if (key == 's') {
-            pair<int,int> direction = {0,1};
-            //bool represents whether or not the player is sprinting
-            delta = move_player(entityManager, playerStats, map, direction, false);
-            player_x += delta.first;
-            player_y += delta.second;
-        } else if (key == 'S') {
-            pair<int,int> direction = {0,1};
-            delta = move_player(entityManager, playerStats, map, direction, true);
-            player_x += delta.first;
-            player_y += delta.second;
-        } else if (key == 'a') {
-            pair<int,int> direction = {-1,0};
-            delta = move_player(entityManager, playerStats, map, direction, false);
-            player_x += delta.first;
-            player_y += delta.second;
-        } else if (key == 'A') {
-            pair<int,int> direction = {-1,0};
-            delta = move_player(entityManager, playerStats, map, direction, true);
-            player_x += delta.first;
-            player_y += delta.second;
-        } else if (key == 'd') {
-            pair<int,int> direction = {1,0};
-            delta = move_player(entityManager, playerStats, map, direction, false);
-            player_x += delta.first;
-            player_y += delta.second;
-        } else if (key == 'D') {
-            pair<int,int> direction = {1,0};
-            delta = move_player(entityManager, playerStats, map, direction, true);
-            player_x += delta.first;
-            player_y += delta.second;
-        } else if (key == 'q') {
-            break;
-        } else if (key == ' ') {
-            // Player attack
-            auto& playerPosition = positions[playerEntity];
-            auto& monsters = entityManager.getMonsterComponents();
+                for (const auto& entry : monsters) {
+                    Entity monsterEntity = entry.first;
+                    PositionComponent& monsterPosition = positions[monsterEntity];
+                    MonsterComponent& monster = monsters[monsterEntity];
 
-            for (const auto& entry : monsters) {
-                Entity monsterEntity = entry.first;
-                PositionComponent& monsterPosition = positions[monsterEntity];
-                MonsterComponent& monster = monsters[monsterEntity];
+                    if (abs(playerPosition.x - monsterPosition.x) <= playerStats.speed
+                    && abs(playerPosition.y - monsterPosition.y) <= playerStats.speed
+                    && is_in_set({monsterPosition.x, monsterPosition.y}, fov) ) {
+                        int damage = get_random_int(0, playerStats.attack);
+                        monster.health -= damage;
 
-                if (abs(playerPosition.x - monsterPosition.x) <= playerStats.speed
-                 && abs(playerPosition.y - monsterPosition.y) <= playerStats.speed
-                 && is_in_set({monsterPosition.x, monsterPosition.y}, fov) ) {
-                    int damage = get_random_int(0, playerStats.attack);
-                    monster.health -= damage;
+                        if (damage > 0) {
+                            add_combat_log("Player dealt " + to_string(damage) + " damage to a monster.");
+                        } else {
+                            add_combat_log("Player's attack was blocked by a monster.");
+                        }
 
-                    if (damage > 0) {
-                        add_combat_log("Player dealt " + to_string(damage) + " damage to a monster.");
-                    } else {
-                        add_combat_log("Player's attack was blocked by a monster.");
+                        if (monster.health <= 0) {
+                            add_combat_log("Player has defeated a monster.");
+                            entityManager.destroyEntity(monsterEntity);
+                        }
+                        break;
                     }
+                }
+            } else if (key == 'e' ) {
+                //player interact
+                auto& playerPosition = positions[playerEntity];
+                auto& items = entityManager.getItemComponents();
 
-                    if (monster.health <= 0) {
-                        add_combat_log("Player has defeated a monster.");
-                        entityManager.destroyEntity(monsterEntity);
+                for (const auto& entry : items) {
+                    Entity itemEntity = entry.first;
+                    PositionComponent& itemPosition = positions[itemEntity];
+                    ItemComponent& item = items[itemEntity];
+                    if (playerPosition.x == itemPosition.x && playerPosition.y == itemPosition.y) {
+                        item.effect(playerStats);
+                        entityManager.destroyEntity(itemEntity);
+                        add_combat_log("Picked up " + ItemTypeToString(item.type));
+                        break;
                     }
-                    break;
                 }
             }
-        } else if (key == 'e' ) {
-            //player interact
-            auto& playerPosition = positions[playerEntity];
-            auto& items = entityManager.getItemComponents();
 
-            for (const auto& entry : items) {
-                Entity itemEntity = entry.first;
-                PositionComponent& itemPosition = positions[itemEntity];
-                ItemComponent& item = items[itemEntity];
-                if (playerPosition.x == itemPosition.x && playerPosition.y == itemPosition.y) {
-                    item.effect(playerStats);
-                    entityManager.destroyEntity(itemEntity);
-                    add_combat_log("Picked up " + ItemTypeToString(item.type));
-                    break;
-                }
-            }
         }
 
 
 
-        movementSystem.update();
-        log(DEV_LOG_FILE, "updated movement system");
+        // movementSystem.update();
+        // log(DEV_LOG_FILE, "updated movement system");
 
         monsterSystem.update();
         log(DEV_LOG_FILE, "updated monster system");
@@ -1094,6 +1178,16 @@ int main() {
             printf("The monster has won...");
             return 0;
         }
+
+
+        auto frameEnd = std::chrono::steady_clock::now();
+        auto frameDuration = std::chrono::duration_cast<std::chrono::milliseconds>(frameEnd - frameStart);
+
+        // If the frame finished faster than the time per frame, sleep for the remaining time
+        if (frameDuration < timePerFrame) {
+            std::this_thread::sleep_for(timePerFrame - frameDuration);
+        }
+
     }
 
     endwin();
