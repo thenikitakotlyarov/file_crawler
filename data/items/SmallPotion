@@ -1,0 +1,4 @@
+character=o
+name=Small Health Potion
+rarity=1.0
+effect=health+5
