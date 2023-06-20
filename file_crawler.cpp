@@ -219,27 +219,15 @@ vector<vector<char>> generate_map() {
     vector<vector<bool>> visited(WIDTH, vector<bool>(HEIGHT, false));
     queue<pair<int, int>> q;
 
-    // Start flood fill from all edge cells
-    for (int x = 0; x < WIDTH; ++x) {
-        if (!visited[x][0]) {
-            visited[x][0] = true;
-            q.push({x, 0});
-        }
-        if (!visited[x][HEIGHT - 1]) {
-            visited[x][HEIGHT - 1] = true;
-            q.push({x, HEIGHT - 1});
-        }
+    // Start flood fill from a random point on top edge
+    int initial_x = get_random_int(1, WIDTH-1);
+    int initial_y = get_random_int(1, HEIGHT-1);
+    while (!check_if_in(ground_tiles, map[initial_x][initial_y])) {
+        initial_x += max(1,min(WIDTH-1,get_random_int(-1,1)));
+        initial_y += max(1,min(HEIGHT-1,get_random_int(-1,1)));
     }
-    for (int y = 0; y < HEIGHT; ++y) {
-        if (!visited[0][y]) {
-            visited[0][y] = true;
-            q.push({0, y});
-        }
-        if (!visited[WIDTH - 1][y]) {
-            visited[WIDTH - 1][y] = true;
-            q.push({WIDTH - 1, y});
-        }
-    }
+    visited[initial_x][initial_y] = true;
+    q.push({initial_x, initial_y});
 
     // Perform flood fill
     while (!q.empty()) {
@@ -302,7 +290,7 @@ set<pair<int, int>> calculate_fov(
             y += dy;
             int ix = round(x), iy = round(y);
 
-            if (ix <= 0 || iy <= 0 || ix >= WIDTH || iy >= HEIGHT)
+            if (ix <= 1 || iy <= 1 || ix >= WIDTH-1 || iy >= HEIGHT-1)
                 break;
 
             fov.insert({ix, iy});
@@ -551,7 +539,8 @@ public:
 
                 // Get the path from the monster to the player
                 vector<Node> path = aStar(monsterPosition, playerPosition, map);
-                int new_x,new_y;
+                int new_x = monsterPosition.x;
+                int new_y = monsterPosition.y;
                 // Move the monster to the next node in the path if it exists
                 if (!path.empty()) {
                     new_x = path[1].x;
@@ -1033,8 +1022,8 @@ int main() {
 
     while (!check_if_in(ground_tiles,map[player_x][player_y])) {
 
-        player_x += get_random_int(-1,1);
-        player_y += get_random_int(-1,1);
+        player_x = max(1,min(WIDTH-1,get_random_int(-1,1)));
+        player_y = max(1,min(HEIGHT-1,get_random_int(-1,1)));
     }
     log(DEV_LOG_FILE, "generated map");
 
