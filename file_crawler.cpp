@@ -42,7 +42,7 @@ using namespace std;
 #+#    #+# #+#    #+# #+#     #+#  #+#+# #+#+#  #+#        #+#        #+#    #+#
  ########  ###    ### ###     ###   ###   ###   ########## ########## ###    ###
 */
-// v0.5x
+// v0.6x
 
 const string DEV_LOG_FILE = "dev_log.txt";
 const string GAME_LOG_FILE = "game_log.txt";
