@@ -49,8 +49,8 @@ const string GAME_LOG_FILE = "game_log.txt";
 
 const int UI_LOG_COUNT = 7;
 
-const int FPS = 60;
-const int WIDTH = 256, HEIGHT = 256;
+const int FPS = 30;
+const int WIDTH = 1024, HEIGHT = 1024;
 const int PLAYER_MAX_HP = 100;
 const int PLAYER_FOV_RADIUS = 3;
 const int PLAYER_MEMORY_RADIUS = pow(PLAYER_FOV_RADIUS,2);
@@ -1320,7 +1320,6 @@ int main() {
         if (key != ERR) {
             pair<int,int> delta = {0,0};
             if (key == 'w') {
-                sprinting = 0;
                 pair<int,int> direction = {0,-1};
                 //bool represents whether or not the player is sprinting
                 delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
@@ -1328,43 +1327,40 @@ int main() {
                 player_y += delta.second;
 
             } else if (key == 'W') {
-                sprinting += 1;
+                sprinting = min(playerStats.speed,sprinting*2+2);
                 pair<int,int> direction = {0,-1};
                 delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 's') {
-                sprinting = 0;
                 pair<int,int> direction = {0,1};
                 delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 'S') {
-                sprinting += 1;
+                sprinting = min(playerStats.speed,sprinting*2+2);
                 pair<int,int> direction = {0,1};
                 delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 'a') {
-                sprinting = 0;
                 pair<int,int> direction = {-1,0};
                 delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 'A') {
-                sprinting += 1;
+                sprinting = min(playerStats.speed,sprinting*2+2);
                 pair<int,int> direction = {-1,0};
                 delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 'd') {
-                sprinting = 0;
                 pair<int,int> direction = {1,0};
                 delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 'D') {
-                sprinting += 1;
+                sprinting = min(playerStats.speed,sprinting*2+2);
                 pair<int,int> direction = {1,0};
                 delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
                 player_x += delta.first;
@@ -1419,6 +1415,8 @@ int main() {
             }
 
         }
+
+        sprinting = max(0,(sprinting/2) - 1);
 
 
 
