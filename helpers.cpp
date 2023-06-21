@@ -9,8 +9,8 @@ mt19937 gen(rd());
 int get_random_int(const int min, const int max) {
     uniform_int_distribution<> distr(min, max);
     return distr(gen);
-
 }
+
 
 char get_random_character(const vector<char>& vec) {
     return vec[get_random_int(0,vec.size() - 1)];
@@ -68,15 +68,6 @@ public:
 };
 
 
-double heuristic(const vector<vector<char>>& map, int x1, int y1, int x2, int y2) {
-    // Modify the heuristic function implementation according to your needs
-    return abs(x1 - x2) + abs(y1 - y2);
-}
-
-double cost(const vector<vector<char>>& map, int x2, int y2) {
-    // Modify the cost function implementation according to your needs
-    return 1.0;
-}
 
 
 //pathfinding end

@@ -51,23 +51,37 @@ const int UI_LOG_COUNT = 7;
 
 const int FPS = 60;
 const int WIDTH = 256, HEIGHT = 256;
-const char PLAYER = '@';
-const int  PLAYER_MAX_HP = 100;
-const int  PLAYER_FOV_RADIUS = 3;
-const int  PLAYER_MEMORY_RADIUS = pow(PLAYER_FOV_RADIUS,2);
+const int PLAYER_MAX_HP = 100;
+const int PLAYER_FOV_RADIUS = 3;
+const int PLAYER_MEMORY_RADIUS = pow(PLAYER_FOV_RADIUS,2);
 
 const bool sound = false;
 Mix_Chunk* PLAYER_FOOTSTEP_SOUND = nullptr;
 const int PLAYER_FOOTSTEP_SOUND_COUNT = 6;
 
-const vector<char> ground_tiles = {'.',',','`','"'};
-const vector<char> wall_tiles = {'[',']','{','}','=','|'};
-const vector<char> trap_tiles = {'&','#'};
-const vector<char> void_tiles = {' '};
-const vector<char> entity_tiles = {'@',//player
-    'M','N','m','n','r','i',//monsters
-    'o','O','0','s','S','7','d','D','8','a','A','9'//items
+const vector<char> GROUND_TILES = {'.',',','`','"'};
+const vector<char> WALL_TILES = {'[',']','{','}','=','|'};
+const vector<char> TRAP_TILES = {'&','#'};
+const vector<char> VOID_TILES = {' '};
+
+
+const char PLAYER_TILE = '@';
+const vector<char> MONSTER_TILES = {
+    'M','N','m','n','r','i'
 };
+const vector<char> ITEM_TILES = {
+    'o','O','0','s','S','7','d','D','8','a','A','9'
+};
+
+vector<char> get_entity_tiles() {
+    vector<char> tiles;
+    tiles.insert(tiles.end(), MONSTER_TILES.begin(), MONSTER_TILES.end());
+    tiles.insert(tiles.end(), ITEM_TILES.begin(), ITEM_TILES.end());
+    tiles.push_back(PLAYER_TILE);
+    return tiles;
+}
+vector<char> ENTITY_TILES = get_entity_tiles();
+
 
 vector<string> combat_log;
 
@@ -106,32 +120,6 @@ void add_combat_log(const string& message) {
 }
 
 
-
-// COLOR SETUP
-vector<short> generate_palette(int seed) {
-    log(DEV_LOG_FILE, "called generate_palette with seed as ", seed);
-    // Assumes all color pairs have been initialized.
-    vector<short> palette(5);
-
-    // 1..6 are red, green, yellow, blue, magenta and cyan
-    // 9..14 are their "intensified" versions
-    vector<int> available_colors = {1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14};
-
-    //{COLOR_RED, COLOR_GREEN, COLOR_YELLOW, COLOR_BLUE, COLOR_MAGENTA, COLOR_CYAN};
-
-    for (int i = 0; i < 5; ++i) {
-        int color_index = get_random_int(0, available_colors.size() - 1);
-        short foreground = available_colors[color_index];
-        short background = COLOR_BLACK;
-
-        palette[i] = get_color_pair_index(foreground, background);
-
-        available_colors.erase(available_colors.begin() + color_index);
-    }
-
-    return palette;
-}
-
 // AUDIO
 void playFootstepSound() {
 
@@ -158,6 +146,56 @@ void playFootstepSound() {
     // Mix_FreeChunk(footstepSound);
 }
 
+// COLOR SETUP
+vector<short> generate_palette(int seed) {
+    log(DEV_LOG_FILE, "called generate_palette with seed as ", seed);
+    // Assumes all color pairs have been initialized.
+    vector<short> palette(5);
+
+    // 1..6 are red, green, yellow, blue, magenta and cyan
+    // 9..14 are their "intensified" versions
+    vector<int> available_colors = {1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14};
+
+    //{COLOR_RED, COLOR_GREEN, COLOR_YELLOW, COLOR_BLUE, COLOR_MAGENTA, COLOR_CYAN};
+
+    for (int i = 0; i < 5; ++i) {
+        int color_index = get_random_int(0, available_colors.size() - 1);
+        short foreground = available_colors[color_index];
+        short background = COLOR_BLACK;
+
+        palette[i] = get_color_pair_index(foreground, background);
+
+        available_colors.erase(available_colors.begin() + color_index);
+    }
+
+    return palette;
+}
+
+vector<int> get_ground_swatch() {
+    vector<vector<int>> options = {
+        {3,4},  //green, yellow
+        {2,4}   //red, yellow
+    };
+    return options[get_random_int(0,options.size() - 1)];
+}
+
+vector<int> get_trap_swatch() {
+    vector<vector<int>> options= {
+        {5,7}   //blue, cyan
+    };
+    return options[get_random_int(0,options.size() - 1)];
+}
+
+vector<int> get_wall_swatch() {
+    vector<vector<int>> options= {
+        {5,7}   //blue, cyan
+    };
+    return options[get_random_int(0,options.size() - 1)];
+}
+
+int get_tile_color(const vector<int> swatch) {
+    return swatch[get_random_int(0,swatch.size() - 1)];
+}
 
 
 
@@ -169,33 +207,38 @@ struct Tile {
     bool visible;
 };
 
-vector<vector<Tile>> generate_map() {
-    log(DEV_LOG_FILE, "called generate_map");
-    vector<vector<Tile>> map(WIDTH, vector<Tile>(HEIGHT));
+vector<vector<Tile>> generate_game_map() {
+    log(DEV_LOG_FILE, "called generate_game_map");
+    vector<vector<Tile>> game_map(WIDTH, vector<Tile>(HEIGHT));
+
+    vector<int> ground_swatch = get_ground_swatch();
+    vector<int> trap_swatch = get_trap_swatch();
+    vector<int> wall_swatch = get_wall_swatch();
+
 
     // Generate open areas using Perlin noise
     for (int y = 0; y < HEIGHT; ++y) {
         for (int x = 0; x < WIDTH; ++x) {
-            char ch = get_random_character(void_tiles);
+            char ch = get_random_character(VOID_TILES);
             short color = get_color_pair_index(COLOR_WHITE,COLOR_BLACK);
             Tile void_tile = {ch, color, false, false};
-            map[x][y] = void_tile;
+            game_map[x][y] = void_tile;
             double value = perlin.GetValue(x / 10.0, y / 10.0, 0.0);
 
 
             if (value < 0.2) {
-                ch = get_random_character(ground_tiles);
-                color = get_ground_color();
+                ch = get_random_character(GROUND_TILES);
+                color = get_tile_color(ground_swatch);
             } else if (value < 0.21) {
-                ch = get_random_character(trap_tiles);
-                color = get_trap_color();
+                ch = get_random_character(TRAP_TILES);
+                color = get_tile_color(trap_swatch);
             } else if (value < 0.8) {
-                ch = get_random_character(wall_tiles);
-                color = get_wall_color();
+                ch = get_random_character(WALL_TILES);
+                color = get_tile_color(wall_swatch);
             }
 
             Tile this_tile = {ch, color, false, false};
-            map[x][y] = this_tile;
+            game_map[x][y] = this_tile;
         }
     }
 
@@ -206,7 +249,7 @@ vector<vector<Tile>> generate_map() {
     // Start flood fill from a random point on top edge
     int initial_x = get_random_int(1, WIDTH-1);
     int initial_y = get_random_int(1, HEIGHT-1);
-    while (!check_if_in(ground_tiles, map[initial_x][initial_y])) {
+    while (!check_if_in(GROUND_TILES, game_map[initial_x][initial_y].ch)) {
         initial_x += max(1,min(WIDTH-1,get_random_int(-1,1)));
         initial_y += max(1,min(HEIGHT-1,get_random_int(-1,1)));
     }
@@ -226,7 +269,7 @@ vector<vector<Tile>> generate_map() {
             int ny = y + neighbor.second;
 
             // Check if neighbor is within bounds and an open area
-            if (nx >= 0 && nx < WIDTH && ny >= 0 && ny < HEIGHT && check_if_in(ground_tiles, map[nx][ny]) && !visited[nx][ny]) {
+            if (nx >= 0 && nx < WIDTH && ny >= 0 && ny < HEIGHT && check_if_in(GROUND_TILES, game_map[nx][ny].ch) && !visited[nx][ny]) {
                 visited[nx][ny] = true;
                 q.push({nx, ny});
             }
@@ -236,42 +279,45 @@ vector<vector<Tile>> generate_map() {
     // Convert unvisited cells to closed spaces
     for (int y = 0; y < HEIGHT; ++y) {
         for (int x = 0; x < WIDTH; ++x) {
-            if (!visited[x][y] && check_if_in(ground_tiles, map[x][y])) {
-                char ch = get_random_character(wall_tiles);
-                short color = get_wall_color();
-                map[x][y] = {ch, color, false, false};
+            if (!visited[x][y] && check_if_in(GROUND_TILES, game_map[x][y].ch)) {
+                char ch = get_random_character(WALL_TILES);
+                short color = get_tile_color(wall_swatch);
+                Tile this_tile = {ch, color, false, false};
+                game_map[x][y] =  this_tile;
             }
         }
     }
 
-    // Draw a border around the map
+    // Draw a border around the game_map
     for (int x = 0; x < WIDTH; ++x) {
-        char ch = get_random_character(wall_tiles);
-        short color = get_wall_color();
-        map[x][0] = {ch, color, false, false};
-        map[x][HEIGHT - 1] = {ch, color, false, false};
+        char ch = get_random_character(WALL_TILES);
+        short color = get_tile_color(wall_swatch);
+        Tile this_tile = {ch, color, false, false};
+        game_map[x][0] = this_tile;
+        game_map[x][HEIGHT - 1] = this_tile;
     }
     for (int y = 0; y < HEIGHT; ++y) {
-        char ch = get_random_character(wall_tiles);
-        short color = get_wall_color();
-        map[0][y] = {ch, color, false, false};
-        map[WIDTH - 1][y] = {ch, color, false, false};
+        char ch = get_random_character(WALL_TILES);
+        short color = get_tile_color(wall_swatch);
+        Tile this_tile = {ch, color, false, false};
+        game_map[0][y] = this_tile;
+        game_map[WIDTH - 1][y] = this_tile;
     }
 
 
-    return map;
+    return game_map;
 }
 
 
 
-// PATHING
+// PATHING AND FOV
 struct PositionComponent {
     int x;
     int y;
 };
 
 set<pair<int, int>> calculate_fov(
-        vector<vector<char>>& map,
+        vector<vector<Tile>>& game_map,
         int center_x, int center_y,
         int radius) {
 
@@ -279,28 +325,42 @@ set<pair<int, int>> calculate_fov(
 
     for (int i = 0; i < 360; ++i) {
         double rad = i * (M_PI / 180.0);
-        double dx = cos(rad), dy = sin(rad);
+        double dx = cos(rad), dy = sin(rad) / 2;
         double x = center_x, y = center_y;
 
         for (int j = 0; j < radius; ++j) {
             x += dx;
             y += dy;
             int ix = round(x), iy = round(y);
+            // ix = max(0,min(WIDTH,ix));
+            // iy = max(0,min(HEIGHT,iy));
 
-            if (ix <= 1 || iy <= 1 || ix >= WIDTH-1 || iy >= HEIGHT-1)
+            if (ix < 0 || iy < 0 || ix >= WIDTH || iy >= HEIGHT)
                 break;
 
             fov.insert({ix, iy});
-
-            if (check_if_in(wall_tiles, map[ix][iy]))
+            if (check_if_in(WALL_TILES, game_map[ix][iy].ch))
                 break;
+
         }
     }
 
     return fov;
 }
+
+
+double heuristic(const vector<vector<Tile>>& game_map, int x1, int y1, int x2, int y2) {
+    // Modify the heuristic function implementation according to your needs
+    return abs(x1 - x2) + abs(y1 - y2);
+}
+
+double cost(const vector<vector<Tile>>& game_map, int x2, int y2) {
+    // Modify the cost function implementation according to your needs
+    return 1.0;
+}
+
 vector<Node> aStar(const PositionComponent& start, const PositionComponent& goal,
-                   const vector<vector<char>>& map) {
+                   const vector<vector<Tile>>& game_map) {
 
     vector<vector<bool>> closedSet(WIDTH, vector<bool>(HEIGHT, false));
     vector<vector<Node*>> openSet(WIDTH, vector<Node*>(HEIGHT, nullptr));
@@ -339,10 +399,10 @@ vector<Node> aStar(const PositionComponent& start, const PositionComponent& goal
                 int y = current->y + dy + get_random_int(-1,1);
 
                 if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT && !closedSet[x][y]) {
-                    double tentativeG = current->g + cost(map, x, y);
+                    double tentativeG = current->g + cost(game_map, x, y);
 
                     if (openSet[x][y] == nullptr && tentativeG != INFINITY) {
-                        openSet[x][y] = new Node(x, y, current, tentativeG, heuristic(map, x, y, goal.x, goal.y));
+                        openSet[x][y] = new Node(x, y, current, tentativeG, heuristic(game_map, x, y, goal.x, goal.y));
                         queue.push(openSet[x][y]);
                     } else if (tentativeG < openSet[x][y]->g) {
                         openSet[x][y]->g = tentativeG;
@@ -499,7 +559,7 @@ vector<ItemComponent> itemTemplates = {
     };
 
 
-void spawnItems(EntityManager& entityManager, vector<vector<char>>& map) {
+void spawnItems(EntityManager& entityManager, vector<vector<Tile>>& game_map) {
     log(DEV_LOG_FILE, "spawning items");
 
     for (const auto& item : itemTemplates) {
@@ -508,7 +568,7 @@ void spawnItems(EntityManager& entityManager, vector<vector<char>>& map) {
             do {
                 x = get_random_int(0, WIDTH - 1);
                 y = get_random_int(0, HEIGHT - 1);
-            } while (!check_if_in(ground_tiles, map[x][y]));
+            } while (!check_if_in(GROUND_TILES, game_map[x][y].ch));
             Entity itemEntity = entityManager.createEntity();
             entityManager.getPositions()[itemEntity] = {x, y};
             entityManager.getItemComponents()[itemEntity] = item;
@@ -520,12 +580,12 @@ void spawnItems(EntityManager& entityManager, vector<vector<char>>& map) {
 class MonsterSystem {
 private:
     EntityManager& entityManager;
-    vector<vector<char>>& map;
+    vector<vector<Tile>>& game_map;
     PlayerStats& playerStats;
 
 public:
-    MonsterSystem(EntityManager& entityManager, vector<vector<char>>& map, PlayerStats& playerStats)
-        : entityManager(entityManager), map(map), playerStats(playerStats) {}
+    MonsterSystem(EntityManager& entityManager, vector<vector<Tile>>& game_map, PlayerStats& playerStats)
+        : entityManager(entityManager), game_map(game_map), playerStats(playerStats) {}
 
     void update() {
         log(DEV_LOG_FILE, "updating monster system");
@@ -555,7 +615,7 @@ public:
 
                 // Get the path from the monster to the player
                 log(DEV_LOG_FILE, "monster", entity, " is pathing");
-                vector<Node> path = aStar(monsterPosition, playerPosition, map);
+                vector<Node> path = aStar(monsterPosition, playerPosition, game_map);
                 log(DEV_LOG_FILE, "monster", entity, " found path");
                 int new_x = monsterPosition.x;
                 int new_y = monsterPosition.y;
@@ -583,7 +643,7 @@ public:
 
                 log(DEV_LOG_FILE, "monster", entity, " moving along path");
                 // Only move the monster to the new position if it's not occupied
-                if (!is_occupied and check_if_in(ground_tiles, map[new_x][new_y])) {
+                if (!is_occupied and check_if_in(GROUND_TILES, game_map[new_x][new_y].ch)) {
                     monsterPosition.x = new_x;
                     monsterPosition.y = new_y;
                 }
@@ -591,7 +651,7 @@ public:
                 log(DEV_LOG_FILE, "checking monster", entity, "'s attack range");
                 set<pair<int, int>> monster_attack_range =
                     calculate_fov(
-                        map,
+                        game_map,
                         monsterPosition.x, monsterPosition.y,
                         monster.attackRadius
                     );
@@ -619,14 +679,14 @@ public:
 
 
 
-void spawnMonsters(int monster_count, EntityManager& entityManager, vector<vector<char>>& map) {
+void spawnMonsters(int monster_count, EntityManager& entityManager, vector<vector<Tile>>& game_map) {
     log(DEV_LOG_FILE, "spawning monsters");
     for (int i = 0; i < monster_count; ++i) {
         int x, y;
         do {
             x = get_random_int(0, WIDTH - 1);
             y = get_random_int(0, HEIGHT - 1);
-        } while (!check_if_in(ground_tiles, map[x][y]));
+        } while (!check_if_in(GROUND_TILES, game_map[x][y].ch));
         Entity monsterEntity = entityManager.createEntity();
         entityManager.getPositions()[monsterEntity] = {x, y};
         
@@ -651,36 +711,43 @@ void spawnMonsters(int monster_count, EntityManager& entityManager, vector<vecto
 
 
 void render_buffer(
-        const vector<vector<char, pair<int, int>>>& draw_buffer,
-        const vector<vector<vector<char, short, bool, bool>>& map,
+        const vector<pair<char, pair<int, int>>>& draw_buffer,
+        const vector<vector<Tile>>& game_map,
         const vector<short>& palette,
         int start_x, int start_y) {
     
     log(DEV_LOG_FILE, "rendering buffer");
 
+        clear();
     for (const auto& item : draw_buffer) {
         char ch = item.first;
-        int y = item.second.first - start_y;
-        int x = item.second.second - start_x;
-        short color_pair = 0;
+        int y = item.second.first;
+        int x = item.second.second;
+        int Y = y - start_y;
+        int X = x - start_x;
 
-        if (!check_if_in(entity_tiles,ch)) {
-            color_pair = 0;
-        } else if (map[x][y][2] && !map[x][y][3]) {
-            color_pair = get_color_pair_index(8, COLOR_BLACK);
-        } else if (check_if_in(wall_tiles, ch)) {
-            color_pair = palette[1];
-        } else if (check_if_in(trap_tiles, ch)) {
-            color_pair = palette[1];
-        } else if (check_if_in(ground_tiles, ch)) {
-            color_pair = palette[0];
-        } else if (ch == '@') {
+
+        short color_pair = get_color_pair_index(COLOR_BLACK, COLOR_BLACK);
+
+        if (ch == PLAYER_TILE) {
             color_pair = palette[3];
+        } else if (!check_if_in(ENTITY_TILES,ch)
+            && game_map[x][y].visible) {
+            color_pair = game_map[x][y].color;
+        } else if (game_map[x][y].visited && !game_map[x][y].visible) {
+            color_pair = get_color_pair_index(8, COLOR_BLACK);
+        } else if (check_if_in(MONSTER_TILES,ch)
+                   && game_map[x][y].visible) {
+            color_pair = palette[2];
+        } else if (check_if_in(ITEM_TILES,ch)
+                   && game_map[x][y].visible) {
+            color_pair = palette[1];
         }
 
         attron(COLOR_PAIR(color_pair));
-        mvaddch(y, x, ch);
+        mvaddch(Y, X, ch);
         attroff(COLOR_PAIR(color_pair));
+
     }
 }
 
@@ -777,7 +844,7 @@ void draw_UI(PlayerStats& playerStats) {
 
 pair<int,int> move_player(EntityManager& entityManager,
                           PlayerStats& playerStats,
-                          const vector<vector<char>>& map,
+                          const vector<vector<Tile>>& game_map,
                           const pair<int,int> direction,
                           const int sprinting) {
     log(DEV_LOG_FILE, "player opts to move x", direction.first, ",y", direction.second);
@@ -794,9 +861,9 @@ pair<int,int> move_player(EntityManager& entityManager,
     for (int i = 0; i < distance; i++) {
         int dx = delta.first + direction.first;
         int dy = delta.second + direction.second;
-        if (check_if_in(ground_tiles, map[playerPosition.x+dx][playerPosition.y+dy])) {
+        if (check_if_in(GROUND_TILES, game_map[playerPosition.x+dx][playerPosition.y+dy].ch)) {
             delta = {dx, dy};
-        } else if (check_if_in(trap_tiles, map[playerPosition.x+dx][playerPosition.y+dy])) {
+        } else if (check_if_in(TRAP_TILES, game_map[playerPosition.x+dx][playerPosition.y+dy].ch)) {
             int damage = get_random_int(1,5);
             playerStats.health -= damage;
             add_combat_log("Player took " + to_string(damage) + " damage from a trap.");
@@ -1027,17 +1094,16 @@ int main() {
     log(DEV_LOG_FILE, "generated palette");
 
 
-    vector<vector<vector<char, short, bool ,bool>>> map = generate_map();
+    vector<vector<Tile>> game_map = generate_game_map();
     //TODO: spawn player in sensible location
     int player_x = get_random_int(1, WIDTH-1);
     int player_y = get_random_int(1, HEIGHT-1);
 
-    while (!check_if_in(ground_tiles,map[player_x][player_y])) {
-
-        player_x = max(1,min(WIDTH-1,get_random_int(-1,1)));
-        player_y = max(1,min(HEIGHT-1,get_random_int(-1,1)));
+    while (!check_if_in(GROUND_TILES,game_map[player_x][player_y].ch)) {
+        player_x = get_random_int(1, WIDTH-1);
+        player_y = get_random_int(1, HEIGHT-1);
     }
-    log(DEV_LOG_FILE, "generated map");
+    log(DEV_LOG_FILE, "generated game_map");
 
 
     EntityManager entityManager;
@@ -1051,19 +1117,19 @@ int main() {
     log(DEV_LOG_FILE, "initialized entity manager");
 
 
-    spawnItems(entityManager, map);
-    spawnMonsters(HEIGHT * WIDTH / 2048.0, entityManager, map);
-    MonsterSystem monsterSystem(entityManager, map, playerStats);
+    spawnItems(entityManager, game_map);
+    spawnMonsters(HEIGHT * WIDTH / 2048.0, entityManager, game_map);
+    MonsterSystem monsterSystem(entityManager, game_map, playerStats);
     log(DEV_LOG_FILE, "spawned items and monsters");
 
     nodelay(stdscr, TRUE);
     auto timePerFrame = std::chrono::milliseconds(1000 / FPS); // Approximately 15 FPS
 
     int sprinting = 0;
-
+    set<pair<int, int>> player_fov = {};
     log(DEV_LOG_FILE, "starting game loop");
     while (true) {
-        clear();
+
         auto frameStart = std::chrono::steady_clock::now();
 
 
@@ -1074,48 +1140,38 @@ int main() {
         start_y = min(start_y, HEIGHT - LINES);
         int end_y = start_y + LINES;
 
-        set<pair<int, int>> fov = calculate_fov(
-            map, player_x, player_y, PLAYER_FOV_RADIUS * playerStats.speed
+        // get player fov
+        set<pair<int, int>> player_fov = calculate_fov(
+            game_map, player_x, player_y, PLAYER_FOV_RADIUS * playerStats.speed
         );
+        // // Set player fov to visible and visited
+        // for ( pair<int,int> coords : player_fov) {
+        //     game_map[coords.first][coords.second].visible = true;
+        //     game_map[coords.first][coords.second].visited = true;
+        // }
 
+
+        // initialize empty draw buffer
         vector<pair<char, pair<int, int>>> draw_buffer;
 
         for (int y = start_y; y < end_y; ++y) {
             for (int x = start_x; x < end_x; ++x) {
                 if (x < 0 || x >= WIDTH)     continue;
                 if (y < 0 || y >= HEIGHT)    continue;
-                if (!is_in_set({x, y}, fov)) continue;
                 
-                char ch = map[x][y];
+                char ch = game_map[x][y].ch;
                 draw_buffer.push_back(make_pair(ch, make_pair(y, x)));
-                
-                // Memorize walls
-                if (check_if_in(wall_tiles, map[x][y]))
-                    map[x][y][2] = true;
+
+                if (is_in_set({x, y}, player_fov)) {
+                    game_map[x][y].visible = true;
+                    game_map[x][y].visited = true;
+
+                }
+
             }
         }
         
-        entityManager.getPlayerStats()[playerEntity] = playerStats;
-        int memory_radius = pow(PLAYER_FOV_RADIUS, 2) * playerStats.defense   ;
-
-        // Forget distant visited tiles
-        for (int i = 0; i < 360; ++i) {
-            double rad = i * (M_PI / 180.0);
-            double dx = cos(rad), dy = sin(rad);
-            double x = player_x, y = player_y;
-
-            x += dx * memory_radius;
-            y += dy * memory_radius;
-            int ix = round(x), iy = round(y);
-            map[x][y][2] = false;
-
-        }
-
-
-
-
-
-        draw_buffer.push_back(make_pair(PLAYER, make_pair(player_y, player_x)));
+        draw_buffer.push_back(make_pair(PLAYER_TILE, make_pair(player_y, player_x)));
 
         auto& positions = entityManager.getPositions();
         auto& monsters = entityManager.getMonsterComponents();
@@ -1125,7 +1181,7 @@ int main() {
             Entity entity = entry.first;
             if (monsters.find(entity) != monsters.end()) {
                 const PositionComponent& position = entry.second;
-                if (is_in_set({position.x, position.y}, fov)) {
+                if (is_in_set({position.x, position.y}, player_fov)) {
                     char entity_tile;
                     if (monsters[entity].health > 20) {
                         entity_tile = 'M';
@@ -1140,7 +1196,7 @@ int main() {
                 }
             } else if (items.find(entity) != items.end()) {
                 const PositionComponent& position = entry.second;
-                if (is_in_set({position.x, position.y}, fov)) {
+                if (is_in_set({position.x, position.y}, player_fov)) {
                     char entity_tile = items[entity].character;
                     draw_buffer.push_back(make_pair(entity_tile, make_pair(position.y, position.x)));
                 }
@@ -1150,11 +1206,37 @@ int main() {
 
         palette[3] = get_player_color(playerStats);
 
-        render_buffer(draw_buffer, map, palette, start_x, start_y);
+        render_buffer(draw_buffer, game_map, palette, start_x, start_y);
 
         refresh();
 
+
+
+        //clear fov from map tiles
+        for (pair<int, int> fov_coords : player_fov ) {
+            game_map[fov_coords.first][fov_coords.second].visible = false;
+        }
+
+        entityManager.getPlayerStats()[playerEntity] = playerStats;
+        int memory_radius = pow(PLAYER_FOV_RADIUS, 3) * playerStats.defense   ;
+
+        // Forget distant visited tiles
+        for (int i = 0; i < 360; ++i) {
+            double rad = i * (M_PI / 180.0);
+            double dx = cos(rad), dy = sin(rad) / 2;
+            double x = player_x, y = player_y;
+
+            x += dx * memory_radius;
+            y += dy * memory_radius;
+            int ix = round(x), iy = round(y);
+            ix = max(1,min(WIDTH-1,ix));
+            iy = max(1,min(HEIGHT-1,iy));
+            game_map[ix][iy].visited = false;
+
+        }
+
         draw_UI(playerStats);
+        mvprintw(0,0,"(x%d,y%d)",player_x,player_y);
 
 
         int key = getch();
@@ -1164,51 +1246,50 @@ int main() {
                 sprinting = 0;
                 pair<int,int> direction = {0,-1};
                 //bool represents whether or not the player is sprinting
-                delta = move_player(entityManager, playerStats, map, direction, sprinting);
+                delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
 
             } else if (key == 'W') {
                 sprinting += 1;
                 pair<int,int> direction = {0,-1};
-                delta = move_player(entityManager, playerStats, map, direction, sprinting);
+                delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 's') {
                 sprinting = 0;
                 pair<int,int> direction = {0,1};
-                //bool represents whether or not the player is sprinting
-                delta = move_player(entityManager, playerStats, map, direction, sprinting);
+                delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 'S') {
                 sprinting += 1;
                 pair<int,int> direction = {0,1};
-                delta = move_player(entityManager, playerStats, map, direction, sprinting);
+                delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 'a') {
                 sprinting = 0;
                 pair<int,int> direction = {-1,0};
-                delta = move_player(entityManager, playerStats, map, direction, sprinting);
+                delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 'A') {
                 sprinting += 1;
                 pair<int,int> direction = {-1,0};
-                delta = move_player(entityManager, playerStats, map, direction, sprinting);
+                delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 'd') {
                 sprinting = 0;
                 pair<int,int> direction = {1,0};
-                delta = move_player(entityManager, playerStats, map, direction, sprinting);
+                delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 'D') {
                 sprinting += 1;
                 pair<int,int> direction = {1,0};
-                delta = move_player(entityManager, playerStats, map, direction, sprinting);
+                delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 'q') {
@@ -1225,7 +1306,7 @@ int main() {
 
                     if (abs(playerPosition.x - monsterPosition.x) <= playerStats.speed
                     && abs(playerPosition.y - monsterPosition.y) <= playerStats.speed
-                    && is_in_set({monsterPosition.x, monsterPosition.y}, fov) ) {
+                    && is_in_set({monsterPosition.x, monsterPosition.y}, player_fov) ) {
                         int damage = get_random_int(0, playerStats.attack);
                         monster.health -= damage;
 
@@ -1272,7 +1353,19 @@ int main() {
 
         entityManager.getPositions()[playerEntity] = {player_x, player_y};
 
+
+        auto frameEnd = std::chrono::steady_clock::now();
+        auto frameDuration = std::chrono::duration_cast<std::chrono::milliseconds>(frameEnd - frameStart);
+
+        // If the frame finished faster than the time per frame, sleep for the remaining time
+        if (frameDuration < timePerFrame) {
+            std::this_thread::sleep_for(timePerFrame - frameDuration);
+        }
+
+        //clear draw_buffer
         draw_buffer.clear();
+        clear();
+
 
 
         if (playerStats.health <= 0) {
@@ -1283,13 +1376,6 @@ int main() {
         }
 
 
-        auto frameEnd = std::chrono::steady_clock::now();
-        auto frameDuration = std::chrono::duration_cast<std::chrono::milliseconds>(frameEnd - frameStart);
-
-        // If the frame finished faster than the time per frame, sleep for the remaining time
-        if (frameDuration < timePerFrame) {
-            std::this_thread::sleep_for(timePerFrame - frameDuration);
-        }
 
     }
 
