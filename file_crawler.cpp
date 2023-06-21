@@ -821,7 +821,7 @@ int get_player_level(PlayerStats& playerStats) {
 void draw_UI(PlayerStats& playerStats) {
 
     //draw health orb
-    int orb_diameter = 7;//it's actually half this value on the y
+    int orb_diameter = 8;//it's actually half this value on the y
     int orb_size = (orb_diameter*orb_diameter)/2;
     int health_level =  static_cast<int>(static_cast<float>(playerStats.health) / PLAYER_MAX_HP * orb_size);
     int x = 2;
