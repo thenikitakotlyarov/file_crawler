@@ -50,7 +50,7 @@ const string GAME_LOG_FILE = "game_log.txt";
 const int UI_LOG_COUNT = 7;
 
 const int FPS = 15;
-const int WIDTH = 512, HEIGHT = 512;
+const int WIDTH = 512, HEIGHT = 512 ;
 const int PLAYER_MAX_HP = 100;
 const int PLAYER_MAX_EP = 100;
 const int PLAYER_FOV_RADIUS = 12;
@@ -988,10 +988,10 @@ void draw_UI(PlayerStats& playerStats) {
     attron(COLOR_PAIR(player_color));
 
     //draw level and class name
-    mvprintw(LINES-4, x, "%s",
+    mvprintw(LINES-3, x, "%s",
              player_class.c_str()
             );
-    mvprintw(LINES-3, x, "LVL%d",
+    mvprintw(LINES-2, x, "LVL%d",
              player_level
             );
     attroff(COLOR_PAIR(player_color));
