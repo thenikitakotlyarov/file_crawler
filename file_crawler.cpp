@@ -533,12 +533,12 @@ public:
 
 vector<ItemComponent> itemTemplates = {
         {ItemType::SmallPotion, 'o', "Small Health Potion",//< item identifier
-            1.0, //< item rarity
+            3.0, //< item rarity
             [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP, stats.health + 5);}},
             //item ability parms^ item ability ^
-        {ItemType::MediumPotion, 'O', "Medium Health Potion", 0.5,
+        {ItemType::MediumPotion, 'O', "Medium Health Potion", 1,
             [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP,stats.health + 10);}},
-        {ItemType::LargePotion, '0', "Large Health Potion", 0.25,
+        {ItemType::LargePotion, '0', "Large Health Potion", 0.5,
             [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP,stats.health + 25);}},
         {ItemType::WeakAttackSerum, 'a', "Weak ATT-Serum", 1.0,
             [](PlayerStats& stats) { stats.attack += 1; }},
@@ -561,11 +561,11 @@ vector<ItemComponent> itemTemplates = {
     };
 
 
-void spawnItems(EntityManager& entityManager, vector<vector<Tile>>& game_map) {
+void spawn_items(int count, EntityManager& entityManager, vector<vector<Tile>>& game_map) {
     log(DEV_LOG_FILE, "spawning items");
 
     for (const auto& item : itemTemplates) {
-        for (int i = 0; i < item.rarity * (HEIGHT * WIDTH / 2048); ++i) {
+        for (int i = 0; i < item.rarity * count; ++i) {
             int x, y;
             do {
                 x = get_random_int(0, WIDTH - 1);
@@ -681,7 +681,7 @@ public:
 
 
 
-void spawnMonsters(int monster_count, EntityManager& entityManager, vector<vector<Tile>>& game_map) {
+void spawn_monsters(int monster_count, EntityManager& entityManager, vector<vector<Tile>>& game_map) {
     log(DEV_LOG_FILE, "spawning monsters");
     for (int i = 0; i < monster_count; ++i) {
         int x, y;
@@ -1184,9 +1184,11 @@ int main() {
     entityManager.getPlayerStats()[playerEntity] = playerStats;
     log(DEV_LOG_FILE, "initialized entity manager");
 
+    int item_count = 0.7 * HEIGHT * WIDTH / ((HEIGHT+WIDTH)/2);
+    int monster_count = 1.25 * HEIGHT * WIDTH / ((HEIGHT+WIDTH)/2);
 
-    spawnItems(entityManager, game_map);
-    spawnMonsters(HEIGHT * WIDTH / 2048.0, entityManager, game_map);
+    spawn_items(item_count ,entityManager, game_map);
+    spawn_monsters(monster_count, entityManager, game_map);
     MonsterSystem monsterSystem(entityManager, game_map, playerStats);
     log(DEV_LOG_FILE, "spawned items and monsters");
 
@@ -1322,45 +1324,45 @@ int main() {
             if (key == 'w') {
                 pair<int,int> direction = {0,-1};
                 //bool represents whether or not the player is sprinting
-                delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
+                delta = move_player(entityManager, playerStats, game_map, direction, 0);
                 player_x += delta.first;
                 player_y += delta.second;
 
             } else if (key == 'W') {
-                sprinting = min(playerStats.speed,sprinting*2+2);
+                sprinting = min(playerStats.speed,sprinting+2);
                 pair<int,int> direction = {0,-1};
                 delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 's') {
                 pair<int,int> direction = {0,1};
-                delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
+                delta = move_player(entityManager, playerStats, game_map, direction, 0);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 'S') {
-                sprinting = min(playerStats.speed,sprinting*2+2);
+                sprinting = min(playerStats.speed,sprinting+2);
                 pair<int,int> direction = {0,1};
                 delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 'a') {
                 pair<int,int> direction = {-1,0};
-                delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
+                delta = move_player(entityManager, playerStats, game_map, direction, 0);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 'A') {
-                sprinting = min(playerStats.speed,sprinting*2+2);
+                sprinting = min(playerStats.speed,sprinting+2);
                 pair<int,int> direction = {-1,0};
                 delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 'd') {
                 pair<int,int> direction = {1,0};
-                delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
+                delta = move_player(entityManager, playerStats, game_map, direction, 0);
                 player_x += delta.first;
                 player_y += delta.second;
             } else if (key == 'D') {
-                sprinting = min(playerStats.speed,sprinting*2+2);
+                sprinting = min(playerStats.speed,sprinting+2);
                 pair<int,int> direction = {1,0};
                 delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
                 player_x += delta.first;
@@ -1413,10 +1415,11 @@ int main() {
                     }
                 }
             }
-
+        } else {
+            sprinting = 0;
         }
 
-        sprinting = max(0,(sprinting/2) - 1);
+        sprinting = max(0,sprinting-1);
 
 
 
