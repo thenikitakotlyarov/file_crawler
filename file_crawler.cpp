@@ -93,7 +93,7 @@ void log(const string filename, Args&&... args) {
 
     if (!logfile.is_open()) return;
 
-    // Redirect std::cout to the log file
+    // Redirect cout to the log file
     streambuf* coutbuf = cout.rdbuf();
     cout.rdbuf(logfile.rdbuf());
 
@@ -103,7 +103,7 @@ void log(const string filename, Args&&... args) {
     // Log the formatted message
     cout << oss.str() << endl;
 
-    // Restore std::cout
+    // Restore cout
     cout.rdbuf(coutbuf);
     // Close the log file
     logfile.close();
@@ -135,7 +135,7 @@ void playFootstepSound() {
     if (!footstepSound) {
         log(DEV_LOG_FILE, fileName + "  does not exist");
         // Handle sound loading error
-        // Example: std::cerr << "Failed to load footstep sound: " << Mix_GetError() << std::endl;
+        // Example: cerr << "Failed to load footstep sound: " << Mix_GetError() << endl;
         return;
     }
 
@@ -607,7 +607,6 @@ public:
             MonsterComponent& monster = monsters[entity];
 
             monster.cooldown = max(0, monster.cooldown - 1);
-
             int dx = monsterPosition.x - playerPosition.x;
             int dy = monsterPosition.y - playerPosition.y;
             double distance = sqrt(dx * dx + dy * dy);
@@ -624,8 +623,22 @@ public:
                 // Move the monster to the next node in the path if it exists
                 if (!path.empty()) {
                     log(DEV_LOG_FILE, "monster", entity, " taking path");
+                    // introduce a little noise to monster path
                     new_x = max(1,min(WIDTH-1,path[1].x));
                     new_y = max(1,min(HEIGHT-1,path[1].y));
+                } else {
+                    log(DEV_LOG_FILE, "monster", entity, " wanders");
+                    int wander_x, wander_y = 0;
+                    // introduce a little noise to monster path
+                    if ( get_random_int(1,FPS) == FPS ) {
+                        int wander_x = get_random_int(-1,1);
+                    }
+                    if ( get_random_int(1,FPS) == FPS ) {
+                        int wander_y = get_random_int(-1,1);
+                    }
+                    new_x = max(1,min(WIDTH-1,monsterPosition.x+wander_x));
+                    new_y = max(1,min(HEIGHT-1,monsterPosition.y+wander_y));
+
                 }
 
 
@@ -675,6 +688,7 @@ public:
                     }
                 }
             }
+
         }
     }
 };
@@ -916,7 +930,7 @@ pair<int,int> move_player(EntityManager& entityManager,
 
     pair<int,int> delta = {0, 0};
     int distance = 1;
-    if (sprinting) {
+    if (sprinting > 0.0f) {
         distance = min(playerStats.speed,int(pow(sprinting,1.2)));
     }
 
@@ -1102,21 +1116,21 @@ int main() {
         int initResult = Mix_Init(mixerFlags);
         if ((initResult & mixerFlags) != mixerFlags) {
             // Handle initialization error
-            // Example: std::cerr << "Failed to initialize SDL Mixer: " << Mix_GetError() << std::endl;
+            // Example: cerr << "Failed to initialize SDL Mixer: " << Mix_GetError() << endl;
             return 1;
         }
 
         // Open the audio device
         if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 4096) < 0) {
             // Handle audio device opening error
-            // Example: std::cerr << "Failed to open audio device: " << Mix_GetError() << std::endl;
+            // Example: cerr << "Failed to open audio device: " << Mix_GetError() << endl;
             return 1;
         }
 
         PLAYER_FOOTSTEP_SOUND = Mix_LoadWAV("data/sound/footstep.wav");  // Replace "footstep.wav" with the path to your sound file
         if (!PLAYER_FOOTSTEP_SOUND) {
             // Handle sound loading error
-            // Example: std::cerr << "Failed to load footstep sound: " << Mix_GetError() << std::endl;
+            // Example: cerr << "Failed to load footstep sound: " << Mix_GetError() << endl;
             return 1;
         }
         log(DEV_LOG_FILE, "initialized audio");
@@ -1193,14 +1207,14 @@ int main() {
     log(DEV_LOG_FILE, "spawned items and monsters");
 
     nodelay(stdscr, TRUE);
-    auto timePerFrame = std::chrono::milliseconds(1000 / FPS); // Approximately 15 FPS
+    auto timePerFrame = chrono::milliseconds(1000 / FPS); // Approximately 15 FPS
 
-    int sprinting = 0;
+    float sprinting = 0.0f;
     set<pair<int, int>> player_fov = {};
     log(DEV_LOG_FILE, "starting game loop");
     while (true) {
 
-        auto frameStart = std::chrono::steady_clock::now();
+        auto frameStart = chrono::steady_clock::now();
 
 
         int start_x = max(0, player_x - COLS / 2);
@@ -1359,7 +1373,8 @@ int main() {
                     direction = {0,1};
                 else if (key=='D')
                     direction = {1,0};
-                sprinting = min(playerStats.speed,(sprinting/10*playerStats.speed)+2);
+                sprinting += 0.2f; // This is your acceleration rate, adjust as needed
+                if (sprinting > playerStats.speed) sprinting = playerStats.speed; // Cap the sprinting speed
                 delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
                 //forgive me
                 bool occupied = false;
@@ -1426,10 +1441,10 @@ int main() {
                 }
             } 
         } else {
-            sprinting = 0;
+            sprinting -= 0.1f;
+            if (sprinting < 0.0f) sprinting = 0.0f;
         }
 
-        sprinting = max(0,sprinting-1);
 
 
 
@@ -1442,12 +1457,12 @@ int main() {
         entityManager.getPositions()[playerEntity] = {player_x, player_y};
 
 
-        auto frameEnd = std::chrono::steady_clock::now();
-        auto frameDuration = std::chrono::duration_cast<std::chrono::milliseconds>(frameEnd - frameStart);
+        auto frameEnd = chrono::steady_clock::now();
+        auto frameDuration = chrono::duration_cast<chrono::milliseconds>(frameEnd - frameStart);
 
         // If the frame finished faster than the time per frame, sleep for the remaining time
         if (frameDuration < timePerFrame) {
-            std::this_thread::sleep_for(timePerFrame - frameDuration);
+            this_thread::sleep_for(timePerFrame - frameDuration);
         }
 
         //clear draw_buffer
