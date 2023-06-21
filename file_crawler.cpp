@@ -424,6 +424,8 @@ vector<Node> aStar(const PositionComponent& start, const PositionComponent& goal
 
 // ENTITIES
 struct PlayerStats {
+    int level;
+    string class_name;
     int health;
     int attack;
     int defense;
@@ -730,15 +732,15 @@ void render_buffer(
 
         short color_pair = get_color_pair_index(COLOR_BLACK, COLOR_BLACK);
 
-        if (!check_if_in(ENTITY_TILES,ch)
+        if (!check_if_in(ENTITY_TILES,ch)// visible environment
             && game_map[x][y].visible) {
             color_pair = game_map[x][y].color;
-        } else if (game_map[x][y].visited && !game_map[x][y].visible) {
+        } else if (game_map[x][y].visited && !game_map[x][y].visible) { // memory
             color_pair = get_color_pair_index(8, COLOR_BLACK);
-        } else if (check_if_in(MONSTER_TILES,ch)
+        } else if (check_if_in(MONSTER_TILES,ch) //monsters
                    && game_map[x][y].visible) {
             color_pair = palette[2];
-        } else if (check_if_in(ITEM_TILES,ch)
+        } else if (check_if_in(ITEM_TILES,ch) //items
                    && game_map[x][y].visible) {
             color_pair = palette[11];
         }
@@ -764,26 +766,19 @@ void render_buffer(
 int get_player_color(PlayerStats& playerStats) {
     int color_index;
 
-    if (playerStats.attack > playerStats.defense
-        && playerStats.attack > playerStats.speed) {
+    if (playerStats.class_name == "Fighter") {
         color_index = 2;//red
-    } else if (playerStats.defense == playerStats.attack
-               && playerStats.defense > playerStats.speed) {
+    } else if (playerStats.class_name == "Cleric") {
         color_index = 6;//magenta
-    } else if (playerStats.defense > playerStats.attack
-               && playerStats.defense > playerStats.speed) {
+    } else if (playerStats.class_name == "Wizard") {
         color_index = 5;//blue
-    } else if (playerStats.defense == playerStats.speed
-               && playerStats.defense > playerStats.attack) {
+    } else if (playerStats.class_name == "Sorcerer") {
         color_index = 7;//cyan
-    } else if (playerStats.speed > playerStats.attack
-               && playerStats.speed > playerStats.defense) {
+    } else if (playerStats.class_name == "Ranger") {
         color_index = 3;//green
-    } else if (playerStats.speed == playerStats.attack
-               && playerStats.speed > playerStats.defense) {
+    } else if (playerStats.class_name == "Rogue") {
         color_index = 4;//yellow
-    } else if (playerStats.defense == playerStats.attack
-               && playerStats.defense == playerStats.speed) {
+    } else if (playerStats.class_name == "Adventurer") {
         color_index = 8;//white
     }
 
@@ -819,12 +814,17 @@ string get_player_class_name(PlayerStats& playerStats) {
     return class_name;
 }
 
+int get_player_level(PlayerStats& playerStats) {
+    return round((playerStats.attack + playerStats.defense + playerStats.speed)/10);
+}
+
 void draw_UI(PlayerStats& playerStats) {
     int x = 2;
     int y = 1;
+    int player_level = playerStats.level;
+
     int player_color = get_player_color(playerStats);
-    int player_level = round((playerStats.attack + playerStats.defense + playerStats.speed)/10);
-    string player_class = get_player_class_name(playerStats);
+    string player_class = playerStats.class_name;
     attron(COLOR_PAIR(player_color));
     mvprintw(y, x, "LVL%d %s",
              player_level,
@@ -1088,7 +1088,10 @@ int main() {
 
     log(DEV_LOG_FILE, "selected player class");
 
-    PlayerStats playerStats = {PLAYER_MAX_HP, playerAttack, playerDefense, playerSpeed};
+    PlayerStats playerStats = {0,"EMPTY_PLACEHOLDER",PLAYER_MAX_HP,
+                               playerAttack, playerDefense, playerSpeed};
+    playerStats.level = get_player_level(playerStats);
+    playerStats.class_name = get_player_class_name(playerStats);
 
     int seed = get_random_int(0, 255);
     log(DEV_LOG_FILE, "generated seed ", seed, " for rngesus");
@@ -1237,6 +1240,15 @@ int main() {
             ix = max(1,min(WIDTH-1,ix));
             iy = max(1,min(HEIGHT-1,iy));
             game_map[ix][iy].visited = false;
+
+        }
+
+        int player_level = get_player_level(playerStats);
+        if ( player_level > playerStats.level) {// player just leveled up
+            add_combat_log("Leveled up!");
+            playerStats.level = player_level;
+            playerStats.class_name = get_player_class_name(playerStats);
+            entityManager.getPlayerStats()[playerEntity] = playerStats;
 
         }
 
