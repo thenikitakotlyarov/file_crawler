@@ -661,6 +661,8 @@ public:
                 if (!is_occupied and check_if_in(GROUND_TILES, game_map[new_x][new_y].ch)) {
                     monsterPosition.x = new_x;
                     monsterPosition.y = new_y;
+
+                    positions[entity] = monsterPosition;
                 }
 
                 log(DEV_LOG_FILE, "checking monster", entity, "'s attack range");
@@ -1258,6 +1260,7 @@ int main() {
         draw_buffer.push_back(make_pair(PLAYER_TILE, make_pair(player_y, player_x)));
 
         auto& positions = entityManager.getPositions();
+        PositionComponent playerPosition = {player_x,player_y};
         auto& monsters = entityManager.getMonsterComponents();
         auto& items = entityManager.getItemComponents();
 
@@ -1291,8 +1294,13 @@ int main() {
         palette[3] = get_player_color(playerStats);
 
         render_buffer(draw_buffer, game_map, palette, start_x, start_y);
+        wnoutrefresh(stdscr);
 
-        refresh();
+        // movementSystem.update();
+        // log(DEV_LOG_FILE, "updated movement system");
+
+        monsterSystem.update();
+        log(DEV_LOG_FILE, "updated monster system");
 
 
 
@@ -1391,6 +1399,9 @@ int main() {
                 if (!occupied){
                     player_x += delta.first;
                     player_y += delta.second;
+                    playerPosition.x = player_x;
+                    playerPosition.y = player_y;
+                    positions[0] = playerPosition;
                 }
             } else if (key == 'q') {
                 break;
@@ -1448,11 +1459,6 @@ int main() {
 
 
 
-        // movementSystem.update();
-        // log(DEV_LOG_FILE, "updated movement system");
-
-        monsterSystem.update();
-        log(DEV_LOG_FILE, "updated monster system");
 
         entityManager.getPositions()[playerEntity] = {player_x, player_y};
 
@@ -1464,6 +1470,9 @@ int main() {
         if (frameDuration < timePerFrame) {
             this_thread::sleep_for(timePerFrame - frameDuration);
         }
+
+        //actually render
+        doupdate();
 
         //clear draw_buffer
         draw_buffer.clear();
