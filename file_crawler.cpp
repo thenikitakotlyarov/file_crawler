@@ -819,31 +819,91 @@ int get_player_level(PlayerStats& playerStats) {
 }
 
 void draw_UI(PlayerStats& playerStats) {
+
+    //draw health orb
+    int orb_diameter = 7;//it's actually half this value on the y
+    int orb_size = (orb_diameter*orb_diameter)/2;
+    int health_level =  static_cast<int>(static_cast<float>(playerStats.health) / PLAYER_MAX_HP * orb_size);
     int x = 2;
-    int y = 1;
+    int y = LINES - (orb_diameter/2) - 2;
     int player_level = playerStats.level;
 
+    //draw background for hud
+    for (int hy = 1; hy < orb_diameter-1; ++hy) {
+        for (int hx = 1; hx < 30; ++hx) {
+            mvprintw(y+hy,x+hx," ");
+        }
+    }
+
+    for (int oy = 0; oy < (orb_diameter/2) + 2; ++oy) {
+        for(int ox = 0; ox < orb_diameter + 2; ++ox) {
+
+            //draw box in center
+            if (   (ox != 0 && oy!=0)
+                && (ox!=orb_diameter+1 && oy!=0)
+                && (ox != 0 && oy!=orb_diameter/2+1)
+                && (ox!=orb_diameter+1 && oy!=orb_diameter/2+1)){
+                int color_pair;
+                char ch;
+                    if (health_level >= orb_size - (((oy) * orb_diameter) - ox)) {
+                        ch = get_random_character({' ',' ',' ','~'});
+                        color_pair = get_color_pair_index(COLOR_BLACK,COLOR_RED);
+                    } else{
+                        ch =get_random_character({' ',' ',' ',' ',' ',' ',' ',' ','.'});
+                        color_pair = get_color_pair_index(8,COLOR_BLACK);
+                    }
+
+                attron(COLOR_PAIR(color_pair));
+                string str_ch(1, ch);
+                mvprintw(y+oy,1+ox,str_ch.c_str());
+                attroff(COLOR_PAIR(color_pair));
+            }
+            //draw boundary
+            if (   (oy==0 || oy==orb_diameter/2+1) && !(ox==0 || ox==orb_diameter+1)
+                || (ox==0 || ox==orb_diameter+1) && !(oy==0 || oy==orb_diameter/2+1)
+                || (ox==1 || ox==orb_diameter) && (oy==1 || oy==orb_diameter/2)){
+                attron(COLOR_PAIR(get_color_pair_index(8,COLOR_BLACK)));
+                mvprintw(y+oy,1+ox,"O");
+                attroff(COLOR_PAIR(get_color_pair_index(8,COLOR_BLACK)));
+
+
+            }
+        }
+    }
+
+    x = orb_diameter + 5;
     int player_color = get_player_color(playerStats);
     string player_class = playerStats.class_name;
     attron(COLOR_PAIR(player_color));
-    mvprintw(y, x, "LVL%d %s",
-             player_level,
+
+    //draw level and class name
+    mvprintw(y+1, x, "%s",
              player_class.c_str()
             );
+    mvprintw(y+2, x, "LVL%d",
+             player_level
+            );
     attroff(COLOR_PAIR(player_color));
-    mvprintw(y+1, x, "HP: %d", playerStats.health);
-    mvprintw(y+2, x, "ATT: %d DEF: %d SPD: %d",
+
+    //draw stats
+    mvprintw(y+4, x, "ATT: %d DEF: %d SPD: %d",
              playerStats.attack,
              playerStats.defense,
              playerStats.speed
             );
 
-    y += 3;
+    y = 1;
+    x = 2;
+
+    //draw combat log
     int log_size = min(LINES - 3, static_cast<int>(combat_log.size()));
 
     for (int i = 0; i < log_size; i++) {
         mvprintw(y + i, x, combat_log[combat_log.size() - log_size + i].c_str());
     }
+
+
+
 }
 
 
