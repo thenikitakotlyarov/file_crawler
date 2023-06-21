@@ -1253,7 +1253,7 @@ int main() {
         }
 
         draw_UI(playerStats);
-        mvprintw(0,0,"(x%d,y%d)",player_x,player_y);
+        // mvprintw(0,0,"(x%d,y%d)",player_x,player_y);
 
 
         int key = getch();
