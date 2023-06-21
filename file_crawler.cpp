@@ -718,7 +718,8 @@ void render_buffer(
     
     log(DEV_LOG_FILE, "rendering buffer");
 
-        clear();
+    // clear();
+    int py, px;
     for (const auto& item : draw_buffer) {
         char ch = item.first;
         int y = item.second.first;
@@ -729,9 +730,7 @@ void render_buffer(
 
         short color_pair = get_color_pair_index(COLOR_BLACK, COLOR_BLACK);
 
-        if (ch == PLAYER_TILE) {
-            color_pair = palette[3];
-        } else if (!check_if_in(ENTITY_TILES,ch)
+        if (!check_if_in(ENTITY_TILES,ch)
             && game_map[x][y].visible) {
             color_pair = game_map[x][y].color;
         } else if (game_map[x][y].visited && !game_map[x][y].visible) {
@@ -741,14 +740,23 @@ void render_buffer(
             color_pair = palette[2];
         } else if (check_if_in(ITEM_TILES,ch)
                    && game_map[x][y].visible) {
-            color_pair = palette[1];
+            color_pair = palette[11];
         }
 
-        attron(COLOR_PAIR(color_pair));
-        mvaddch(Y, X, ch);
-        attroff(COLOR_PAIR(color_pair));
-
+        if (ch == PLAYER_TILE) {
+            py = Y;
+            px = X;
+        } else {
+            attron(COLOR_PAIR(color_pair));
+            mvaddch(Y, X, ch);
+            attroff(COLOR_PAIR(color_pair));
+        }
     }
+    // draw character last
+    attron(COLOR_PAIR(palette[3]));
+    mvaddch(py, px, PLAYER_TILE);
+    attroff(COLOR_PAIR(palette[3]));
+
 }
 
 
@@ -830,10 +838,7 @@ void draw_UI(PlayerStats& playerStats) {
              playerStats.speed
             );
 
-    y += 2;
-    // mvprintw(y, x, "Combat Log:");
-    y++;
-
+    y += 3;
     int log_size = min(LINES - 3, static_cast<int>(combat_log.size()));
 
     for (int i = 0; i < log_size; i++) {
