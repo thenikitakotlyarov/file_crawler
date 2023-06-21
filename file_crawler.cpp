@@ -50,6 +50,7 @@ const string GAME_LOG_FILE = "game_log.txt";
 const int UI_LOG_COUNT = 7;
 
 const int FPS = 30;
+const chrono::duration<double, milli> frame_duration(1000.0 / FPS);
 const int WIDTH = 1024, HEIGHT = 1024;
 const int PLAYER_MAX_HP = 100;
 const int PLAYER_FOV_RADIUS = 3;
@@ -1318,58 +1319,63 @@ int main() {
         // mvprintw(0,0,"(x%d,y%d)",player_x,player_y);
 
 
-        int key = getch();
-        if (key != ERR) {
-            pair<int,int> delta = {0,0};
-            if (key == 'w') {
-                pair<int,int> direction = {0,-1};
-                //bool represents whether or not the player is sprinting
-                delta = move_player(entityManager, playerStats, game_map, direction, 0);
-                player_x += delta.first;
-                player_y += delta.second;
 
-            } else if (key == 'W') {
+        bool keys[256] = { false };  // Key state array. Initialize all to false.
+
+        while (true) {
+            int key;
+            while ((key = getch()) != ERR) {
+                keys[key] = true;  // If a key is pressed, set its state to true.
+            }
+
+            pair<int,int> delta = {0,0};
+            if (keys['w'] && keys['d']) {
+                sprinting = min(playerStats.speed, sprinting + 2);
+                pair<int, int> direction = { 1, -1 };  // Diagonal direction (right and up).
+                delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
+            } else if (keys['w'] && keys['a']) {
+                sprinting = min(playerStats.speed, sprinting + 2);
+                pair<int, int> direction = { -1, -1 };  // Diagonal direction (left and up).
+                delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
+            } else if (keys['s'] && keys['d']) {
+                sprinting = min(playerStats.speed, sprinting + 2);
+                pair<int, int> direction = { 1, 1 };  // Diagonal direction (right and down).
+                delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
+            } else if (keys['s'] && keys['a']) {
+                sprinting = min(playerStats.speed, sprinting + 2);
+                pair<int, int> direction = { -1, 1 };  // Diagonal direction (left and down).
+                delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
+            } else if (keys['w']) {
+                pair<int,int> direction = {0,-1};
+                delta = move_player(entityManager, playerStats, game_map, direction, 0);
+            } else if (keys['s']) {
+                pair<int,int> direction = {0,1};
+                delta = move_player(entityManager, playerStats, game_map, direction, 0);
+            } else if (keys['a']) {
+                pair<int,int> direction = {-1,0};
+                delta = move_player(entityManager, playerStats, game_map, direction, 0);
+            } else if (keys['d']) {
+                pair<int,int> direction = {1,0};
+                delta = move_player(entityManager, playerStats, game_map, direction, 0);
+            } else if (keys['W']) {
                 sprinting = min(playerStats.speed,sprinting+2);
                 pair<int,int> direction = {0,-1};
                 delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
-                player_x += delta.first;
-                player_y += delta.second;
-            } else if (key == 's') {
-                pair<int,int> direction = {0,1};
-                delta = move_player(entityManager, playerStats, game_map, direction, 0);
-                player_x += delta.first;
-                player_y += delta.second;
-            } else if (key == 'S') {
+            } else if (keys['S']) {
                 sprinting = min(playerStats.speed,sprinting+2);
                 pair<int,int> direction = {0,1};
                 delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
-                player_x += delta.first;
-                player_y += delta.second;
-            } else if (key == 'a') {
-                pair<int,int> direction = {-1,0};
-                delta = move_player(entityManager, playerStats, game_map, direction, 0);
-                player_x += delta.first;
-                player_y += delta.second;
-            } else if (key == 'A') {
+            } else if (keys['A']) {
                 sprinting = min(playerStats.speed,sprinting+2);
                 pair<int,int> direction = {-1,0};
                 delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
-                player_x += delta.first;
-                player_y += delta.second;
-            } else if (key == 'd') {
-                pair<int,int> direction = {1,0};
-                delta = move_player(entityManager, playerStats, game_map, direction, 0);
-                player_x += delta.first;
-                player_y += delta.second;
-            } else if (key == 'D') {
+            } else if (keys['D']) {
                 sprinting = min(playerStats.speed,sprinting+2);
                 pair<int,int> direction = {1,0};
                 delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
-                player_x += delta.first;
-                player_y += delta.second;
-            } else if (key == 'q') {
+            } else if (keys['q']) {
                 break;
-            } else if (key == ' ') {
+            } else if (keys[' ']) {
                 // Player attack
                 auto& playerPosition = positions[playerEntity];
                 auto& monsters = entityManager.getMonsterComponents();
@@ -1398,7 +1404,7 @@ int main() {
                         break;
                     }
                 }
-            } else if (key == 'e' ) {
+            } else if (keys['e']) {
                 //player interact
                 auto& playerPosition = positions[playerEntity];
                 auto& items = entityManager.getItemComponents();
@@ -1407,6 +1413,7 @@ int main() {
                     Entity itemEntity = entry.first;
                     PositionComponent& itemPosition = positions[itemEntity];
                     ItemComponent& item = items[itemEntity];
+
                     if (playerPosition.x == itemPosition.x && playerPosition.y == itemPosition.y) {
                         item.effect(playerStats);
                         entityManager.destroyEntity(itemEntity);
@@ -1415,11 +1422,29 @@ int main() {
                     }
                 }
             }
-        } else {
-            sprinting = 0;
-        }
 
-        sprinting = max(0,sprinting-1);
+            player_x += delta.first;
+            player_y += delta.second;
+
+            if (!keys['w'] && !keys['a'] && !keys['s'] && !keys['d'] && !keys['W'] && !keys['A'] && !keys['S'] && !keys['D']) {
+                sprinting = 0;
+            }
+
+            sprinting = max(0, sprinting - 1);
+
+            // Clear key state after each frame.
+            memset(keys, false, sizeof(keys));
+
+            auto frameEnd = chrono::steady_clock::now();
+            chrono::duration<double, milli> elapsed = frameEnd - frameStart;
+
+            // If the frame finished faster than the time per frame, sleep for the remaining time
+            if (elapsed > frame_duration) {
+                break;
+            }
+
+
+        }
 
 
 
@@ -1432,13 +1457,7 @@ int main() {
         entityManager.getPositions()[playerEntity] = {player_x, player_y};
 
 
-        auto frameEnd = std::chrono::steady_clock::now();
-        auto frameDuration = std::chrono::duration_cast<std::chrono::milliseconds>(frameEnd - frameStart);
 
-        // If the frame finished faster than the time per frame, sleep for the remaining time
-        if (frameDuration < timePerFrame) {
-            std::this_thread::sleep_for(timePerFrame - frameDuration);
-        }
 
         //clear draw_buffer
         draw_buffer.clear();
