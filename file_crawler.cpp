@@ -42,18 +42,19 @@ using namespace std;
 #+#    #+# #+#    #+# #+#     #+#  #+#+# #+#+#  #+#        #+#        #+#    #+#
  ########  ###    ### ###     ###   ###   ###   ########## ########## ###    ###
 */
-// v0.6x
+// v0.7x
 
 const string DEV_LOG_FILE = "dev_log.txt";
 const string GAME_LOG_FILE = "game_log.txt";
 
 const int UI_LOG_COUNT = 7;
 
-const int FPS = 30;
-const int WIDTH = 1024, HEIGHT = 1024;
+const int FPS = 15;
+const int WIDTH = 512, HEIGHT = 512;
 const int PLAYER_MAX_HP = 100;
-const int PLAYER_FOV_RADIUS = 3;
-const int PLAYER_MEMORY_RADIUS = pow(PLAYER_FOV_RADIUS,2);
+const int PLAYER_MAX_EP = 100;
+const int PLAYER_FOV_RADIUS = 12;
+const int PLAYER_MEMORY_RADIUS = 3*PLAYER_FOV_RADIUS;
 
 const bool sound = false;
 Mix_Chunk* PLAYER_FOOTSTEP_SOUND = nullptr;
@@ -328,25 +329,29 @@ set<pair<int, int>> calculate_fov(
         double dx = cos(rad), dy = sin(rad) / 2;
         double x = center_x, y = center_y;
 
-        for (int j = 0; j < radius; ++j) {
-            x += dx;
-            y += dy;
+        for (int j = 0; j <= radius; ++j) {
             int ix = round(x), iy = round(y);
-            // ix = max(0,min(WIDTH,ix));
-            // iy = max(0,min(HEIGHT,iy));
 
-            if (ix < 0 || iy < 0 || ix >= WIDTH || iy >= HEIGHT)
+            if (ix  < 0 || iy < 0 || ix >= WIDTH || iy >= HEIGHT)
                 break;
 
-            fov.insert({ix, iy});
+            // check if we should insert this tile into fov
+            if (j == 0 || i % j == 0) {
+                fov.insert({ix, iy});
+            }
+
             if (check_if_in(WALL_TILES, game_map[ix][iy].ch))
                 break;
 
+            x += dx;
+            y += dy;
         }
     }
 
     return fov;
 }
+
+
 
 
 double heuristic(const vector<vector<Tile>>& game_map, int x1, int y1, int x2, int y2) {
@@ -427,6 +432,7 @@ struct PlayerStats {
     int level;
     string class_name;
     int health;
+    int energy;
     int attack;
     int defense;
     int speed;
@@ -778,6 +784,27 @@ void render_buffer(
 }
 
 
+int get_mana_color(PlayerStats& playerStats) {
+    int color_index;
+
+    if (playerStats.class_name == "Fighter") {
+        color_index = get_color_pair_index(COLOR_BLACK, COLOR_RED);//red
+    } else if (playerStats.class_name == "Cleric") {
+        color_index = get_color_pair_index(COLOR_BLACK, COLOR_MAGENTA);//magenta
+    } else if (playerStats.class_name == "Wizard") {
+        color_index = get_color_pair_index(COLOR_BLACK, COLOR_BLUE);//blue
+    } else if (playerStats.class_name == "Sorcerer") {
+        color_index = get_color_pair_index(COLOR_BLACK, COLOR_CYAN);//cyan
+    } else if (playerStats.class_name == "Ranger") {
+        color_index = get_color_pair_index(COLOR_BLACK, COLOR_GREEN);//green
+    } else if (playerStats.class_name == "Rogue") {
+        color_index = get_color_pair_index(COLOR_BLACK, COLOR_YELLOW);//yellow
+    } else if (playerStats.class_name == "Adventurer") {
+        color_index = get_color_pair_index(COLOR_BLACK, COLOR_WHITE);//white
+    }
+
+    return color_index;
+}
 
 int get_player_color(PlayerStats& playerStats) {
     int color_index;
@@ -836,21 +863,25 @@ int get_player_level(PlayerStats& playerStats) {
 
 void draw_UI(PlayerStats& playerStats) {
 
-    //draw health orb
-    int orb_diameter = 8;//it's actually half this value on the y
+    int orb_diameter = max(6,LINES*2/6);//it's actually half this value on the y, takes 1/6th of the screen, smollest orb size of 3x7
     int orb_size = (orb_diameter*orb_diameter)/2;
-    int health_level =  static_cast<int>(static_cast<float>(playerStats.health) / PLAYER_MAX_HP * orb_size);
+    int health_level = static_cast<int>(static_cast<float>(playerStats.health) / PLAYER_MAX_HP * orb_size);
+    int energy_level = static_cast<int>(static_cast<float>(playerStats.energy) / PLAYER_MAX_EP * orb_size);
     int x = 2;
     int y = LINES - (orb_diameter/2) - 2;
     int player_level = playerStats.level;
 
     //draw background for hud
-    for (int hy = 1; hy < orb_diameter-1; ++hy) {
-        for (int hx = 1; hx < 30; ++hx) {
-            mvprintw(y+hy,x+hx," ");
+    int ui_bg = get_color_pair_index(8,8);
+    attron(COLOR_PAIR(ui_bg));
+    for (int hy = 0; hy < 5; ++hy) {
+        for (int hx = 0; hx < COLS; ++hx) {
+            mvprintw(LINES-hy,hx,".");
         }
     }
+    attroff(COLOR_PAIR(ui_bg));
 
+    //draw health orb
     for (int oy = 0; oy < (orb_diameter/2) + 2; ++oy) {
         for(int ox = 0; ox < orb_diameter + 2; ++ox) {
 
@@ -877,10 +908,74 @@ void draw_UI(PlayerStats& playerStats) {
             //draw boundary
             if (   (oy==0 || oy==orb_diameter/2+1) && !(ox==0 || ox==orb_diameter+1)
                 || (ox==0 || ox==orb_diameter+1) && !(oy==0 || oy==orb_diameter/2+1)
-                || (ox==1 || ox==orb_diameter) && (oy==1 || oy==orb_diameter/2)){
-                attron(COLOR_PAIR(get_color_pair_index(8,COLOR_BLACK)));
-                mvprintw(y+oy,1+ox,"O");
-                attroff(COLOR_PAIR(get_color_pair_index(8,COLOR_BLACK)));
+                || (ox==1 || ox==orb_diameter) && (oy==1 || oy==orb_diameter/2)) {
+                int orb_boundary_color = get_color_pair_index(7,8);
+                char orb_boundary_ch = ' ';
+                if ((ox==1 && oy==1) || (ox==orb_diameter && oy==orb_diameter/2)) {
+                    orb_boundary_ch = '/';
+                } else if ((ox==1 && oy==orb_diameter/2) || (ox==orb_diameter && oy==1)) {
+                    orb_boundary_ch = '\\';
+                } else if ((ox==0 || ox==orb_diameter+1) && (oy>1 && oy<orb_diameter/2)){
+                    orb_boundary_ch = '|';
+                } else if ((oy==0 || oy==orb_diameter/2+1) && (ox>1 && ox<orb_diameter)){
+                    orb_boundary_ch = '-';
+                }
+
+                string str_ch(1,orb_boundary_ch);
+                attron(COLOR_PAIR(orb_boundary_color));
+                mvprintw(y+oy,1+ox,str_ch.c_str());
+                attroff(COLOR_PAIR(orb_boundary_color));
+
+
+            }
+        }
+    }
+
+
+    //draw energy orb
+    for (int oy = 0; oy < (orb_diameter/2) + 2; ++oy) {
+        for(int ox = 0; ox < orb_diameter + 2; ++ox) {
+
+            //draw box in center
+            if (   (ox != 0 && oy!=0)
+                && (ox!=orb_diameter+1 && oy!=0)
+                && (ox != 0 && oy!=orb_diameter/2+1)
+                && (ox!=orb_diameter+1 && oy!=orb_diameter/2+1)){
+                int color_pair;
+                char ch;
+                    if (energy_level >= orb_size - (((oy) * orb_diameter) - ox)) {
+                        ch = get_random_character({' ',' ',' ','~'});
+                        color_pair = get_mana_color(playerStats);
+                    } else{
+                        ch =get_random_character({' ',' ',' ',' ',' ',' ',' ',' ','.'});
+                        color_pair = get_color_pair_index(8,COLOR_BLACK);
+                    }
+
+                attron(COLOR_PAIR(color_pair));
+                string str_ch(1, ch);
+                mvprintw(y+oy,COLS-ox-2,str_ch.c_str());
+                attroff(COLOR_PAIR(color_pair));
+            }
+            //draw boundary
+            if (   (oy==0 || oy==orb_diameter/2+1) && !(ox==0 || ox==orb_diameter+1)
+                || (ox==0 || ox==orb_diameter+1) && !(oy==0 || oy==orb_diameter/2+1)
+                || (ox==1 || ox==orb_diameter) && (oy==1 || oy==orb_diameter/2)) {
+                int orb_boundary_color = get_color_pair_index(7,8);
+                char orb_boundary_ch = ' ';
+                if ((ox==1 && oy==1) || (ox==orb_diameter && oy==orb_diameter/2)) {
+                    orb_boundary_ch = '\\';
+                } else if ((ox==1 && oy==orb_diameter/2) || (ox==orb_diameter && oy==1)) {
+                    orb_boundary_ch = '/';
+                } else if ((ox==0 || ox==orb_diameter+1) && (oy>1 && oy<orb_diameter/2)){
+                    orb_boundary_ch = '|';
+                } else if ((oy==0 || oy==orb_diameter/2+1) && (ox>1 && ox<orb_diameter)){
+                    orb_boundary_ch = '-';
+                }
+
+                string str_ch(1,orb_boundary_ch);
+                attron(COLOR_PAIR(orb_boundary_color));
+                mvprintw(y+oy,COLS-ox-2,str_ch.c_str());
+                attroff(COLOR_PAIR(orb_boundary_color));
 
 
             }
@@ -893,16 +988,16 @@ void draw_UI(PlayerStats& playerStats) {
     attron(COLOR_PAIR(player_color));
 
     //draw level and class name
-    mvprintw(y+1, x, "%s",
+    mvprintw(LINES-4, x, "%s",
              player_class.c_str()
             );
-    mvprintw(y+2, x, "LVL%d",
+    mvprintw(LINES-3, x, "LVL%d",
              player_level
             );
     attroff(COLOR_PAIR(player_color));
 
     //draw stats
-    mvprintw(y+4, x, "ATT: %d DEF: %d SPD: %d",
+    mvprintw(LINES-1, x, "STR:%d WIL:%d DEX:%d",
              playerStats.attack,
              playerStats.defense,
              playerStats.speed
@@ -912,7 +1007,8 @@ void draw_UI(PlayerStats& playerStats) {
     x = 2;
 
     //draw combat log
-    int log_size = min(LINES - 3, static_cast<int>(combat_log.size()));
+    int log_size = min(LINES - orb_diameter - 2, static_cast<int>(combat_log.size()));
+
 
     for (int i = 0; i < log_size; i++) {
         mvprintw(y + i, x, combat_log[combat_log.size() - log_size + i].c_str());
@@ -1099,6 +1195,7 @@ int main() {
 
     initscr();
     log(DEV_LOG_FILE, "initialized screen");
+    int frame_count = 0;
 
     start_color();
     init_all_color_pairs();
@@ -1164,7 +1261,7 @@ int main() {
 
     log(DEV_LOG_FILE, "selected player class");
 
-    PlayerStats playerStats = {0,"EMPTY_PLACEHOLDER",PLAYER_MAX_HP,
+    PlayerStats playerStats = {0,"EMPTY_PLACEHOLDER",PLAYER_MAX_HP,PLAYER_MAX_EP,
                                playerAttack, playerDefense, playerSpeed};
     playerStats.level = get_player_level(playerStats);
     playerStats.class_name = get_player_class_name(playerStats);
@@ -1200,11 +1297,12 @@ int main() {
     entityManager.getPlayerStats()[playerEntity] = playerStats;
     log(DEV_LOG_FILE, "initialized entity manager");
 
-    int item_count = 0.7 * HEIGHT * WIDTH / ((HEIGHT+WIDTH)/2);
-    int monster_count = 1.25 * HEIGHT * WIDTH / ((HEIGHT+WIDTH)/2);
+    int item_count = round(0.1 * HEIGHT * WIDTH / 100);
+    int monster_count = round(0.2 * HEIGHT * WIDTH /100);
 
     spawn_items(item_count ,entityManager, game_map);
     spawn_monsters(monster_count, entityManager, game_map);
+
     MonsterSystem monsterSystem(entityManager, game_map, playerStats);
     log(DEV_LOG_FILE, "spawned items and monsters");
 
@@ -1228,7 +1326,7 @@ int main() {
 
         // get player fov
         set<pair<int, int>> player_fov = calculate_fov(
-            game_map, player_x, player_y, PLAYER_FOV_RADIUS * playerStats.speed
+            game_map, player_x, player_y, PLAYER_FOV_RADIUS + playerStats.speed
         );
         // // Set player fov to visible and visited
         // for ( pair<int,int> coords : player_fov) {
@@ -1249,8 +1347,8 @@ int main() {
                 draw_buffer.push_back(make_pair(ch, make_pair(y, x)));
 
                 if (is_in_set({x, y}, player_fov)) {
+                    game_map[x][y].visited = true;//if (check_if_in(WALL_TILES, game_map[x][y].ch)) game_map[x][y].visited = true;
                     game_map[x][y].visible = true;
-                    game_map[x][y].visited = true;
 
                 }
 
@@ -1310,7 +1408,7 @@ int main() {
         }
 
         entityManager.getPlayerStats()[playerEntity] = playerStats;
-        int memory_radius = pow(PLAYER_FOV_RADIUS, 3) * playerStats.defense   ;
+        int memory_radius = PLAYER_MEMORY_RADIUS * playerStats.defense;
 
         // Forget distant visited tiles
         for (int i = 0; i < 360; ++i) {
@@ -1409,31 +1507,35 @@ int main() {
                 // Player attack
                 auto& playerPosition = positions[playerEntity];
                 auto& monsters = entityManager.getMonsterComponents();
+                if (playerStats.energy >= 10) {
+                    for (const auto& entry : monsters) {
+                        Entity monsterEntity = entry.first;
+                        PositionComponent& monsterPosition = positions[monsterEntity];
+                        MonsterComponent& monster = monsters[monsterEntity];
 
-                for (const auto& entry : monsters) {
-                    Entity monsterEntity = entry.first;
-                    PositionComponent& monsterPosition = positions[monsterEntity];
-                    MonsterComponent& monster = monsters[monsterEntity];
+                        if (abs(playerPosition.x - monsterPosition.x) <= playerStats.speed
+                        && abs(playerPosition.y - monsterPosition.y) <= playerStats.speed
+                        && is_in_set({monsterPosition.x, monsterPosition.y}, player_fov) ) {
+                            int damage = get_random_int(0, playerStats.attack);
+                            monster.health -= damage;
 
-                    if (abs(playerPosition.x - monsterPosition.x) <= playerStats.speed
-                    && abs(playerPosition.y - monsterPosition.y) <= playerStats.speed
-                    && is_in_set({monsterPosition.x, monsterPosition.y}, player_fov) ) {
-                        int damage = get_random_int(0, playerStats.attack);
-                        monster.health -= damage;
+                            if (damage > 0) {
+                                add_combat_log("Player dealt " + to_string(damage) + " damage to a monster.");
+                            } else {
+                                add_combat_log("Player's attack was blocked by a monster.");
+                            }
 
-                        if (damage > 0) {
-                            add_combat_log("Player dealt " + to_string(damage) + " damage to a monster.");
-                        } else {
-                            add_combat_log("Player's attack was blocked by a monster.");
+                            if (monster.health <= 0) {
+                                add_combat_log("Player has defeated a monster.");
+                                entityManager.destroyEntity(monsterEntity);
+                            }
+                            break;
                         }
-
-                        if (monster.health <= 0) {
-                            add_combat_log("Player has defeated a monster.");
-                            entityManager.destroyEntity(monsterEntity);
-                        }
-                        break;
                     }
+                    playerStats.energy -= 10;
+
                 }
+
             } else if (key == 'e' ) {
                 //player interact
                 auto& playerPosition = positions[playerEntity];
@@ -1473,6 +1575,24 @@ int main() {
 
         //actually render
         doupdate();
+        frame_count ++;
+        if (frame_count % FPS == 0) {// runs every second
+            //replenish health
+            playerStats.health = min(PLAYER_MAX_HP, playerStats.health + min(15,playerStats.attack/10));
+            //replenish mana
+            playerStats.energy = min(PLAYER_MAX_EP, playerStats.energy + min(15,5+playerStats.defense/10));
+
+        }
+
+        if (frame_count % (275*FPS/100) == 0) {//runs every few seconds
+            //clear ui
+            while (combat_log.size() > UI_LOG_COUNT){
+                combat_log.erase(combat_log.begin());//cull to ui log size
+            }
+            if (!combat_log.empty()) {
+                combat_log.erase(combat_log.begin());
+            }
+        }
 
         //clear draw_buffer
         draw_buffer.clear();
