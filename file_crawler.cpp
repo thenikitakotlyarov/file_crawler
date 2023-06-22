@@ -703,9 +703,9 @@ public:
 
 
 
-void spawn_monsters(int monster_count, EntityManager& entityManager, vector<vector<Tile>>& game_map) {
+void spawn_monsters(int count, float rating, EntityManager& entityManager, vector<vector<Tile>>& game_map) {
     log(DEV_LOG_FILE, "spawning monsters");
-    for (int i = 0; i < monster_count; ++i) {
+    for (int i = 0; i < count; ++i) {
         int x, y;
         do {
             x = get_random_int(0, WIDTH - 1);
@@ -714,10 +714,10 @@ void spawn_monsters(int monster_count, EntityManager& entityManager, vector<vect
         Entity monsterEntity = entityManager.createEntity();
         entityManager.getPositions()[monsterEntity] = {x, y};
         
-        pair<int, int> chase_dis = {7, 25};
-        pair<int, int> attack_range_dis = {1, 7};
-        pair<int, int> attack_power_dis = {1, 20};
-        pair<int, int> health_dis = {5, 25};
+        pair<int, int> chase_dis = {rating*7, rating*25};
+        pair<int, int> attack_range_dis = {rating*1, rating*7};
+        pair<int, int> attack_power_dis = {rating*1, rating*20};
+        pair<int, int> health_dis = {rating*5, rating*25};
         
         entityManager.getAIComponents()[monsterEntity] = {
             get_random_int(chase_dis.first,chase_dis.second),
@@ -1299,10 +1299,11 @@ int main() {
 
     int item_count = round(0.1 * HEIGHT * WIDTH / 100);
     int monster_count = round(0.2 * HEIGHT * WIDTH /100);
+    float monster_difficulty = 1.0;
 
     spawn_items(item_count ,entityManager, game_map);
-    spawn_monsters(monster_count, entityManager, game_map);
-
+    spawn_monsters(monster_count, monster_difficulty, entityManager, game_map);
+    monster_count = monster_count/10;//rescale for difficulty progression handled in player-level-up logic later
     MonsterSystem monsterSystem(entityManager, game_map, playerStats);
     log(DEV_LOG_FILE, "spawned items and monsters");
 
@@ -1347,7 +1348,7 @@ int main() {
                 draw_buffer.push_back(make_pair(ch, make_pair(y, x)));
 
                 if (is_in_set({x, y}, player_fov)) {
-                    game_map[x][y].visited = true;//if (check_if_in(WALL_TILES, game_map[x][y].ch)) game_map[x][y].visited = true;
+                    if (check_if_in(WALL_TILES, game_map[x][y].ch)) game_map[x][y].visited = true;//game_map[x][y].visited = true;//
                     game_map[x][y].visible = true;
 
                 }
@@ -1431,6 +1432,10 @@ int main() {
             playerStats.level = player_level;
             playerStats.class_name = get_player_class_name(playerStats);
             entityManager.getPlayerStats()[playerEntity] = playerStats;
+            monster_count = monster_count * 12 /10;
+            monster_difficulty = monster_difficulty * 12 /10;
+
+            spawn_monsters(monster_count,monster_difficulty,entityManager,game_map);//congrats the player with friends!
 
         }
 
