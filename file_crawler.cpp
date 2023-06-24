@@ -1891,7 +1891,8 @@ int main() {
                 // Player attack
                 auto& playerPosition = positions[playerEntity];
                 auto& monsters = entityManager.getMonsterComponents();
-                if (playerStats.energy >=7) {
+                if (playerStats.energy >=2) {
+                    playerStats.energy -= 2;
                     for (const auto& entry : monsters) {
                         const int player_max_arc = playerStats.attack/10;
                         int hit_monsters = 0;
@@ -1901,7 +1902,8 @@ int main() {
 
                         if (abs(playerPosition.x - monsterPosition.x) <= playerStats.speed
                         && abs(playerPosition.y - monsterPosition.y) <= playerStats.speed
-                        && is_in_set({monsterPosition.x, monsterPosition.y}, player_fov) ) {
+                        && is_in_set({monsterPosition.x, monsterPosition.y}, player_fov)
+                        && playerStats.energy >= 5 ) {
                             playerStats.energy -= 5;
                             int damage = get_random_int(0, playerStats.attack);
                             monster.health -= damage;
@@ -1922,8 +1924,6 @@ int main() {
                             if (hit_monsters>player_max_arc) break;
                         }
                     }
-                playerStats.energy -= 2;
-
                 }
 
             } else if (key == 'e' ) {
