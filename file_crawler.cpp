@@ -72,17 +72,18 @@ const int PLAYER_FOOTSTEP_SOUND_COUNT = 6;
 const vector<wstring> GROUND_TILES = {L"⠁",L"⠂",L"⠃",L"⠄",L"⠅",L"⠆",L"⠇",L"⠈",L"⠉",L"⠊",L"⠋",L"⠌",L"⠍",L"⠎",L"⠏",L"⠐",L"⠑",L"⠒",L"⠓",L"⠔",L"⠕",L"⠖",L"⠗",L"⠘",L"⠙",L"⠚",L"⠛",L"⠜",L"⠝",L"⠞",L"⠟",L"⠠",L"⠡",L"⠢",L"⠣",L"⠤",L"⠥",L"⠦",L"⠧",L"⠨",L"⠩",L"⠪",L"⠫",L"⠬",L"⠭",L"⠮",L"⠯",L"⠰",L"⠱",L"⠲",L"⠳",L"⠴",L"⠵",L"⠶",L"⠷",L"⠸",L"⠹",L"⠺",L"⠻",L"⠼",L"⠽",L"⠾",L"⠿",L"⡀",L"⡁",L"⡂",L"⡃",L"⡄",L"⡅",L"⡆",L"⡇",L"⡈",L"⡉",L"⡊",L"⡋",L"⡌",L"⡍",L"⡎",L"⡏",L"⡐",L"⡑",L"⡒",L"⡓",L"⡔",L"⡕",L"⡖",L"⡗",L"⡘",L"⡙",L"⡚",L"⡛",L"⡜",L"⡝",L"⡞",L"⡟",L"⡠",L"⡡",L"⡢",L"⡣",L"⡤",L"⡥",L"⡦",L"⡧",L"⡨",L"⡩",L"⡪",L"⡫",L"⡬",L"⡭",L"⡮",L"⡯",L"⡰",L"⡱",L"⡲",L"⡳",L"⡴",L"⡵",L"⡶",L"⡷",L"⡸",L"⡹",L"⡺",L"⡻",L"⡼",L"⡽",L"⡾",L"⡿",L"⢀",L"⢁",L"⢂",L"⢃",L"⢄",L"⢅",L"⢆",L"⢇",L"⢈",L"⢉",L"⢊",L"⢋",L"⢌",L"⢍",L"⢎",L"⢏",L"⢐",L"⢑",L"⢒",L"⢓",L"⢔",L"⢕",L"⢖",L"⢗",L"⢘",L"⢙",L"⢚",L"⢛",L"⢜",L"⢝",L"⢞",L"⢟",L"⢠",L"⢡",L"⢢",L"⢣",L"⢤",L"⢥",L"⢦",L"⢧",L"⢨",L"⢩",L"⢪",L"⢫",L"⢬",L"⢭",L"⢮",L"⢯",L"⢰",L"⢱",L"⢲",L"⢳",L"⢴",L"⢵",L"⢶",L"⢷",L"⢸",L"⢹",L"⢺",L"⢻",L"⢼",L"⢽",L"⢾",L"⢿",L"⣀",L"⣁",L"⣂",L"⣃",L"⣄",L"⣅",L"⣆",L"⣇",L"⣈",L"⣉",L"⣊",L"⣋",L"⣌",L"⣍",L"⣎",L"⣏",L"⣐",L"⣑",L"⣒",L"⣓",L"⣔",L"⣕",L"⣖",L"⣗",L"⣘",L"⣙",L"⣚",L"⣛",L"⣜",L"⣝",L"⣞",L"⣟",L"⣠",L"⣡",L"⣢",L"⣣",L"⣤",L"⣥",L"⣦",L"⣧",L"⣨",L"⣩",L"⣪",L"⣫",L"⣬",L"⣭",L"⣮",L"⣯",L"⣰",L"⣱",L"⣲",L"⣳",L"⣴",L"⣵",L"⣶",L"⣷",L"⣸",L"⣹",L"⣺",L"⣻",L"⣼",L"⣽",L"⣾",L"⣿"};
 
 
-const vector<wstring> WALL_TILES = {L"▀",L"▁",L"▂",L"▃",L"▄",L"▅",L"▆",L"▇",L"█",L"▉",L"▊",L"▋",L"▌",L"▍",L"▎",L"▏",L"▐",L"░",L"▒",L"▓",L"▔",L"▕",L"▖",L"▗",L"▘",L"▙",L"▚",L"▛",L"▜",L"▝",L"▞",L"▟"};
+const vector<wstring> WALL_TILES = {L"▓"};
 
-const vector<wstring> TRAP_TILES = {L"&",L"#",L"人"};
+const vector<wstring> TRAP_TILES = {L"¤", L"¶", L"§", L"‡", L"†", L"‽", L"∮", L"∯", L"∱", L"∲", L"∳"};
 const vector<wstring> VOID_TILES = {L" "};
 
 
 const wstring PLAYER_TILE = L"ᚤ";
 
-const vector<wstring> MONSTER_LOW_HP_TILES = {L"亡", L"亢", L"四", L"五", L"六", L"七", L"八", L"九", L"口", L"日", L"月", L"木", L"水", L"火", L"竹", L"卩", L"廾", L"心", L"攵", L"文", L"斗", L"斤", L"方", L"无", L"曰", L"欠", L"歹", L"殳", L"毋", L"比", L"毛", L"氏"};
-const vector<wstring> MONSTER_MID_HP_TILES = {L"手", L"卯", L"米", L"虍", L"马", L"羊", L"羽", L"回", L"民", L"生", L"用", L"田", L"白", L"皮", L"目", L"矛", L"石", L"示", L"禾", L"立", L"老", L"而", L"耒", L"聿", L"肉", L"臣", L"自", L"至", L"臼", L"舌", L"舛", L"舟", L"艮", L"色", L"虎", L"血", L"行", L"衣", L"西", L"見", L"角", L"言", L"谷", L"豆", L"豕", L"豸", L"貝", L"赤", L"走", L"足", L"身", L"車", L"齐", L"辛", L"亿", L"仄", L"仅", L"仆", L"仇", L"今", L"介", L"仍", L"从", L"仑", L"仓", L"仔", L"仕", L"他", L"付", L"仙", L"仝", L"令", L"以", L"仪"};
-const vector<wstring> MONSTER_HIGH_HP_TILES = {L"麦", L"黄", L"黍", L"黑", L"黹", L"黽", L"鼠", L"鼻", L"齿", L"龍", L"龠", L"亀", L"龟", L"亜", L"亞", L"交", L"亦", L"亨", L"亩", L"享", L"京", L"亭", L"亮", L"亲"};
+const vector<wstring> MONSTER_LOW_HP_TILES = {L"а", L"б", L"в", L"г", L"д", L"е", L"ж", L"з", L"и", L"к", L"л", L"м", L"н", L"о", L"п", L"р", L"с", L"т", L"у", L"ф", L"х", L"ц", L"ч", L"ш", L"щ", L"ъ", L"ы", L"ь", L"э", L"ю", L"я", L"і", L"ї", L"є"};
+const vector<wstring> MONSTER_MID_HP_TILES = {L"α", L"β", L"γ", L"δ", L"ε", L"ζ", L"η", L"θ", L"ι", L"κ", L"λ", L"μ", L"ν", L"ξ", L"ο", L"π", L"ρ", L"ς", L"σ", L"τ", L"υ", L"φ", L"χ", L"ψ", L"ω", L"ά", L"έ", L"ή", L"ί", L"ό", L"ύ", L"ώ", L"ϑ", L"ϒ", L"ϓ", L"ϔ"};
+const vector<wstring> MONSTER_HIGH_HP_TILES = {L"آ", L"أ", L"إ", L"ء", L"ؤ", L"ئ", L"ب", L"ت", L"ث", L"ج", L"ح", L"خ", L"د", L"ذ", L"ر", L"ز", L"س", L"ش", L"ص", L"ض", L"ط", L"ظ", L"ع", L"غ", L"ـ", L"ف", L"ق", L"ك", L"ل", L"م", L"ن"};
+
 
 
 /*_                   _
@@ -234,6 +235,7 @@ struct Tile {
     short color;
     bool visited;
     bool visible;
+    int z;
 };
 
 bool is_a_good_map(const vector<vector<Tile>> potential_map) {
@@ -282,7 +284,8 @@ vector<vector<Tile>> generate_game_map() {
         for (int x = 0; x < WIDTH; ++x) {
             wstring ch = get_random_character(VOID_TILES);
             short color = get_color_pair_index(COLOR_WHITE,COLOR_BLACK);
-            Tile void_tile = {ch, color, false, false};
+            int height;
+            Tile void_tile = {ch, color, false, false, 0};
             game_map[x][y] = void_tile;
             double value = perlin.GetValue(x / 10.0, y / 10.0, 0.0);
 
@@ -290,15 +293,18 @@ vector<vector<Tile>> generate_game_map() {
             if (value < 0.2) {
                 ch = get_random_character(GROUND_TILES);
                 color = get_tile_color(ground_swatch);
+                height = 0;
             } else if (value < 0.21) {
                 ch = get_random_character(TRAP_TILES);
                 color = get_tile_color(trap_swatch);
+                height = 0;
             } else if (value < 0.8) {
                 ch = get_random_character(WALL_TILES);
                 color = get_tile_color(wall_swatch);
+                height = get_random_int(0,5);
             }
 
-            Tile this_tile = {ch, color, false, false};
+            Tile this_tile = {ch, color, false, false, height};
             game_map[x][y] = this_tile;
         }
     }
@@ -343,7 +349,8 @@ vector<vector<Tile>> generate_game_map() {
             if (!visited[x][y] && check_if_in(GROUND_TILES, game_map[x][y].ch)) {
                 wstring ch = get_random_character(WALL_TILES);
                 short color = get_tile_color(wall_swatch);
-                Tile this_tile = {ch, color, false, false};
+                int height = get_random_int(0,5);
+                Tile this_tile = {ch, color, false, false, height};
                 game_map[x][y] =  this_tile;
             }
         }
@@ -353,14 +360,14 @@ vector<vector<Tile>> generate_game_map() {
     for (int x = 0; x < WIDTH; ++x) {
         wstring ch = get_random_character(WALL_TILES);
         short color = get_tile_color(wall_swatch);
-        Tile this_tile = {ch, color, false, false};
+        Tile this_tile = {ch, color, false, false, 0};
         game_map[x][0] = this_tile;
         game_map[x][HEIGHT - 1] = this_tile;
     }
     for (int y = 0; y < HEIGHT; ++y) {
         wstring ch = get_random_character(WALL_TILES);
         short color = get_tile_color(wall_swatch);
-        Tile this_tile = {ch, color, false, false};
+        Tile this_tile = {ch, color, false, false, 0};
         game_map[0][y] = this_tile;
         game_map[WIDTH - 1][y] = this_tile;
     }
@@ -368,129 +375,6 @@ vector<vector<Tile>> generate_game_map() {
 
     return game_map;
 }
-
-
-/*
-vector<vector<Tile>> generate_game_map() {
-    log(DEV_LOG_FILE, "called generate_game_map");
-    int i = 1;
-
-
-
-
-
-    bool made = false;
-
-    vector<vector<Tile>> game_map(WIDTH, vector<Tile>(HEIGHT));
-
-    while (!made) {
-
-        log(DEV_LOG_FILE, "attempt ", i);
-        vector<vector<Tile>> game_map(WIDTH, vector<Tile>(HEIGHT));
-
-
-        vector<int> ground_swatch = get_ground_swatch();
-        vector<int> trap_swatch = get_trap_swatch();
-        vector<int> wall_swatch = get_wall_swatch();
-
-
-        // Generate open areas using Perlin noise
-        for (int y = 0; y < HEIGHT; ++y) {
-            for (int x = 0; x < WIDTH; ++x) {
-                wstring ch = get_random_character(VOID_TILES);
-                short color = get_color_pair_index(COLOR_WHITE,COLOR_BLACK);
-                Tile void_tile = {ch, color, false, false};
-                game_map[x][y] = void_tile;
-                double value = perlin.GetValue(x / 10.0, y / 10.0, 0.1);
-
-
-                if (value < 0.2) {
-                    ch = get_random_character(GROUND_TILES);
-                    color = get_tile_color(ground_swatch);
-                } else if (value < 0.21) {
-                    ch = get_random_character(TRAP_TILES);
-                    color = get_tile_color(trap_swatch);
-                } else if (value < 0.8) {
-                    ch = get_random_character(WALL_TILES);
-                    color = get_tile_color(wall_swatch);
-                }
-
-                Tile this_tile = {ch, color, false, false};
-                game_map[x][y] = this_tile;
-            }
-        }
-
-        // Flood fill to ensure all open areas are connected to an edge
-        vector<vector<bool>> visited(WIDTH, vector<bool>(HEIGHT, false));
-        queue<pair<int, int>> q;
-
-        // Start flood fill from a random point on top edge
-        int initial_x = get_random_int(1, WIDTH-1);
-        int initial_y = get_random_int(1, HEIGHT-1);
-        while (!check_if_in(GROUND_TILES, game_map[initial_x][initial_y].ch)) {
-            initial_x += max(1,min(WIDTH-1,get_random_int(-1,1)));
-            initial_y += max(1,min(HEIGHT-1,get_random_int(-1,1)));
-        }
-        visited[initial_x][initial_y] = true;
-        q.push({initial_x, initial_y});
-
-        // Perform flood fill
-        while (!q.empty()) {
-            int x = q.front().first;
-            int y = q.front().second;
-            q.pop();
-
-            // Check neighboring cells
-            const vector<pair<int, int>> neighbors = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-            for (const auto& neighbor : neighbors) {
-                int nx = x + neighbor.first;
-                int ny = y + neighbor.second;
-
-                // Check if neighbor is within bounds and an open area
-                if (nx >= 0 && nx < WIDTH && ny >= 0 && ny < HEIGHT && check_if_in(GROUND_TILES, game_map[nx][ny].ch) && !visited[nx][ny]) {
-                    visited[nx][ny] = true;
-                    q.push({nx, ny});
-                }
-            }
-        }
-
-        // Convert unvisited cells to closed spaces
-        for (int y = 0; y < HEIGHT; ++y) {
-            for (int x = 0; x < WIDTH; ++x) {
-                if (!visited[x][y] && check_if_in(GROUND_TILES, game_map[x][y].ch)) {
-                    wstring ch = get_random_character(WALL_TILES);
-                    short color = get_tile_color(wall_swatch);
-                    Tile this_tile = {ch, color, false, false};
-                    game_map[x][y] =  this_tile;
-                }
-            }
-        }
-
-        // Draw a border around the game_map
-        for (int x = 0; x < WIDTH; ++x) {
-            wstring ch = get_random_character(WALL_TILES);
-            short color = get_tile_color(wall_swatch);
-            Tile this_tile = {ch, color, false, false};
-            game_map[x][0] = this_tile;
-            game_map[x][HEIGHT - 1] = this_tile;
-        }
-        for (int y = 0; y < HEIGHT; ++y) {
-            wstring ch = get_random_character(WALL_TILES);
-            short color = get_tile_color(wall_swatch);
-            Tile this_tile = {ch, color, false, false};
-            game_map[0][y] = this_tile;
-            game_map[WIDTH - 1][y] = this_tile;
-        }
-        if (is_a_good_map(game_map)) {
-            made = true;
-        }
-
-        i++;
-
-    }
-
-    return game_map;
-}*/
 
 
 /*___      _   _     __ _         _ _
@@ -1158,8 +1042,8 @@ void render_buffer(
         short color = get_color_pair_index(COLOR_BLACK,entity.second.second);
         if (ch == PLAYER_TILE) py = y, px = x, player_color = color;
         if (x < 0 || x >= COLS || y < 0 || y >= LINES-3) continue;
-        frame[y][x].first = ch, frame[y][x].second = color;
     }
+
 
     for (const auto& tile : draw_buffer) {
         int y = tile.second.first;
@@ -1176,12 +1060,45 @@ void render_buffer(
             color = get_color_pair_index(8, COLOR_BLACK);
         }
 
-        if (X < 0 || X >= COLS || Y < 0 || Y >= LINES-3) continue;
-        if (frame[Y][X].first == L"?") frame[Y][X] = make_pair(ch, color);
+        if ((X < 0 || X >= COLS || Y < 0 || Y >= LINES-3))continue;
+        frame[Y][X] = make_pair(ch, color);//if (frame[Y][X].first == L"?")
+
+        int degrade = 0;
+        if (Y <= py + 12) {
+            for ( int h = 1; h <= game_map[x][y].z; ++h) {
+                if (Y-h+degrade/2 < 0 || Y+h-degrade/2 >= LINES-3) continue;
+                if (h > 2) {
+                    ch = L"▒";
+                } else if (h > 5 ) {
+                    ch = L"░";
+                }
+                frame[Y-h+degrade/2][X] = make_pair(ch, color);//if (frame[Y][X].first == L"?")
+                if (Y > py) {
+                    degrade++;
+                }
+
+            }
+        }
     }
 
-    //draw player last
-    frame[py][px] = make_pair(PLAYER_TILE, player_color);
+
+    for (const auto& entity: entities) {
+        int y = entity.first.first - start_y;
+        int x = entity.first.second - start_x;
+        if (py == y && px == x) continue;
+        wstring ch = entity.second.first;
+        short color = get_color_pair_index(COLOR_BLACK,entity.second.second);
+        if (x < 0 || x >= COLS || y < 0 || y >= LINES-3) continue;
+        if (!check_if_in(GROUND_TILES, game_map[x+start_x][y+start_y].ch)) continue;
+        frame[y][x].first = ch, frame[y][x].second = color;
+    }
+
+
+    //draw player last if not behind wall
+    if (check_if_in(GROUND_TILES, frame[py][px].first)) {
+        frame[py][px] = make_pair(PLAYER_TILE, player_color);
+    }
+
 
 
     // Render frame
@@ -1508,7 +1425,7 @@ vector<int> set_player_class(const int classChoice) {
 
 pair<int, int> get_player_spawn_coords(vector<vector<Tile>> game_map, EntityManager& entityManager) {
     int x = get_random_int(1, WIDTH-1), y = get_random_int(1, HEIGHT-1);
-    int no_monster_radius = 15, no_monster_min = 1;
+    int no_monster_radius = 17, no_monster_min = 3;
 
     auto& positions = entityManager.getPositions();
     auto& monsters = entityManager.getMonsterComponents();
