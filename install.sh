@@ -24,6 +24,12 @@ if [[ "$OS" == "Linux" ]]; then
         sudo dnf update
         sudo dnf install -y ncurses libnoise openssl openssl-devel SDL2 SDL2_mixer libstdc++ libgcc
         echo "Linux dependencies installed."
+    elif command -v pacman &>/dev/null; then
+        # Pacman package manager (Arch, Manjaro, Garuda Linux, etc.)
+        echo "Installing Linux dependencies using Pacman..."
+        sudo pacman -Syu
+        sudo pacman -S ncurses libnoise openssl libssl crypto++ sdl2 sdl2_mixer gcc-libs
+        echo "Linux dependencies installed."
     else
         echo "Unsupported Linux package manager."
         exit 1
@@ -53,4 +59,3 @@ fi
 # Run your game
 echo "Running the game..."
 ./file_crawler
-
