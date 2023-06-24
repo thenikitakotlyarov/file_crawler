@@ -42,7 +42,15 @@ using namespace std;
 #+#    #+# #+#    #+# #+#     #+#  #+#+# #+#+#  #+#        #+#        #+#    #+#
  ########  ###    ### ###     ###   ###   ###   ########## ########## ###    ###
 */
-// v0.7x
+// v0.8x
+
+
+
+/* ___             _            _
+  / __|___ _ _  __| |_ __ _ _ _| |_ ___
+ | (__/ _ \ ' \(_-<  _/ _` | ' \  _(_-<
+  \___\___/_||_/__/\__\__,_|_||_\__/__/
+ section:constants */
 
 const string DEV_LOG_FILE = "dev_log.txt";
 const string GAME_LOG_FILE = "game_log.txt";
@@ -61,32 +69,39 @@ Mix_Chunk* PLAYER_FOOTSTEP_SOUND = nullptr;
 const int PLAYER_FOOTSTEP_SOUND_COUNT = 6;
 
 const vector<char> GROUND_TILES = {'.',',','`','"'};
-const vector<char> WALL_TILES = {'[',']','{','}','=','|'};
+const vector<char> WALL_TILES = {'[',']','{','}','=','|','+','-','_','/','\\',};
 const vector<char> TRAP_TILES = {'&','#'};
 const vector<char> VOID_TILES = {' '};
 
 
 const char PLAYER_TILE = '@';
-const vector<char> MONSTER_TILES = {
-    'M','N','m','n','r','i'
-};
-const vector<char> ITEM_TILES = {
-    'o','O','0','s','S','7','d','D','8','a','A','9'
-};
 
-vector<char> get_entity_tiles() {
-    vector<char> tiles;
-    tiles.insert(tiles.end(), MONSTER_TILES.begin(), MONSTER_TILES.end());
-    tiles.insert(tiles.end(), ITEM_TILES.begin(), ITEM_TILES.end());
-    tiles.push_back(PLAYER_TILE);
-    return tiles;
-}
-vector<char> ENTITY_TILES = get_entity_tiles();
 
+// const vector<char> MONSTER_TILES = {
+//     'Z','S',
+// };
+// const vector<char> ITEM_TILES = {
+//     'o','O','0','s','S','7','d','D','8','a','A','9'
+// };
+
+// vector<char> get_entity_tiles() {
+//     vector<char> tiles;
+//     tiles.insert(tiles.end(), MONSTER_TILES.begin(), MONSTER_TILES.end());
+//     tiles.insert(tiles.end(), ITEM_TILES.begin(), ITEM_TILES.end());
+//     tiles.push_back(PLAYER_TILE);
+//     return tiles;
+// }
+// vector<char> ENTITY_TILES = get_entity_tiles();
+
+
+/*_                   _
+ | |   ___  __ _ __ _(_)_ _  __ _
+ | |__/ _ \/ _` / _` | | ' \/ _` |
+ |____\___/\__, \__, |_|_||_\__, |
+           |___/|___/       |___/
+ section:logging */
 
 vector<string> combat_log;
-
-
 
 template<typename... Args>
 void log(const string filename, Args&&... args) {
@@ -121,7 +136,12 @@ void add_combat_log(const string& message) {
 }
 
 
-// AUDIO
+/*  _          _ _
+   /_\ _  _ __| (_)___
+  / _ \ || / _` | / _ \
+ /_/ \_\_,_\__,_|_\___/
+ section:audio */
+
 void playFootstepSound() {
 
     // Generate a random number between 1 and maximum sound file index
@@ -147,7 +167,13 @@ void playFootstepSound() {
     // Mix_FreeChunk(footstepSound);
 }
 
-// COLOR SETUP
+
+/* ___               _    _
+  / __|_ _ __ _ _ __| |_ (_)__ ___
+ | (_ | '_/ _` | '_ \ ' \| / _(_-<
+  \___|_| \__,_| .__/_||_|_\__/__/
+ section:graphics */
+
 vector<short> generate_palette(int seed) {
     log(DEV_LOG_FILE, "called generate_palette with seed as ", seed);
     // Assumes all color pairs have been initialized.
@@ -175,21 +201,27 @@ vector<short> generate_palette(int seed) {
 vector<int> get_ground_swatch() {
     vector<vector<int>> options = {
         {3,4},  //green, yellow
-        {2,4}   //red, yellow
+        {2,4},   //red, yellow
+        {12,3}   //brown, green
     };
     return options[get_random_int(0,options.size() - 1)];
 }
 
 vector<int> get_trap_swatch() {
     vector<vector<int>> options= {
-        {5,7}   //blue, cyan
+        {5,7},   //blue, cyan
+        {2,1},   //red, black
+        {9,6}    //orange, magenta
     };
     return options[get_random_int(0,options.size() - 1)];
 }
 
 vector<int> get_wall_swatch() {
     vector<vector<int>> options= {
-        {5,7}   //blue, cyan
+        {5,7},   //blue, cyan
+        {8,12},  //white, grey
+        {1,11},  //black, brown
+        {4,10}   //yellow, purple
     };
     return options[get_random_int(0,options.size() - 1)];
 }
@@ -199,6 +231,11 @@ int get_tile_color(const vector<int> swatch) {
 }
 
 
+/* ___                       _   _
+  / __|___ _ _  ___ _ _ __ _| |_(_)___ _ _
+ | (_ / -_) ' \/ -_) '_/ _` |  _| / _ \ ' \
+  \___\___|_||_\___|_| \__,_|\__|_\___/_||_|
+ section:generation */
 
 // MAP GEN
 struct Tile {
@@ -207,6 +244,38 @@ struct Tile {
     bool visited;
     bool visible;
 };
+
+bool is_a_good_map(const vector<vector<Tile>> potential_map) {
+    bool looks_good, verified;
+
+    //double-check all the basic shit
+    if (!(potential_map.size() == WIDTH || potential_map[0].size() == HEIGHT)) {
+        looks_good = false;
+    } else {
+        looks_good = true;
+    }
+
+    if (looks_good) {
+        int total_tile_count, ground_tile_count = 0;
+        for (vector<Tile> column : potential_map) {
+            for (Tile tile: column) {
+                total_tile_count++;
+                if (check_if_in(GROUND_TILES, tile.ch)) ground_tile_count++;
+            }
+        }
+
+        float open_space_ratio = 1.0f * ((float)ground_tile_count / total_tile_count);
+        log(DEV_LOG_FILE, "this attempt has ", ground_tile_count,"/",total_tile_count,"(",open_space_ratio, ") air");
+        if (open_space_ratio<0.65f) {
+            verified = false;
+        } else {
+            verified = true;
+        }
+    }
+
+    return verified;
+}
+
 
 vector<vector<Tile>> generate_game_map() {
     log(DEV_LOG_FILE, "called generate_game_map");
@@ -310,8 +379,136 @@ vector<vector<Tile>> generate_game_map() {
 }
 
 
+/*
+vector<vector<Tile>> generate_game_map() {
+    log(DEV_LOG_FILE, "called generate_game_map");
+    int i = 1;
 
-// PATHING AND FOV
+
+
+
+
+    bool made = false;
+
+    vector<vector<Tile>> game_map(WIDTH, vector<Tile>(HEIGHT));
+
+    while (!made) {
+
+        log(DEV_LOG_FILE, "attempt ", i);
+        vector<vector<Tile>> game_map(WIDTH, vector<Tile>(HEIGHT));
+
+
+        vector<int> ground_swatch = get_ground_swatch();
+        vector<int> trap_swatch = get_trap_swatch();
+        vector<int> wall_swatch = get_wall_swatch();
+
+
+        // Generate open areas using Perlin noise
+        for (int y = 0; y < HEIGHT; ++y) {
+            for (int x = 0; x < WIDTH; ++x) {
+                char ch = get_random_character(VOID_TILES);
+                short color = get_color_pair_index(COLOR_WHITE,COLOR_BLACK);
+                Tile void_tile = {ch, color, false, false};
+                game_map[x][y] = void_tile;
+                double value = perlin.GetValue(x / 10.0, y / 10.0, 0.1);
+
+
+                if (value < 0.2) {
+                    ch = get_random_character(GROUND_TILES);
+                    color = get_tile_color(ground_swatch);
+                } else if (value < 0.21) {
+                    ch = get_random_character(TRAP_TILES);
+                    color = get_tile_color(trap_swatch);
+                } else if (value < 0.8) {
+                    ch = get_random_character(WALL_TILES);
+                    color = get_tile_color(wall_swatch);
+                }
+
+                Tile this_tile = {ch, color, false, false};
+                game_map[x][y] = this_tile;
+            }
+        }
+
+        // Flood fill to ensure all open areas are connected to an edge
+        vector<vector<bool>> visited(WIDTH, vector<bool>(HEIGHT, false));
+        queue<pair<int, int>> q;
+
+        // Start flood fill from a random point on top edge
+        int initial_x = get_random_int(1, WIDTH-1);
+        int initial_y = get_random_int(1, HEIGHT-1);
+        while (!check_if_in(GROUND_TILES, game_map[initial_x][initial_y].ch)) {
+            initial_x += max(1,min(WIDTH-1,get_random_int(-1,1)));
+            initial_y += max(1,min(HEIGHT-1,get_random_int(-1,1)));
+        }
+        visited[initial_x][initial_y] = true;
+        q.push({initial_x, initial_y});
+
+        // Perform flood fill
+        while (!q.empty()) {
+            int x = q.front().first;
+            int y = q.front().second;
+            q.pop();
+
+            // Check neighboring cells
+            const vector<pair<int, int>> neighbors = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+            for (const auto& neighbor : neighbors) {
+                int nx = x + neighbor.first;
+                int ny = y + neighbor.second;
+
+                // Check if neighbor is within bounds and an open area
+                if (nx >= 0 && nx < WIDTH && ny >= 0 && ny < HEIGHT && check_if_in(GROUND_TILES, game_map[nx][ny].ch) && !visited[nx][ny]) {
+                    visited[nx][ny] = true;
+                    q.push({nx, ny});
+                }
+            }
+        }
+
+        // Convert unvisited cells to closed spaces
+        for (int y = 0; y < HEIGHT; ++y) {
+            for (int x = 0; x < WIDTH; ++x) {
+                if (!visited[x][y] && check_if_in(GROUND_TILES, game_map[x][y].ch)) {
+                    char ch = get_random_character(WALL_TILES);
+                    short color = get_tile_color(wall_swatch);
+                    Tile this_tile = {ch, color, false, false};
+                    game_map[x][y] =  this_tile;
+                }
+            }
+        }
+
+        // Draw a border around the game_map
+        for (int x = 0; x < WIDTH; ++x) {
+            char ch = get_random_character(WALL_TILES);
+            short color = get_tile_color(wall_swatch);
+            Tile this_tile = {ch, color, false, false};
+            game_map[x][0] = this_tile;
+            game_map[x][HEIGHT - 1] = this_tile;
+        }
+        for (int y = 0; y < HEIGHT; ++y) {
+            char ch = get_random_character(WALL_TILES);
+            short color = get_tile_color(wall_swatch);
+            Tile this_tile = {ch, color, false, false};
+            game_map[0][y] = this_tile;
+            game_map[WIDTH - 1][y] = this_tile;
+        }
+        if (is_a_good_map(game_map)) {
+            made = true;
+        }
+
+        i++;
+
+    }
+
+    return game_map;
+}*/
+
+
+/*___      _   _     __ _         _ _
+ | _ \__ _| |_| |_  / _(_)_ _  __| (_)_ _  __ _
+ |  _/ _` |  _| ' \|  _| | ' \/ _` | | ' \/ _` |
+ |_| \__,_|\__|_||_|_| |_|_||_\__,_|_|_||_\__, |
+                                          |___/
+ section:pathfinding */
+
 struct PositionComponent {
     int x;
     int y;
@@ -427,10 +624,18 @@ vector<Node> aStar(const PositionComponent& start, const PositionComponent& goal
 }
 
 
-// ENTITIES
+
+/* ___                                  _
+  / __|___ _ __  _ __  ___ _ _  ___ _ _| |_ ___
+ | (__/ _ \ '  \| '_ \/ _ \ ' \/ -_) ' \  _(_-<
+  \___\___/_|_|_| .__/\___/_||_\___|_||_\__/__/
+                |_|
+ section:components */
+
 struct PlayerStats {
     int level;
     string class_name;
+    int color;
     int health;
     int energy;
     int attack;
@@ -438,43 +643,51 @@ struct PlayerStats {
     int speed;
 };
 
-// COMPONENTS
-struct AIComponent {
-    int chaseRadius;
-    int attackRadius;
-    int cooldown;
-};
+
 enum class ItemType {
-    SmallPotion,
-    MediumPotion,
-    LargePotion,
-    WeakAttackSerum,
-    NormalAttackSerum,
-    StrongAttackSerum,
-    WeakDefenseSerum,
-    NormalDefenseSerum,
-    StrongDefenseSerum,
-    WeakSpeedSerum,
-    NormalSpeedSerum,
-    StrongSpeedSerum
+    SmallHealthPotion,
+    MediumHealthPotion,
+    LargeHealthPotion,
+    SmallEnergyPotion,
+    MediumEnergyPotion,
+    LargeEnergyPotion,
+    LightRegenPotion,
+    FullRegenPotion,
+    WeakStrengthSerum,
+    StrongStrengthSerum,
+    WeakWillSerum,
+    StrongWillSerum,
+    WeakDexteritySerum,
+    StrongDexteritySerum
 };
 
 struct ItemComponent {
     ItemType type;
     char character;
     string name;
+    int color;
     float rarity;
     function<void(PlayerStats&)> effect;
 };
+
 struct MonsterComponent {
+    char character;
+    string name;
+    int color;
     int attackPower;
     int attackRadius;
+    int chaseRadius;
     int cooldown;
+    int total_health;
     int health;
 };
 
 
-
+/*___     _   _ _   _
+ | __|_ _| |_(_) |_(_)___ ___
+ | _|| ' \  _| |  _| / -_|_-<
+ |___|_||_\__|_|\__|_\___/__/
+ section:entities */
 
 
 using Entity = int;
@@ -484,7 +697,7 @@ private:
     vector<Entity> entities;
     unordered_map<Entity, PositionComponent> positions;
     unordered_map<Entity, PlayerStats> playerStats;
-    unordered_map<Entity, AIComponent> ais;
+    // unordered_map<Entity, AIComponent> ais;
     unordered_map<Entity, MonsterComponent> monsters;
     unordered_map<Entity, ItemComponent> items;
     int nextEntityId;
@@ -504,7 +717,7 @@ public:
             entities.erase(it);
             positions.erase(entity);
             playerStats.erase(entity);
-            ais.erase(entity);
+            // ais.erase(entity);
             monsters.erase(entity);
         }
     }
@@ -521,9 +734,9 @@ public:
         return playerStats;
     }
 
-    unordered_map<Entity, AIComponent>& getAIComponents() {
-        return ais;
-    }
+    // unordered_map<Entity, AIComponent>& getAIComponents() {
+        // return ais;
+    // }
 
     unordered_map<Entity, MonsterComponent>& getMonsterComponents() {
         return monsters;
@@ -535,40 +748,203 @@ public:
 };
 
 
-// ITEMS
+// subsection:player
 
+int get_player_level(PlayerStats& playerStats) {
+    return round((playerStats.attack
+                  + playerStats.defense
+                  + playerStats.speed)
+                 /(9+playerStats.level));
+}
+
+string get_player_class_name(PlayerStats& playerStats) {
+    string class_name;
+
+    if (playerStats.attack > playerStats.defense
+        && playerStats.attack > playerStats.speed) {
+        class_name = "Fighter";//red
+    } else if (playerStats.defense == playerStats.attack
+               && playerStats.defense > playerStats.speed) {
+        class_name = "Cleric";//magenta
+    } else if (playerStats.defense > playerStats.attack
+               && playerStats.defense > playerStats.speed) {
+        class_name = "Wizard";//blue
+    } else if (playerStats.defense == playerStats.speed
+               && playerStats.defense > playerStats.attack) {
+        class_name = "Sorcerer";//cyan
+    } else if (playerStats.speed > playerStats.attack
+               && playerStats.speed > playerStats.defense) {
+        class_name = "Ranger";//green
+    } else if (playerStats.speed == playerStats.attack
+               && playerStats.speed > playerStats.defense) {
+        class_name = "Rogue";//yellow
+    } else if (playerStats.defense == playerStats.attack
+               && playerStats.defense == playerStats.speed) {
+        class_name = "Adventurer";//white
+    }
+
+    return class_name;
+}
+
+
+int get_player_color(PlayerStats& playerStats) {
+    int color;
+
+    if (playerStats.class_name == "Fighter") {
+        color = COLOR_RED;
+    } else if (playerStats.class_name == "Rogue") {
+        color = COLOR_YELLOW;
+    } else if (playerStats.class_name == "Ranger") {
+        color = COLOR_GREEN;
+    } else if (playerStats.class_name == "Sorcerer") {
+        color = COLOR_CYAN;
+    } else if (playerStats.class_name == "Wizard") {
+        color = COLOR_BLUE;
+    } else if (playerStats.class_name == "Cleric") {
+        color = COLOR_MAGENTA;
+    } else if (playerStats.class_name == "Adventurer") {
+        color = COLOR_WHITE;
+    }
+
+    return color;
+}
+
+
+pair<int,int> move_player(EntityManager& entityManager,
+                          PlayerStats& playerStats,
+                          const vector<vector<Tile>>& game_map,
+                          const pair<int,int> direction,
+                          const int sprinting) {
+    log(DEV_LOG_FILE, "player opts to move x", direction.first, ",y", direction.second);
+
+    pair<int,int> delta = {0, 0};
+    int distance = 1;
+    if (sprinting > 0.0f) {
+        distance = min(playerStats.speed,int(pow(sprinting,1.2)));
+    }
+
+    auto& positions = entityManager.getPositions();
+    PositionComponent& playerPosition = positions[0];
+
+    for (int i = 0; i < distance; i++) {
+        int dx = delta.first + direction.first;
+        int dy = delta.second + direction.second;
+        if (check_if_in(GROUND_TILES, game_map[playerPosition.x+dx][playerPosition.y+dy].ch)) {
+            delta = {dx, dy};
+        } else if (check_if_in(TRAP_TILES, game_map[playerPosition.x+dx][playerPosition.y+dy].ch)) {
+            int damage = get_random_int(1,5);
+            playerStats.health -= damage;
+            add_combat_log("Player took " + to_string(damage) + " damage from a trap.");
+            delta = {dx, dy};
+            break;
+        }
+        else {
+            break; // Stop the loop if the player hits a wall
+        }
+    }
+
+    if (sound) {
+        playFootstepSound();
+    }
+
+    return delta;
+
+}
+
+// subsection:items
+
+// enum class ItemType {
+//     SmallHealthPotion,
+//     MediumHealthPotion,
+//     LargeHealthPotion,
+//     SmallEnergyPotion,
+//     MediumEnergyPotion,
+//     LargeEnergyPotion,
+//     LightRegenPotion,
+//     FullRegenPotion,
+//     WeakStrengthSerum,
+//     StrongStrengthSerum,
+//     WeakWillSerum,
+//     StrongWillSerum,
+//     WeakDexteritySerum,
+//     StrongDexteritySerum
+// };
+
+
+// struct ItemComponent {
+//     ItemType type;
+//     char character;
+//     string name;
+//     int color;
+//     float rarity;
+//     function<void(PlayerStats&)> effect;
+// };
+
+
+// we can def load this from a file or smthn
 vector<ItemComponent> itemTemplates = {
-        {ItemType::SmallPotion, 'o', "Small Health Potion",//< item identifier
-            3.0, //< item rarity
-            [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP, stats.health + 5);}},
-            //item ability parms^ item ability ^
-        {ItemType::MediumPotion, 'O', "Medium Health Potion", 1,
+        {ItemType::SmallHealthPotion, //< identifier
+            'o', "Small Health Potion", COLOR_RED, 0.5, //< character, name, color, rarity
+            [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP, stats.health + 5);}}, //< ability
+
+        {ItemType::MediumHealthPotion,
+            'O', "Medium Health Potion", COLOR_RED,0.1,
             [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP,stats.health + 10);}},
-        {ItemType::LargePotion, '0', "Large Health Potion", 0.5,
+
+        {ItemType::LargeHealthPotion,
+            '0', "Large Health Potion",  COLOR_RED, 0.5,
             [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP,stats.health + 25);}},
-        {ItemType::WeakAttackSerum, 'a', "Weak ATT-Serum", 1.0,
+
+        {ItemType::SmallEnergyPotion,
+            'o', "Small Energy Potion", COLOR_BLUE, 0.5,
+            [](PlayerStats& stats) {stats.energy = min(PLAYER_MAX_EP, stats.energy + 5);}},
+
+        {ItemType::MediumEnergyPotion,
+            'O', "Medium Energy Potion", COLOR_BLUE,0.1,
+            [](PlayerStats& stats) {stats.energy = min(PLAYER_MAX_EP,stats.energy + 10);}},
+
+        {ItemType::LargeEnergyPotion,
+            '0', "Large Energy Potion",  COLOR_BLUE, 0.05,
+            [](PlayerStats& stats) {stats.energy = min(PLAYER_MAX_EP,stats.energy + 25);}},
+
+        {ItemType::LightRegenPotion,
+            'O', "Light Regen Potion", COLOR_MAGENTA,0.05,
+            [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP,stats.health + PLAYER_MAX_HP/4),
+                                    stats.energy = min(PLAYER_MAX_EP,stats.energy + PLAYER_MAX_EP/4);}},
+
+        {ItemType::FullRegenPotion,
+            'O', "Full Regen Potion", COLOR_MAGENTA,0.025,
+            [](PlayerStats& stats) {stats.health = PLAYER_MAX_HP,
+                                    stats.energy = PLAYER_MAX_EP;}},
+
+        {ItemType::WeakStrengthSerum,
+            's', "Weak Strength Serum", COLOR_RED, 1.0,
             [](PlayerStats& stats) { stats.attack += 1; }},
-        {ItemType::NormalAttackSerum, 'A', "Normal ATT-Serum", 0.5,
+
+        {ItemType::StrongStrengthSerum,
+            'S', "Strong Strength Serum", COLOR_RED, 0.25,
             [](PlayerStats& stats) { stats.attack += 2; }},
-        {ItemType::StrongAttackSerum, '9', "Strong ATT-Serum", 0.25,
-            [](PlayerStats& stats) { stats.attack += 3; }},
-        {ItemType::WeakDefenseSerum, 'd', "Weak DEF-Serum", 1.0,
+
+        {ItemType::WeakWillSerum,
+            'w', "Weak Will Serum", COLOR_BLUE, 1.0,
             [](PlayerStats& stats) { stats.defense += 1; }},
-        {ItemType::NormalDefenseSerum, 'D', "Normal DEF-Serum", 0.5,
+
+        {ItemType::StrongWillSerum,
+            'W', "Strong  Will Serum", COLOR_BLUE, 0.25,
             [](PlayerStats& stats) { stats.defense += 2; }},
-        {ItemType::StrongDefenseSerum, '8', "Strong DEF-Serum", 0.25,
-            [](PlayerStats& stats) { stats.defense += 3; }},
-        {ItemType::WeakSpeedSerum, 's', "Weak SPD-Serum", 1.0,
+
+        {ItemType::WeakDexteritySerum,
+            'd', "Weak Dexterity Serum", COLOR_GREEN, 1.0,
             [](PlayerStats& stats) { stats.speed += 1; }},
-        {ItemType::NormalSpeedSerum, 'S', "Normal SPD-Serum", 0.5,
-            [](PlayerStats& stats) { stats.speed += 2; }},
-        {ItemType::StrongSpeedSerum, '7', "Strong SPD-Serum", 0.25,
-            [](PlayerStats& stats) { stats.speed += 3; }}
+
+        {ItemType::StrongDexteritySerum,
+            'D', "Strong Dexterity Serum", COLOR_GREEN, 0.25,
+            [](PlayerStats& stats) { stats.speed += 2; }}
     };
 
 
 void spawn_items(int count, EntityManager& entityManager, vector<vector<Tile>>& game_map) {
-    log(DEV_LOG_FILE, "spawning items");
+    log(DEV_LOG_FILE, "spawning ", count, " items");
 
     for (const auto& item : itemTemplates) {
         for (int i = 0; i < item.rarity * count; ++i) {
@@ -584,7 +960,7 @@ void spawn_items(int count, EntityManager& entityManager, vector<vector<Tile>>& 
     }
 }
 
-// MONSTERS
+// subsection:monsters
 class MonsterSystem {
 private:
     EntityManager& entityManager;
@@ -609,7 +985,7 @@ public:
 
             PositionComponent& monsterPosition = positions[entity];
             PositionComponent& playerPosition = positions[0];
-            AIComponent& ai = entityManager.getAIComponents()[entity];
+            // AIComponent& ai = entityManager.getAIComponents()[entity];
             MonsterComponent& monster = monsters[entity];
 
             monster.cooldown = max(0, monster.cooldown - 1);
@@ -617,7 +993,7 @@ public:
             int dy = monsterPosition.y - playerPosition.y;
             double distance = sqrt(dx * dx + dy * dy);
 
-            if (distance <= ai.chaseRadius) {
+            if (distance <= monster.chaseRadius) {
                 log(DEV_LOG_FILE, "monster", entity, " chases player");
 
                 // Get the path from the monster to the player
@@ -668,7 +1044,7 @@ public:
                     monsterPosition.x = new_x;
                     monsterPosition.y = new_y;
 
-                    positions[entity] = monsterPosition;
+                    entityManager.getPositions()[entity] = {monsterPosition.x, monsterPosition.y};
                 }
 
                 log(DEV_LOG_FILE, "checking monster", entity, "'s attack range");
@@ -681,7 +1057,7 @@ public:
                 log(DEV_LOG_FILE, "monster", entity, "'s attack range set");
 
 
-                if (distance <= ai.attackRadius && monster.cooldown == 0
+                if (distance <= monster.attackRadius && monster.cooldown == 0
                     && is_in_set({playerPosition.x, playerPosition.y}, monster_attack_range) ) {
                     log(DEV_LOG_FILE, "monster", entity, " attacks player");
 
@@ -703,6 +1079,20 @@ public:
 
 
 
+// subsection:spawning
+
+// struct MonsterComponent {
+//     char character;
+//     string name;
+//     int color;
+//     int attackPower;
+//     int attackRadius;
+//     int chaseRadius;
+//     int cooldown;
+//     int total_health;
+//     int health;
+// };
+
 void spawn_monsters(int count, float rating, EntityManager& entityManager, vector<vector<Tile>>& game_map) {
     log(DEV_LOG_FILE, "spawning monsters");
     for (int i = 0; i < count; ++i) {
@@ -714,152 +1104,115 @@ void spawn_monsters(int count, float rating, EntityManager& entityManager, vecto
         Entity monsterEntity = entityManager.createEntity();
         entityManager.getPositions()[monsterEntity] = {x, y};
         
-        pair<int, int> chase_dis = {rating*7, rating*25};
-        pair<int, int> attack_range_dis = {rating*1, rating*7};
         pair<int, int> attack_power_dis = {rating*1, rating*20};
+        pair<int, int> attack_range_dis = {rating*1, rating*7};
+        pair<int, int> chase_dis = {rating*7, rating*25};
+        pair<int, int> attack_cooldown_dis = {rating*1, rating*7};
         pair<int, int> health_dis = {rating*5, rating*25};
-        
+
+        const int monster_attack_power = get_random_int(attack_power_dis.first,attack_power_dis.second);
+        const int monster_attack_range = get_random_int(attack_range_dis.first,attack_range_dis.second);
+        const int monster_chase_range = get_random_int(chase_dis.first,chase_dis.second);
+        const int monster_attack_cooldown = FPS*get_random_int(attack_cooldown_dis.first,attack_cooldown_dis.second);
+        const int monster_health = get_random_int(health_dis.first,health_dis.second);
+
+
+
+        /*
         entityManager.getAIComponents()[monsterEntity] = {
-            get_random_int(chase_dis.first,chase_dis.second),
-            get_random_int(attack_range_dis.first,attack_range_dis.second),
-            FPS * 3
-        };
+            monster_chase_range,
+            monster_attack_range,
+            monster_attack_cooldown
+        };*/
         entityManager.getMonsterComponents()[monsterEntity] = {
-            get_random_int(attack_power_dis.first,attack_power_dis.second),
-            get_random_int(attack_range_dis.first,attack_range_dis.second),
-            FPS * 3,
-            get_random_int(health_dis.first,health_dis.second)
+            'M', "Monster", COLOR_RED,
+            monster_attack_power,monster_attack_range, monster_chase_range, monster_attack_cooldown,
+            monster_health, monster_health
         };
     }
 }
 
+
+
+/*___             _         _
+ | _ \___ _ _  __| |___ _ _(_)_ _  __ _
+ |   / -_) ' \/ _` / -_) '_| | ' \/ _` |
+ |_|_\___|_||_\__,_\___|_| |_|_||_\__, |
+                                  |___/
+ section:rendering */
 
 void render_buffer(
         const vector<pair<char, pair<int, int>>>& draw_buffer,
         const vector<vector<Tile>>& game_map,
-        const vector<short>& palette,
+        const vector<pair<pair<int, int>, pair<char, int>>> entities,
         int start_x, int start_y) {
-    
+
     log(DEV_LOG_FILE, "rendering buffer");
 
-    // clear();
     int py, px;
-    for (const auto& item : draw_buffer) {
-        char ch = item.first;
-        int y = item.second.first;
-        int x = item.second.second;
+    short player_color;
+    vector<vector<pair<char, int>>> frame(LINES-3, vector<pair<char, int>>(COLS, {'?',COLOR_BLACK}));
+
+
+    for (const auto& entity: entities) {
+        int y = entity.first.first - start_y;
+        int x = entity.first.second - start_x;
+        char ch = entity.second.first;
+        short color = get_color_pair_index(COLOR_BLACK,entity.second.second);
+        if (ch == PLAYER_TILE) py = y, px = x, player_color = color;
+        if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) continue;
+        frame[y][x].first = ch, frame[y][x].second = color;
+    }
+
+    for (const auto& tile : draw_buffer) {
+        int y = tile.second.first;
+        int x = tile.second.second;
         int Y = y - start_y;
         int X = x - start_x;
 
+        char ch = tile.first;
+        short color = get_color_pair_index(COLOR_BLACK,COLOR_BLACK);
 
-        short color_pair = get_color_pair_index(COLOR_BLACK, COLOR_BLACK);
-
-        if (!check_if_in(ENTITY_TILES,ch)// visible environment
-            && game_map[x][y].visible) {
-            color_pair = game_map[x][y].color;
-        } else if (game_map[x][y].visited && !game_map[x][y].visible) { // memory
-            color_pair = get_color_pair_index(8, COLOR_BLACK);
-        } else if (check_if_in(MONSTER_TILES,ch) //monsters
-                   && game_map[x][y].visible) {
-            color_pair = palette[2];
-        } else if (check_if_in(ITEM_TILES,ch) //items
-                   && game_map[x][y].visible) {
-            color_pair = palette[11];
+        if (game_map[x][y].visible) { // visible environment
+            color = game_map[x][y].color;
+        } else if (game_map[x][y].visited) { // memory
+            color = get_color_pair_index(8, COLOR_BLACK);
         }
 
-        if (ch == PLAYER_TILE) {
-            py = Y;
-            px = X;
-        } else {
-            attron(COLOR_PAIR(color_pair));
-            mvaddch(Y, X, ch);
-            attroff(COLOR_PAIR(color_pair));
+        if (X < 0 || X >= WIDTH || Y < 0 || Y >= HEIGHT) continue;
+        if (frame[Y][X].first == '?') frame[Y][X] = make_pair(ch, color);
+    }
+
+    //draw player last
+    frame[py][px] = make_pair(PLAYER_TILE, player_color);
+
+
+    // Render frame
+    clear();
+    char pixel_char;
+    short pixel_color;
+    for (int i = 0; i < LINES-3; ++i) {
+        for (int j = 0; j < COLS; ++j) {
+            pixel_char = frame[i][j].first;
+            pixel_color = frame[i][j].second;
+            attron(COLOR_PAIR(pixel_color));
+            mvaddch(i,j, pixel_char);
+            attroff(COLOR_PAIR(pixel_color));
         }
     }
-    // draw character last
-    attron(COLOR_PAIR(palette[3]));
-    mvaddch(py, px, PLAYER_TILE);
-    attroff(COLOR_PAIR(palette[3]));
 
+    // Actually render
+    doupdate();
 }
 
 
-int get_mana_color(PlayerStats& playerStats) {
-    int color_index;
 
-    if (playerStats.class_name == "Fighter") {
-        color_index = get_color_pair_index(COLOR_BLACK, COLOR_RED);//red
-    } else if (playerStats.class_name == "Cleric") {
-        color_index = get_color_pair_index(COLOR_BLACK, COLOR_MAGENTA);//magenta
-    } else if (playerStats.class_name == "Wizard") {
-        color_index = get_color_pair_index(COLOR_BLACK, COLOR_BLUE);//blue
-    } else if (playerStats.class_name == "Sorcerer") {
-        color_index = get_color_pair_index(COLOR_BLACK, COLOR_CYAN);//cyan
-    } else if (playerStats.class_name == "Ranger") {
-        color_index = get_color_pair_index(COLOR_BLACK, COLOR_GREEN);//green
-    } else if (playerStats.class_name == "Rogue") {
-        color_index = get_color_pair_index(COLOR_BLACK, COLOR_YELLOW);//yellow
-    } else if (playerStats.class_name == "Adventurer") {
-        color_index = get_color_pair_index(COLOR_BLACK, COLOR_WHITE);//white
-    }
+/*___     _            __
+ |_ _|_ _| |_ ___ _ _ / _|__ _ __ ___
+  | || ' \  _/ -_) '_|  _/ _` / _/ -_)
+ |___|_||_\__\___|_| |_| \__,_\__\___|
+ section:interface */
 
-    return color_index;
-}
-
-int get_player_color(PlayerStats& playerStats) {
-    int color_index;
-
-    if (playerStats.class_name == "Fighter") {
-        color_index = 2;//red
-    } else if (playerStats.class_name == "Cleric") {
-        color_index = 6;//magenta
-    } else if (playerStats.class_name == "Wizard") {
-        color_index = 5;//blue
-    } else if (playerStats.class_name == "Sorcerer") {
-        color_index = 7;//cyan
-    } else if (playerStats.class_name == "Ranger") {
-        color_index = 3;//green
-    } else if (playerStats.class_name == "Rogue") {
-        color_index = 4;//yellow
-    } else if (playerStats.class_name == "Adventurer") {
-        color_index = 8;//white
-    }
-
-    return color_index;
-}
-
-string get_player_class_name(PlayerStats& playerStats) {
-    string class_name;
-
-    if (playerStats.attack > playerStats.defense
-        && playerStats.attack > playerStats.speed) {
-        class_name = "Fighter";//red
-    } else if (playerStats.defense == playerStats.attack
-               && playerStats.defense > playerStats.speed) {
-        class_name = "Cleric";//magenta
-    } else if (playerStats.defense > playerStats.attack
-               && playerStats.defense > playerStats.speed) {
-        class_name = "Wizard";//blue
-    } else if (playerStats.defense == playerStats.speed
-               && playerStats.defense > playerStats.attack) {
-        class_name = "Sorcerer";//cyan
-    } else if (playerStats.speed > playerStats.attack
-               && playerStats.speed > playerStats.defense) {
-        class_name = "Ranger";//green
-    } else if (playerStats.speed == playerStats.attack
-               && playerStats.speed > playerStats.defense) {
-        class_name = "Rogue";//yellow
-    } else if (playerStats.defense == playerStats.attack
-               && playerStats.defense == playerStats.speed) {
-        class_name = "Adventurer";//white
-    }
-
-    return class_name;
-}
-
-int get_player_level(PlayerStats& playerStats) {
-    return round((playerStats.attack + playerStats.defense + playerStats.speed)/10);
-}
 
 void draw_UI(PlayerStats& playerStats) {
 
@@ -870,11 +1223,17 @@ void draw_UI(PlayerStats& playerStats) {
     int x = 2;
     int y = LINES - (orb_diameter/2) - 2;
     int player_level = playerStats.level;
+    int player_color = playerStats.color;
+    string player_class = playerStats.class_name;
 
     //draw background for hud
     int ui_bg = get_color_pair_index(8,8);
+
+
+
+
     attron(COLOR_PAIR(ui_bg));
-    for (int hy = 0; hy < 5; ++hy) {
+    for (int hy = 0; hy <= 3; ++hy) {
         for (int hx = 0; hx < COLS; ++hx) {
             mvprintw(LINES-hy,hx,".");
         }
@@ -945,7 +1304,7 @@ void draw_UI(PlayerStats& playerStats) {
                 char ch;
                     if (energy_level >= orb_size - (((oy) * orb_diameter) - ox)) {
                         ch = get_random_character({' ',' ',' ','~'});
-                        color_pair = get_mana_color(playerStats);
+                        color_pair = get_color_pair_index(COLOR_BLACK,get_player_color(playerStats));
                     } else{
                         ch =get_random_character({' ',' ',' ',' ',' ',' ',' ',' ','.'});
                         color_pair = get_color_pair_index(8,COLOR_BLACK);
@@ -983,9 +1342,9 @@ void draw_UI(PlayerStats& playerStats) {
     }
 
     x = orb_diameter + 5;
-    int player_color = get_player_color(playerStats);
-    string player_class = playerStats.class_name;
-    attron(COLOR_PAIR(player_color));
+
+
+    attron(COLOR_PAIR(get_color_pair_index(COLOR_BLACK,player_color)));
 
     //draw level and class name
     mvprintw(LINES-3, x, "%s",
@@ -994,7 +1353,7 @@ void draw_UI(PlayerStats& playerStats) {
     mvprintw(LINES-2, x, "LVL%d",
              player_level
             );
-    attroff(COLOR_PAIR(player_color));
+    attroff(COLOR_PAIR(get_color_pair_index(COLOR_BLACK,player_color)));
 
     //draw stats
     mvprintw(LINES-1, x, "STR:%d WIL:%d DEX:%d",
@@ -1019,47 +1378,12 @@ void draw_UI(PlayerStats& playerStats) {
 }
 
 
-pair<int,int> move_player(EntityManager& entityManager,
-                          PlayerStats& playerStats,
-                          const vector<vector<Tile>>& game_map,
-                          const pair<int,int> direction,
-                          const int sprinting) {
-    log(DEV_LOG_FILE, "player opts to move x", direction.first, ",y", direction.second);
 
-    pair<int,int> delta = {0, 0};
-    int distance = 1;
-    if (sprinting > 0.0f) {
-        distance = min(playerStats.speed,int(pow(sprinting,1.2)));
-    }
-
-    auto& positions = entityManager.getPositions();
-    PositionComponent& playerPosition = positions[0];
-
-    for (int i = 0; i < distance; i++) {
-        int dx = delta.first + direction.first;
-        int dy = delta.second + direction.second;
-        if (check_if_in(GROUND_TILES, game_map[playerPosition.x+dx][playerPosition.y+dy].ch)) {
-            delta = {dx, dy};
-        } else if (check_if_in(TRAP_TILES, game_map[playerPosition.x+dx][playerPosition.y+dy].ch)) {
-            int damage = get_random_int(1,5);
-            playerStats.health -= damage;
-            add_combat_log("Player took " + to_string(damage) + " damage from a trap.");
-            delta = {dx, dy};
-            break;
-        }
-        else {
-            break; // Stop the loop if the player hits a wall
-        }
-    }
-
-    if (sound) {
-        playFootstepSound();
-    }
-
-    return delta;
-
-}
-
+/*__  __
+ |  \/  |___ _ _ _  _ ___
+ | |\/| / -_) ' \ || (_-<
+ |_|  |_\___|_||_\_,_/__/
+ section:menus */
 void print_class_menu() {
 
         clear();
@@ -1190,6 +1514,40 @@ vector<int> set_player_class(const int classChoice) {
     return {playerAttack, playerDefense, playerSpeed};
 }
 
+pair<int, int> get_player_spawn_coords(vector<vector<Tile>> game_map, EntityManager& entityManager) {
+    int x = get_random_int(1, WIDTH-1), y = get_random_int(1, HEIGHT-1);
+    int no_monster_radius = 15, no_monster_min = 1;
+
+    auto& positions = entityManager.getPositions();
+    auto& monsters = entityManager.getMonsterComponents();
+    int nearby_monster_count = 0;
+    for (auto& pos: positions) if ((sqrt(pow(abs(pos.second.x-x),2)+pow(abs(pos.second.y-y),2)) <= no_monster_radius)
+                                    && (monsters.find(pos.first) != monsters.end())) ++nearby_monster_count;
+                                    //no-spawn radius from player
+
+    //TODO: spawn player in sensible location
+    while (!check_if_in(GROUND_TILES,game_map[x][y].ch)
+           || nearby_monster_count > no_monster_min ) {
+        x = get_random_int(1, WIDTH-1), y = get_random_int(1, HEIGHT-1);
+        int nearby_monster_count = 0;
+        for (auto& pos: positions) if ((sqrt(pow(abs(pos.second.x-x),2)+pow(abs(pos.second.y-y),2)) <= no_monster_radius)
+                                       && (monsters.find(pos.first) != monsters.end())) ++nearby_monster_count;
+                                        //no-spawn radius from player
+    }
+
+
+    return make_pair(x, y);
+}
+
+
+
+/*__  __   _   ___ _  _    ___   _   __  __ ___   _    ___   ___  ___
+ |  \/  | /_\ |_ _| \| |  / __| /_\ |  \/  | __| | |  / _ \ / _ \| _ \
+ | |\/| |/ _ \ | || .` | | (_ |/ _ \| |\/| | _|  | |_| (_) | (_) |  _/
+ |_|  |_/_/ \_\___|_|\_|  \___/_/ \_\_|  |_|___| |____\___/ \___/|_|
+ section:main game loop */
+
+
 int main() {
     log(DEV_LOG_FILE, "Running file_crawler");
 
@@ -1261,10 +1619,12 @@ int main() {
 
     log(DEV_LOG_FILE, "selected player class");
 
-    PlayerStats playerStats = {0,"EMPTY_PLACEHOLDER",PLAYER_MAX_HP,PLAYER_MAX_EP,
+    PlayerStats playerStats = {0,"Deprived",0,
+                               PLAYER_MAX_HP,PLAYER_MAX_EP,
                                playerAttack, playerDefense, playerSpeed};
     playerStats.level = get_player_level(playerStats);
     playerStats.class_name = get_player_class_name(playerStats);
+    playerStats.color = get_player_color(playerStats);
 
     int seed = get_random_int(0, 255);
     log(DEV_LOG_FILE, "generated seed ", seed, " for rngesus");
@@ -1276,14 +1636,6 @@ int main() {
 
 
     vector<vector<Tile>> game_map = generate_game_map();
-    //TODO: spawn player in sensible location
-    int player_x = get_random_int(1, WIDTH-1);
-    int player_y = get_random_int(1, HEIGHT-1);
-
-    while (!check_if_in(GROUND_TILES,game_map[player_x][player_y].ch)) {
-        player_x = get_random_int(1, WIDTH-1);
-        player_y = get_random_int(1, HEIGHT-1);
-    }
     log(DEV_LOG_FILE, "generated game_map");
 
 
@@ -1293,19 +1645,32 @@ int main() {
 
 
     Entity playerEntity = entityManager.createEntity();
-    entityManager.getPositions()[playerEntity] = {player_x, player_y};
     entityManager.getPlayerStats()[playerEntity] = playerStats;
+    entityManager.getPositions()[playerEntity] = {0,0};//put player at origin so that spawning them doesn't freak out later
     log(DEV_LOG_FILE, "initialized entity manager");
 
-    int item_count = round(0.1 * HEIGHT * WIDTH / 100);
-    int monster_count = round(0.2 * HEIGHT * WIDTH /100);
+    int item_count = round(0.001 * (HEIGHT * WIDTH));
+    int monster_count = round(0.00125 *  (HEIGHT * WIDTH));
     float monster_difficulty = 1.0;
 
     spawn_items(item_count ,entityManager, game_map);
     spawn_monsters(monster_count, monster_difficulty, entityManager, game_map);
-    monster_count = monster_count/10;//rescale for difficulty progression handled in player-level-up logic later
+    monster_count = monster_count;//rescale for difficulty progression handled in player-level-up logic later
     MonsterSystem monsterSystem(entityManager, game_map, playerStats);
     log(DEV_LOG_FILE, "spawned items and monsters");
+
+
+    log(DEV_LOG_FILE, "spawning player");
+    pair<int,int> player_spawn_coords = get_player_spawn_coords(game_map, entityManager);
+    log(DEV_LOG_FILE, "found spawn for player");
+
+    int player_x = player_spawn_coords.first, player_y = player_spawn_coords.second;
+    entityManager.getPositions()[playerEntity] = {player_x, player_y};
+    log(DEV_LOG_FILE, "spawned player");
+
+
+
+
 
     nodelay(stdscr, TRUE);
     auto timePerFrame = chrono::milliseconds(1000 / FPS); // Approximately 15 FPS
@@ -1323,7 +1688,7 @@ int main() {
         int end_x = start_x + COLS;
         int start_y = max(0, player_y - LINES / 2);
         start_y = min(start_y, HEIGHT - LINES);
-        int end_y = start_y + LINES;
+        int end_y = start_y + LINES - 3;
 
         // get player fov
         set<pair<int, int>> player_fov = calculate_fov(
@@ -1348,7 +1713,8 @@ int main() {
                 draw_buffer.push_back(make_pair(ch, make_pair(y, x)));
 
                 if (is_in_set({x, y}, player_fov)) {
-                    if (check_if_in(WALL_TILES, game_map[x][y].ch)) game_map[x][y].visited = true;//game_map[x][y].visited = true;//
+                    if (check_if_in(WALL_TILES, game_map[x][y].ch)
+                        || check_if_in(GROUND_TILES, game_map[x][y].ch)) game_map[x][y].visited = true;//
                     game_map[x][y].visible = true;
 
                 }
@@ -1356,12 +1722,17 @@ int main() {
             }
         }
         
-        draw_buffer.push_back(make_pair(PLAYER_TILE, make_pair(player_y, player_x)));
+        // draw_buffer.push_back(make_pair(PLAYER_TILE, make_pair(player_y, player_x)));
 
         auto& positions = entityManager.getPositions();
         PositionComponent playerPosition = {player_x,player_y};
         auto& monsters = entityManager.getMonsterComponents();
         auto& items = entityManager.getItemComponents();
+
+        vector<pair<pair<int, int>, pair<char, int>>> visible_entities;
+
+        //draw player as a visible character
+        visible_entities.push_back(make_pair(make_pair(player_y, player_x),make_pair(PLAYER_TILE, playerStats.color)));
 
         for (const auto& entry : positions) {
             Entity entity = entry.first;
@@ -1369,38 +1740,38 @@ int main() {
                 const PositionComponent& position = entry.second;
                 if (is_in_set({position.x, position.y}, player_fov)) {
                     char entity_tile;
-                    if (monsters[entity].health > 20) {
-                        entity_tile = 'M';
-                    } else if (monsters[entity].health > 10) {
-                        entity_tile = 'm';
-                    } else if (monsters[entity].health > 5) {
-                        entity_tile = 'n';
+                    int entity_color;
+                    if (monsters[entity].health > monsters[entity].total_health/2) {
+                        entity_tile = monsters[entity].character;
+                        entity_color = monsters[entity].color;
+                    } else if (monsters[entity].health > monsters[entity].total_health/5 ) {
+                        entity_tile = tolower(monsters[entity].character);
+                        entity_color = monsters[entity].color;
                     } else {
-                        entity_tile = 'r';
+                        entity_tile = ';';
+                        entity_color = monsters[entity].color;
                     }
-                    draw_buffer.push_back(make_pair(entity_tile, make_pair(position.y, position.x)));
+                    //add entities visible to player
+                    visible_entities.push_back(make_pair(make_pair(position.y, position.x),make_pair(entity_tile, entity_color)));
                 }
             } else if (items.find(entity) != items.end()) {
                 const PositionComponent& position = entry.second;
                 if (is_in_set({position.x, position.y}, player_fov)) {
                     char entity_tile = items[entity].character;
-                    draw_buffer.push_back(make_pair(entity_tile, make_pair(position.y, position.x)));
+                    int entity_color = items[entity].color;
+                    visible_entities.push_back(make_pair(make_pair(position.y, position.x), make_pair(entity_tile, entity_color)));
                 }
             }
         }
 
+        // palette[3] = get_player_color(playerStats, false);
 
-        palette[3] = get_player_color(playerStats);
-
-        render_buffer(draw_buffer, game_map, palette, start_x, start_y);
+        render_buffer(draw_buffer, game_map, visible_entities, start_x, start_y);
+        frame_count ++;
         wnoutrefresh(stdscr);
 
         // movementSystem.update();
         // log(DEV_LOG_FILE, "updated movement system");
-
-        monsterSystem.update();
-        log(DEV_LOG_FILE, "updated monster system");
-
 
 
         //clear fov from map tiles
@@ -1439,6 +1810,9 @@ int main() {
 
         }
 
+        monsterSystem.update();
+        log(DEV_LOG_FILE, "updated monster system");
+
         draw_UI(playerStats);
         // mvprintw(0,0,"(x%d,y%d)",player_x,player_y);
 
@@ -1463,8 +1837,8 @@ int main() {
                     Entity monsterEntity = entry.first;
                     PositionComponent& monsterPosition = positions[monsterEntity];
 
-                    if (monsterPosition.x == delta.first
-                        && monsterPosition.y == delta.second) {
+                    if (monsterPosition.x == player_x + delta.first
+                        && monsterPosition.y == player_y + delta.second) {
                         occupied = true;
                         break;
                     }
@@ -1499,7 +1873,7 @@ int main() {
                         break;
                     }
                 }
-                if (!occupied){
+                if (!occupied) {
                     player_x += delta.first;
                     player_y += delta.second;
                     playerPosition.x = player_x;
@@ -1563,12 +1937,7 @@ int main() {
             if (sprinting < 0.0f) sprinting = 0.0f;
         }
 
-
-
-
-
         entityManager.getPositions()[playerEntity] = {player_x, player_y};
-
 
         auto frameEnd = chrono::steady_clock::now();
         auto frameDuration = chrono::duration_cast<chrono::milliseconds>(frameEnd - frameStart);
@@ -1578,9 +1947,6 @@ int main() {
             this_thread::sleep_for(timePerFrame - frameDuration);
         }
 
-        //actually render
-        doupdate();
-        frame_count ++;
         if (frame_count % FPS == 0) {// runs every second
             //replenish health
             playerStats.health = min(PLAYER_MAX_HP, playerStats.health + min(15,playerStats.attack/10));
@@ -1600,8 +1966,8 @@ int main() {
         }
 
         //clear draw_buffer
+        visible_entities.clear();
         draw_buffer.clear();
-        clear();
 
 
 
