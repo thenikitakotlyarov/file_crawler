@@ -12,11 +12,11 @@ int get_random_int(const int min, const int max) {
 }
 
 
-string get_random_character(const vector<string>& vec) {
+wstring get_random_character(const vector<wstring>& vec) {
     return vec[get_random_int(0,vec.size() - 1)];
 }
 
-bool check_if_in(const vector<string>& vec, const string compare) {
+bool check_if_in(const vector<wstring>& vec, const wstring compare) {
     return find(vec.begin(), vec.end(), compare) != vec.end();
 }
 

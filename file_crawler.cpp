@@ -53,8 +53,8 @@ using namespace std;
   \___\___/_||_/__/\__\__,_|_||_\__/__/
  section:constants */
 
-const wstring DEV_LOG_FILE = "dev_log.txt";
-const wstring GAME_LOG_FILE = "game_log.txt";
+const string DEV_LOG_FILE = "dev_log.txt";
+const string GAME_LOG_FILE = "game_log.txt";
 
 const int UI_LOG_COUNT = 7;
 
@@ -69,30 +69,14 @@ const bool sound = false;
 Mix_Chunk* PLAYER_FOOTSTEP_SOUND = nullptr;
 const int PLAYER_FOOTSTEP_SOUND_COUNT = 6;
 
-const vector<string> GROUND_TILES = {".",",","`","\"","'"};
-const vector<string> WALL_TILES = {"[","]","{","}","=","|","+","-","_","/","\\",};
-const vector<string> TRAP_TILES = {"&","#"};
-const vector<string> VOID_TILES = {" "};
+const vector<wstring> GROUND_TILES = {L".",L",",L"`",L"\"",L"'"};
+const vector<wstring> WALL_TILES = {L"[",L"]",L"{L",L"}",L"=",L"|",L"+",L"-",L"_",L"/",L"\\",};
+const vector<wstring> TRAP_TILES = {L"&",L"#"};
+const vector<wstring> VOID_TILES = {L" "};
 
 
-const wstring PLAYER_TILE = "ç";
+const wstring PLAYER_TILE = L"Δ";
 
-
-// const vector<string> MONSTER_TILES = {
-//     "Z","S",
-// };
-// const vector<string> ITEM_TILES = {
-//     "o","O","0","s","S","7","d","D","8","a","A","9"
-// };
-
-// vector<string> get_entity_tiles() {
-//     vector<string> tiles;
-//     tiles.insert(tiles.end(), MONSTER_TILES.begin(), MONSTER_TILES.end());
-//     tiles.insert(tiles.end(), ITEM_TILES.begin(), ITEM_TILES.end());
-//     tiles.push_back(PLAYER_TILE);
-//     return tiles;
-// }
-// vector<string> ENTITY_TILES = get_entity_tiles();
 
 
 /*_                   _
@@ -105,7 +89,7 @@ const wstring PLAYER_TILE = "ç";
 vector<string> combat_log;
 
 template<typename... Args>
-void log(const wstring filename, Args&&... args) {
+void log(const string filename, Args&&... args) {
     ofstream logfile(filename, ios::app);  // Open the file in append mode
 
     if (!logfile.is_open()) return;
@@ -149,11 +133,11 @@ void playFootstepSound() {
     pair<int,int> range = { 1, PLAYER_FOOTSTEP_SOUND_COUNT };
 
     // Construct the file name with the randomly generated number
-    wstring file_id = to_string(get_random_int(range.first,range.second));
-    wstring fileName = "data/sound/footstep"+file_id+".wav";
+    string file_id = to_string(get_random_int(range.first,range.second));
+    string fileName = "data/sound/footstep"+file_id+".wav";
 
     // Load the random sound file
-    Mix_Chunk* footstepSound = Mix_LoadWAV(fileName.c_wstr());
+    Mix_Chunk* footstepSound = Mix_LoadWAV(fileName.c_str());
     if (!footstepSound) {
         log(DEV_LOG_FILE, fileName + "  does not exist");
         // Handle sound loading error
@@ -635,7 +619,7 @@ vector<Node> aStar(const PositionComponent& start, const PositionComponent& goal
 
 struct PlayerStats {
     int level;
-    wstring class_name;
+    string class_name;
     int color;
     int health;
     int energy;
@@ -665,7 +649,7 @@ enum class ItemType {
 struct ItemComponent {
     ItemType type;
     wstring character;
-    wstring name;
+    string name;
     int color;
     float rarity;
     function<void(PlayerStats&)> effect;
@@ -675,7 +659,7 @@ struct MonsterComponent {
     wstring characterFullHealth;
     wstring characterMidHealth;
     wstring characterLowHealth;
-    wstring name;
+    string name;
     int color;
     int attackPower;
     int attackRadius;
@@ -760,8 +744,8 @@ int get_player_level(PlayerStats& playerStats) {
                  /(9+playerStats.level));
 }
 
-wstring get_player_class_name(PlayerStats& playerStats) {
-    wstring class_name;
+string get_player_class_name(PlayerStats& playerStats) {
+    string class_name;
 
     if (playerStats.attack > playerStats.defense
         && playerStats.attack > playerStats.speed) {
@@ -887,61 +871,61 @@ pair<int,int> move_player(EntityManager& entityManager,
 // we can def load this from a file or smthn
 vector<ItemComponent> itemTemplates = {
         {ItemType::SmallHealthPotion, //< identifier
-            "o", "Small Health Potion", COLOR_RED, 0.5, //< character, name, color, rarity
+            L"o", "Small Health Potion", COLOR_RED, 0.5, //< character, name, color, rarity
             [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP, stats.health + 5);}}, //< ability
 
         {ItemType::MediumHealthPotion,
-            "O", "Medium Health Potion", COLOR_RED,0.1,
+            L"O", "Medium Health Potion", COLOR_RED,0.1,
             [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP,stats.health + 10);}},
 
         {ItemType::LargeHealthPotion,
-            "0", "Large Health Potion",  COLOR_RED, 0.5,
+            L"0", "Large Health Potion",  COLOR_RED, 0.5,
             [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP,stats.health + 25);}},
 
         {ItemType::SmallEnergyPotion,
-            "o", "Small Energy Potion", COLOR_BLUE, 0.5,
+            L"o", "Small Energy Potion", COLOR_BLUE, 0.5,
             [](PlayerStats& stats) {stats.energy = min(PLAYER_MAX_EP, stats.energy + 5);}},
 
         {ItemType::MediumEnergyPotion,
-            "O", "Medium Energy Potion", COLOR_BLUE,0.1,
+            L"O", "Medium Energy Potion", COLOR_BLUE,0.1,
             [](PlayerStats& stats) {stats.energy = min(PLAYER_MAX_EP,stats.energy + 10);}},
 
         {ItemType::LargeEnergyPotion,
-            "0", "Large Energy Potion",  COLOR_BLUE, 0.05,
+            L"0", "Large Energy Potion",  COLOR_BLUE, 0.05,
             [](PlayerStats& stats) {stats.energy = min(PLAYER_MAX_EP,stats.energy + 25);}},
 
         {ItemType::LightRegenPotion,
-            "O", "Light Regen Potion", COLOR_MAGENTA,0.05,
+            L"O", "Light Regen Potion", COLOR_MAGENTA,0.05,
             [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP,stats.health + PLAYER_MAX_HP/4),
                                     stats.energy = min(PLAYER_MAX_EP,stats.energy + PLAYER_MAX_EP/4);}},
 
         {ItemType::FullRegenPotion,
-            "O", "Full Regen Potion", COLOR_MAGENTA,0.025,
+            L"O", "Full Regen Potion", COLOR_MAGENTA,0.025,
             [](PlayerStats& stats) {stats.health = PLAYER_MAX_HP,
                                     stats.energy = PLAYER_MAX_EP;}},
 
         {ItemType::WeakStrengthSerum,
-            "s", "Weak Strength Serum", COLOR_RED, 1.0,
+            L"s", "Weak Strength Serum", COLOR_RED, 1.0,
             [](PlayerStats& stats) { stats.attack += 1; }},
 
         {ItemType::StrongStrengthSerum,
-            "S", "Strong Strength Serum", COLOR_RED, 0.25,
+            L"S", "Strong Strength Serum", COLOR_RED, 0.25,
             [](PlayerStats& stats) { stats.attack += 2; }},
 
         {ItemType::WeakWillSerum,
-            "w", "Weak Will Serum", COLOR_BLUE, 1.0,
+            L"w", "Weak Will Serum", COLOR_BLUE, 1.0,
             [](PlayerStats& stats) { stats.defense += 1; }},
 
         {ItemType::StrongWillSerum,
-            "W", "Strong  Will Serum", COLOR_BLUE, 0.25,
+            L"W", "Strong  Will Serum", COLOR_BLUE, 0.25,
             [](PlayerStats& stats) { stats.defense += 2; }},
 
         {ItemType::WeakDexteritySerum,
-            "d", "Weak Dexterity Serum", COLOR_GREEN, 1.0,
+            L"d", "Weak Dexterity Serum", COLOR_GREEN, 1.0,
             [](PlayerStats& stats) { stats.speed += 1; }},
 
         {ItemType::StrongDexteritySerum,
-            "D", "Strong Dexterity Serum", COLOR_GREEN, 0.25,
+            L"D", "Strong Dexterity Serum", COLOR_GREEN, 0.25,
             [](PlayerStats& stats) { stats.speed += 2; }}
     };
 
@@ -1129,7 +1113,7 @@ void spawn_monsters(int count, float rating, EntityManager& entityManager, vecto
             monster_attack_cooldown
         };*/
         entityManager.getMonsterComponents()[monsterEntity] = {
-            "M", "m", ";", "Monster", COLOR_RED,
+            L"M", L"m", L";", "Monster", COLOR_RED,
             monster_attack_power,monster_attack_range, monster_chase_range, monster_attack_cooldown,
             monster_health, monster_health
         };
@@ -1146,16 +1130,16 @@ void spawn_monsters(int count, float rating, EntityManager& entityManager, vecto
  section:rendering */
 
 void render_buffer(
-        const vector<pair<string, pair<int, int>>>& draw_buffer,
+        const vector<pair<wstring, pair<int, int>>>& draw_buffer,
         const vector<vector<Tile>>& game_map,
-        const vector<pair<pair<int, int>, pair<string, int>>> entities,
+        const vector<pair<pair<int, int>, pair<wstring, int>>> entities,
         int start_x, int start_y) {
 
     log(DEV_LOG_FILE, "rendering buffer");
 
     int py, px;
     short player_color;
-    vector<vector<pair<string, int>>> frame(LINES-3, vector<pair<string, int>>(COLS, {"?",COLOR_BLACK}));
+    vector<vector<pair<wstring, int>>> frame(LINES-3, vector<pair<wstring, int>>(COLS, {L"?",COLOR_BLACK}));
 
 
     for (const auto& entity: entities) {
@@ -1184,7 +1168,7 @@ void render_buffer(
         }
 
         if (X < 0 || X >= COLS || Y < 0 || Y >= LINES-3) continue;
-        if (frame[Y][X].first == "?") frame[Y][X] = make_pair(ch, color);
+        if (frame[Y][X].first == L"?") frame[Y][X] = make_pair(ch, color);
     }
 
     //draw player last
@@ -1200,7 +1184,7 @@ void render_buffer(
             pixel_char = frame[i][j].first;
             pixel_color = frame[i][j].second;
             attron(COLOR_PAIR(pixel_color));
-            mvaddwstr(i,j, pixel_char.c_wstr());
+            mvaddwstr(i,j, pixel_char.c_str());
             attroff(COLOR_PAIR(pixel_color));
         }
     }
@@ -1228,7 +1212,7 @@ void draw_UI(PlayerStats& playerStats) {
     int y = LINES - (orb_diameter/2) - 2;
     int player_level = playerStats.level;
     int player_color = playerStats.color;
-    wstring player_class = playerStats.class_name;
+    string player_class = playerStats.class_name;
 
     //draw background for hud
     int ui_bg = get_color_pair_index(8,8);
@@ -1239,7 +1223,7 @@ void draw_UI(PlayerStats& playerStats) {
     attron(COLOR_PAIR(ui_bg));
     for (int hy = 0; hy <= 3; ++hy) {
         for (int hx = 0; hx < COLS; ++hx) {
-            mvaddwstr(LINES-hy,hx,".");
+            mvaddwstr(LINES-hy,hx,L".");
         }
     }
     attroff(COLOR_PAIR(ui_bg));
@@ -1256,15 +1240,15 @@ void draw_UI(PlayerStats& playerStats) {
                 int color_pair;
                 wstring ch;
                     if (health_level >= orb_size - (((oy) * orb_diameter) - ox)) {
-                        ch = get_random_character({" "," "," ","~"});
+                        ch = get_random_character({L" ",L" ",L" ",L"~"});
                         color_pair = get_color_pair_index(COLOR_BLACK,COLOR_RED);
                     } else{
-                        ch =get_random_character({" "," "," "," "," "," "," "," ","."});
+                        ch =get_random_character({L" ",L" ",L" ",L" ",L" ",L" ",L" ",L" ",L"."});
                         color_pair = get_color_pair_index(8,COLOR_BLACK);
                     }
 
                 attron(COLOR_PAIR(color_pair));
-                mvaddwstr(y+oy,1+ox,ch.c_wstr());
+                mvaddwstr(y+oy,1+ox,ch.c_str());
                 attroff(COLOR_PAIR(color_pair));
             }
             //draw boundary
@@ -1272,19 +1256,19 @@ void draw_UI(PlayerStats& playerStats) {
                 || (ox==0 || ox==orb_diameter+1) && !(oy==0 || oy==orb_diameter/2+1)
                 || (ox==1 || ox==orb_diameter) && (oy==1 || oy==orb_diameter/2)) {
                 int orb_boundary_color = get_color_pair_index(7,8);
-                wstring orb_boundary_ch = " ";
+                wstring orb_boundary_ch = L" ";
                 if ((ox==1 && oy==1) || (ox==orb_diameter && oy==orb_diameter/2)) {
-                    orb_boundary_ch = "/";
+                    orb_boundary_ch = L"/";
                 } else if ((ox==1 && oy==orb_diameter/2) || (ox==orb_diameter && oy==1)) {
-                    orb_boundary_ch = "\\";
+                    orb_boundary_ch = L"\\";
                 } else if ((ox==0 || ox==orb_diameter+1) && (oy>1 && oy<orb_diameter/2)){
-                    orb_boundary_ch = "|";
+                    orb_boundary_ch = L"|";
                 } else if ((oy==0 || oy==orb_diameter/2+1) && (ox>1 && ox<orb_diameter)){
-                    orb_boundary_ch = "-";
+                    orb_boundary_ch = L"-";
                 }
 
                 attron(COLOR_PAIR(orb_boundary_color));
-                mvaddwstr(y+oy,1+ox,orb_boundary_ch.c_wstr());
+                mvaddwstr(y+oy,1+ox,orb_boundary_ch.c_str());
                 attroff(COLOR_PAIR(orb_boundary_color));
 
 
@@ -1305,15 +1289,15 @@ void draw_UI(PlayerStats& playerStats) {
                 int color_pair;
                 wstring ch;
                     if (energy_level >= orb_size - (((oy) * orb_diameter) - ox)) {
-                        ch = get_random_character({" "," "," ","~"});
+                        ch = get_random_character({L" ",L" ",L" ",L"~"});
                         color_pair = get_color_pair_index(COLOR_BLACK,get_player_color(playerStats));
                     } else{
-                        ch =get_random_character({" "," "," "," "," "," "," "," ","."});
+                        ch =get_random_character({L" ",L" ",L" ",L" ",L" ",L" ",L" ",L" ",L"."});
                         color_pair = get_color_pair_index(8,COLOR_BLACK);
                     }
 
                 attron(COLOR_PAIR(color_pair));
-                mvaddwstr(y+oy,COLS-ox-2,ch.c_wstr());
+                mvaddwstr(y+oy,COLS-ox-2,ch.c_str());
                 attroff(COLOR_PAIR(color_pair));
             }
             //draw boundary
@@ -1321,19 +1305,19 @@ void draw_UI(PlayerStats& playerStats) {
                 || (ox==0 || ox==orb_diameter+1) && !(oy==0 || oy==orb_diameter/2+1)
                 || (ox==1 || ox==orb_diameter) && (oy==1 || oy==orb_diameter/2)) {
                 int orb_boundary_color = get_color_pair_index(7,8);
-                wstring orb_boundary_ch = " ";
+                wstring orb_boundary_ch = L" ";
                 if ((ox==1 && oy==1) || (ox==orb_diameter && oy==orb_diameter/2)) {
-                    orb_boundary_ch = "\\";
+                    orb_boundary_ch = L"\\";
                 } else if ((ox==1 && oy==orb_diameter/2) || (ox==orb_diameter && oy==1)) {
-                    orb_boundary_ch = "/";
+                    orb_boundary_ch = L"/";
                 } else if ((ox==0 || ox==orb_diameter+1) && (oy>1 && oy<orb_diameter/2)){
-                    orb_boundary_ch = "|";
+                    orb_boundary_ch = L"|";
                 } else if ((oy==0 || oy==orb_diameter/2+1) && (ox>1 && ox<orb_diameter)){
-                    orb_boundary_ch = "-";
+                    orb_boundary_ch = L"-";
                 }
 
                 attron(COLOR_PAIR(orb_boundary_color));
-                mvaddwstr(y+oy,COLS-ox-2,orb_boundary_ch.c_wstr());
+                mvaddwstr(y+oy,COLS-ox-2,orb_boundary_ch.c_str());
                 attroff(COLOR_PAIR(orb_boundary_color));
 
 
@@ -1347,20 +1331,20 @@ void draw_UI(PlayerStats& playerStats) {
     attron(COLOR_PAIR(get_color_pair_index(COLOR_BLACK,player_color)));
 
     //draw level and class name
-    mvprintw(LINES-3, x, "%s",
-             player_class.c_wstr()
-            );
-    mvprintw(LINES-2, x, "LVL%d",
-             player_level
-            );
+    wchar_t player_class_buf[256];
+    swprintf(player_class_buf, 256, L"%s", player_class.c_str());
+    mvwprintw(stdscr, LINES-3, x, "%ls", player_class_buf);
+
+    wchar_t player_level_buf[256];
+    swprintf(player_level_buf, 256, L"LVL%d", player_level);
+    mvwprintw(stdscr, LINES-2, x, "%ls", player_level_buf);
+
     attroff(COLOR_PAIR(get_color_pair_index(COLOR_BLACK,player_color)));
 
-    //draw stats
-    mvprintw(LINES-1, x, "STR:%d WIL:%d DEX:%d",
-             playerStats.attack,
-             playerStats.defense,
-             playerStats.speed
-            );
+    wchar_t player_stats_buf[256];
+    swprintf(player_stats_buf, 256, L"STR:%d WIL:%d DEX:%d", playerStats.attack, playerStats.defense, playerStats.speed);
+    mvwprintw(stdscr, LINES-1, x, "%ls", player_stats_buf);
+
 
     y = 1;
     x = 2;
@@ -1370,7 +1354,7 @@ void draw_UI(PlayerStats& playerStats) {
 
 
     for (int i = 0; i < log_size; i++) {
-        mvaddwstr(y + i, x, combat_log[combat_log.size() - log_size + i].c_wstr());
+        mvaddstr(y + i, x, combat_log[combat_log.size() - log_size + i].c_str());
     }
 
 
@@ -1705,7 +1689,7 @@ int main() {
 
 
         // initialize empty draw buffer
-        vector<pair<string, pair<int, int>>> draw_buffer;
+        vector<pair<wstring, pair<int, int>>> draw_buffer;
 
         for (int y = start_y; y < end_y; ++y) {
             for (int x = start_x; x < end_x; ++x) {
@@ -1732,7 +1716,7 @@ int main() {
         auto& monsters = entityManager.getMonsterComponents();
         auto& items = entityManager.getItemComponents();
 
-        vector<pair<pair<int, int>, pair<string, int>>> visible_entities;
+        vector<pair<pair<int, int>, pair<wstring, int>>> visible_entities;
 
         //draw player as a visible character
         visible_entities.push_back(make_pair(make_pair(player_y, player_x),make_pair(PLAYER_TILE, playerStats.color)));
@@ -1820,7 +1804,10 @@ int main() {
         log(DEV_LOG_FILE, "updated monster system");
 
         draw_UI(playerStats);
-        mvprintw(0,0,"(x%d,y%d)",player_x,player_y);
+        wchar_t player_coord_buf[256];
+        swprintf(player_coord_buf, 256, L"(x%d,y%d)", player_x, player_y);
+        mvwprintw(stdscr, 0, 0, "%ls", player_coord_buf);
+
 
 
         int key = getch();
