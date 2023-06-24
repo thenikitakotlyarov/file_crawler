@@ -18,6 +18,7 @@
 #include <thread>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
+#include <locale.h>
 
 #include "helpers.cpp"
 
@@ -48,12 +49,12 @@ using namespace std;
 
 /* ___             _            _
   / __|___ _ _  __| |_ __ _ _ _| |_ ___
- | (__/ _ \ ' \(_-<  _/ _` | ' \  _(_-<
+ | (__/ _ \ " \(_-<  _/ _` | " \  _(_-<
   \___\___/_||_/__/\__\__,_|_||_\__/__/
  section:constants */
 
-const string DEV_LOG_FILE = "dev_log.txt";
-const string GAME_LOG_FILE = "game_log.txt";
+const wstring DEV_LOG_FILE = "dev_log.txt";
+const wstring GAME_LOG_FILE = "game_log.txt";
 
 const int UI_LOG_COUNT = 7;
 
@@ -68,35 +69,35 @@ const bool sound = false;
 Mix_Chunk* PLAYER_FOOTSTEP_SOUND = nullptr;
 const int PLAYER_FOOTSTEP_SOUND_COUNT = 6;
 
-const vector<char> GROUND_TILES = {'.',',','`','"'};
-const vector<char> WALL_TILES = {'[',']','{','}','=','|','+','-','_','/','\\',};
-const vector<char> TRAP_TILES = {'&','#'};
-const vector<char> VOID_TILES = {' '};
+const vector<string> GROUND_TILES = {".",",","`","\"","'"};
+const vector<string> WALL_TILES = {"[","]","{","}","=","|","+","-","_","/","\\",};
+const vector<string> TRAP_TILES = {"&","#"};
+const vector<string> VOID_TILES = {" "};
 
 
-const char PLAYER_TILE = '@';
+const wstring PLAYER_TILE = "ç";
 
 
-// const vector<char> MONSTER_TILES = {
-//     'Z','S',
+// const vector<string> MONSTER_TILES = {
+//     "Z","S",
 // };
-// const vector<char> ITEM_TILES = {
-//     'o','O','0','s','S','7','d','D','8','a','A','9'
+// const vector<string> ITEM_TILES = {
+//     "o","O","0","s","S","7","d","D","8","a","A","9"
 // };
 
-// vector<char> get_entity_tiles() {
-//     vector<char> tiles;
+// vector<string> get_entity_tiles() {
+//     vector<string> tiles;
 //     tiles.insert(tiles.end(), MONSTER_TILES.begin(), MONSTER_TILES.end());
 //     tiles.insert(tiles.end(), ITEM_TILES.begin(), ITEM_TILES.end());
 //     tiles.push_back(PLAYER_TILE);
 //     return tiles;
 // }
-// vector<char> ENTITY_TILES = get_entity_tiles();
+// vector<string> ENTITY_TILES = get_entity_tiles();
 
 
 /*_                   _
  | |   ___  __ _ __ _(_)_ _  __ _
- | |__/ _ \/ _` / _` | | ' \/ _` |
+ | |__/ _ \/ _` / _` | | " \/ _` |
  |____\___/\__, \__, |_|_||_\__, |
            |___/|___/       |___/
  section:logging */
@@ -104,7 +105,7 @@ const char PLAYER_TILE = '@';
 vector<string> combat_log;
 
 template<typename... Args>
-void log(const string filename, Args&&... args) {
+void log(const wstring filename, Args&&... args) {
     ofstream logfile(filename, ios::app);  // Open the file in append mode
 
     if (!logfile.is_open()) return;
@@ -113,7 +114,7 @@ void log(const string filename, Args&&... args) {
     streambuf* coutbuf = cout.rdbuf();
     cout.rdbuf(logfile.rdbuf());
 
-    // Create a string stream
+    // Create a wstring stream
     ostringstream oss;
     (oss << ... << forward<Args>(args));
     // Log the formatted message
@@ -148,11 +149,11 @@ void playFootstepSound() {
     pair<int,int> range = { 1, PLAYER_FOOTSTEP_SOUND_COUNT };
 
     // Construct the file name with the randomly generated number
-    string file_id = to_string(get_random_int(range.first,range.second));
-    string fileName = "data/sound/footstep"+file_id+".wav";
+    wstring file_id = to_string(get_random_int(range.first,range.second));
+    wstring fileName = "data/sound/footstep"+file_id+".wav";
 
     // Load the random sound file
-    Mix_Chunk* footstepSound = Mix_LoadWAV(fileName.c_str());
+    Mix_Chunk* footstepSound = Mix_LoadWAV(fileName.c_wstr());
     if (!footstepSound) {
         log(DEV_LOG_FILE, fileName + "  does not exist");
         // Handle sound loading error
@@ -170,7 +171,7 @@ void playFootstepSound() {
 
 /* ___               _    _
   / __|_ _ __ _ _ __| |_ (_)__ ___
- | (_ | '_/ _` | '_ \ ' \| / _(_-<
+ | (_ | "_/ _` | "_ \ " \| / _(_-<
   \___|_| \__,_| .__/_||_|_\__/__/
  section:graphics */
 
@@ -233,13 +234,13 @@ int get_tile_color(const vector<int> swatch) {
 
 /* ___                       _   _
   / __|___ _ _  ___ _ _ __ _| |_(_)___ _ _
- | (_ / -_) ' \/ -_) '_/ _` |  _| / _ \ ' \
+ | (_ / -_) " \/ -_) "_/ _` |  _| / _ \ " \
   \___\___|_||_\___|_| \__,_|\__|_\___/_||_|
  section:generation */
 
 // MAP GEN
 struct Tile {
-    char ch;
+    wstring ch;
     short color;
     bool visited;
     bool visible;
@@ -289,7 +290,7 @@ vector<vector<Tile>> generate_game_map() {
     // Generate open areas using Perlin noise
     for (int y = 0; y < HEIGHT; ++y) {
         for (int x = 0; x < WIDTH; ++x) {
-            char ch = get_random_character(VOID_TILES);
+            wstring ch = get_random_character(VOID_TILES);
             short color = get_color_pair_index(COLOR_WHITE,COLOR_BLACK);
             Tile void_tile = {ch, color, false, false};
             game_map[x][y] = void_tile;
@@ -350,7 +351,7 @@ vector<vector<Tile>> generate_game_map() {
     for (int y = 0; y < HEIGHT; ++y) {
         for (int x = 0; x < WIDTH; ++x) {
             if (!visited[x][y] && check_if_in(GROUND_TILES, game_map[x][y].ch)) {
-                char ch = get_random_character(WALL_TILES);
+                wstring ch = get_random_character(WALL_TILES);
                 short color = get_tile_color(wall_swatch);
                 Tile this_tile = {ch, color, false, false};
                 game_map[x][y] =  this_tile;
@@ -360,14 +361,14 @@ vector<vector<Tile>> generate_game_map() {
 
     // Draw a border around the game_map
     for (int x = 0; x < WIDTH; ++x) {
-        char ch = get_random_character(WALL_TILES);
+        wstring ch = get_random_character(WALL_TILES);
         short color = get_tile_color(wall_swatch);
         Tile this_tile = {ch, color, false, false};
         game_map[x][0] = this_tile;
         game_map[x][HEIGHT - 1] = this_tile;
     }
     for (int y = 0; y < HEIGHT; ++y) {
-        char ch = get_random_character(WALL_TILES);
+        wstring ch = get_random_character(WALL_TILES);
         short color = get_tile_color(wall_swatch);
         Tile this_tile = {ch, color, false, false};
         game_map[0][y] = this_tile;
@@ -406,7 +407,7 @@ vector<vector<Tile>> generate_game_map() {
         // Generate open areas using Perlin noise
         for (int y = 0; y < HEIGHT; ++y) {
             for (int x = 0; x < WIDTH; ++x) {
-                char ch = get_random_character(VOID_TILES);
+                wstring ch = get_random_character(VOID_TILES);
                 short color = get_color_pair_index(COLOR_WHITE,COLOR_BLACK);
                 Tile void_tile = {ch, color, false, false};
                 game_map[x][y] = void_tile;
@@ -467,7 +468,7 @@ vector<vector<Tile>> generate_game_map() {
         for (int y = 0; y < HEIGHT; ++y) {
             for (int x = 0; x < WIDTH; ++x) {
                 if (!visited[x][y] && check_if_in(GROUND_TILES, game_map[x][y].ch)) {
-                    char ch = get_random_character(WALL_TILES);
+                    wstring ch = get_random_character(WALL_TILES);
                     short color = get_tile_color(wall_swatch);
                     Tile this_tile = {ch, color, false, false};
                     game_map[x][y] =  this_tile;
@@ -477,14 +478,14 @@ vector<vector<Tile>> generate_game_map() {
 
         // Draw a border around the game_map
         for (int x = 0; x < WIDTH; ++x) {
-            char ch = get_random_character(WALL_TILES);
+            wstring ch = get_random_character(WALL_TILES);
             short color = get_tile_color(wall_swatch);
             Tile this_tile = {ch, color, false, false};
             game_map[x][0] = this_tile;
             game_map[x][HEIGHT - 1] = this_tile;
         }
         for (int y = 0; y < HEIGHT; ++y) {
-            char ch = get_random_character(WALL_TILES);
+            wstring ch = get_random_character(WALL_TILES);
             short color = get_tile_color(wall_swatch);
             Tile this_tile = {ch, color, false, false};
             game_map[0][y] = this_tile;
@@ -504,7 +505,7 @@ vector<vector<Tile>> generate_game_map() {
 
 /*___      _   _     __ _         _ _
  | _ \__ _| |_| |_  / _(_)_ _  __| (_)_ _  __ _
- |  _/ _` |  _| ' \|  _| | ' \/ _` | | ' \/ _` |
+ |  _/ _` |  _| " \|  _| | " \/ _` | | " \/ _` |
  |_| \__,_|\__|_||_|_| |_|_||_\__,_|_|_||_\__, |
                                           |___/
  section:pathfinding */
@@ -627,14 +628,14 @@ vector<Node> aStar(const PositionComponent& start, const PositionComponent& goal
 
 /* ___                                  _
   / __|___ _ __  _ __  ___ _ _  ___ _ _| |_ ___
- | (__/ _ \ '  \| '_ \/ _ \ ' \/ -_) ' \  _(_-<
+ | (__/ _ \ "  \| "_ \/ _ \ " \/ -_) " \  _(_-<
   \___\___/_|_|_| .__/\___/_||_\___|_||_\__/__/
                 |_|
  section:components */
 
 struct PlayerStats {
     int level;
-    string class_name;
+    wstring class_name;
     int color;
     int health;
     int energy;
@@ -663,16 +664,18 @@ enum class ItemType {
 
 struct ItemComponent {
     ItemType type;
-    char character;
-    string name;
+    wstring character;
+    wstring name;
     int color;
     float rarity;
     function<void(PlayerStats&)> effect;
 };
 
 struct MonsterComponent {
-    char character;
-    string name;
+    wstring characterFullHealth;
+    wstring characterMidHealth;
+    wstring characterLowHealth;
+    wstring name;
     int color;
     int attackPower;
     int attackRadius;
@@ -685,7 +688,7 @@ struct MonsterComponent {
 
 /*___     _   _ _   _
  | __|_ _| |_(_) |_(_)___ ___
- | _|| ' \  _| |  _| / -_|_-<
+ | _|| " \  _| |  _| / -_|_-<
  |___|_||_\__|_|\__|_\___/__/
  section:entities */
 
@@ -757,8 +760,8 @@ int get_player_level(PlayerStats& playerStats) {
                  /(9+playerStats.level));
 }
 
-string get_player_class_name(PlayerStats& playerStats) {
-    string class_name;
+wstring get_player_class_name(PlayerStats& playerStats) {
+    wstring class_name;
 
     if (playerStats.attack > playerStats.defense
         && playerStats.attack > playerStats.speed) {
@@ -873,8 +876,8 @@ pair<int,int> move_player(EntityManager& entityManager,
 
 // struct ItemComponent {
 //     ItemType type;
-//     char character;
-//     string name;
+//     wstring character;
+//     wstring name;
 //     int color;
 //     float rarity;
 //     function<void(PlayerStats&)> effect;
@@ -884,61 +887,61 @@ pair<int,int> move_player(EntityManager& entityManager,
 // we can def load this from a file or smthn
 vector<ItemComponent> itemTemplates = {
         {ItemType::SmallHealthPotion, //< identifier
-            'o', "Small Health Potion", COLOR_RED, 0.5, //< character, name, color, rarity
+            "o", "Small Health Potion", COLOR_RED, 0.5, //< character, name, color, rarity
             [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP, stats.health + 5);}}, //< ability
 
         {ItemType::MediumHealthPotion,
-            'O', "Medium Health Potion", COLOR_RED,0.1,
+            "O", "Medium Health Potion", COLOR_RED,0.1,
             [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP,stats.health + 10);}},
 
         {ItemType::LargeHealthPotion,
-            '0', "Large Health Potion",  COLOR_RED, 0.5,
+            "0", "Large Health Potion",  COLOR_RED, 0.5,
             [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP,stats.health + 25);}},
 
         {ItemType::SmallEnergyPotion,
-            'o', "Small Energy Potion", COLOR_BLUE, 0.5,
+            "o", "Small Energy Potion", COLOR_BLUE, 0.5,
             [](PlayerStats& stats) {stats.energy = min(PLAYER_MAX_EP, stats.energy + 5);}},
 
         {ItemType::MediumEnergyPotion,
-            'O', "Medium Energy Potion", COLOR_BLUE,0.1,
+            "O", "Medium Energy Potion", COLOR_BLUE,0.1,
             [](PlayerStats& stats) {stats.energy = min(PLAYER_MAX_EP,stats.energy + 10);}},
 
         {ItemType::LargeEnergyPotion,
-            '0', "Large Energy Potion",  COLOR_BLUE, 0.05,
+            "0", "Large Energy Potion",  COLOR_BLUE, 0.05,
             [](PlayerStats& stats) {stats.energy = min(PLAYER_MAX_EP,stats.energy + 25);}},
 
         {ItemType::LightRegenPotion,
-            'O', "Light Regen Potion", COLOR_MAGENTA,0.05,
+            "O", "Light Regen Potion", COLOR_MAGENTA,0.05,
             [](PlayerStats& stats) {stats.health = min(PLAYER_MAX_HP,stats.health + PLAYER_MAX_HP/4),
                                     stats.energy = min(PLAYER_MAX_EP,stats.energy + PLAYER_MAX_EP/4);}},
 
         {ItemType::FullRegenPotion,
-            'O', "Full Regen Potion", COLOR_MAGENTA,0.025,
+            "O", "Full Regen Potion", COLOR_MAGENTA,0.025,
             [](PlayerStats& stats) {stats.health = PLAYER_MAX_HP,
                                     stats.energy = PLAYER_MAX_EP;}},
 
         {ItemType::WeakStrengthSerum,
-            's', "Weak Strength Serum", COLOR_RED, 1.0,
+            "s", "Weak Strength Serum", COLOR_RED, 1.0,
             [](PlayerStats& stats) { stats.attack += 1; }},
 
         {ItemType::StrongStrengthSerum,
-            'S', "Strong Strength Serum", COLOR_RED, 0.25,
+            "S", "Strong Strength Serum", COLOR_RED, 0.25,
             [](PlayerStats& stats) { stats.attack += 2; }},
 
         {ItemType::WeakWillSerum,
-            'w', "Weak Will Serum", COLOR_BLUE, 1.0,
+            "w", "Weak Will Serum", COLOR_BLUE, 1.0,
             [](PlayerStats& stats) { stats.defense += 1; }},
 
         {ItemType::StrongWillSerum,
-            'W', "Strong  Will Serum", COLOR_BLUE, 0.25,
+            "W", "Strong  Will Serum", COLOR_BLUE, 0.25,
             [](PlayerStats& stats) { stats.defense += 2; }},
 
         {ItemType::WeakDexteritySerum,
-            'd', "Weak Dexterity Serum", COLOR_GREEN, 1.0,
+            "d", "Weak Dexterity Serum", COLOR_GREEN, 1.0,
             [](PlayerStats& stats) { stats.speed += 1; }},
 
         {ItemType::StrongDexteritySerum,
-            'D', "Strong Dexterity Serum", COLOR_GREEN, 0.25,
+            "D", "Strong Dexterity Serum", COLOR_GREEN, 0.25,
             [](PlayerStats& stats) { stats.speed += 2; }}
     };
 
@@ -1083,8 +1086,8 @@ public:
 // subsection:spawning
 
 // struct MonsterComponent {
-//     char character;
-//     string name;
+//     wstring character;
+//     wstring name;
 //     int color;
 //     int attackPower;
 //     int attackRadius;
@@ -1126,7 +1129,7 @@ void spawn_monsters(int count, float rating, EntityManager& entityManager, vecto
             monster_attack_cooldown
         };*/
         entityManager.getMonsterComponents()[monsterEntity] = {
-            'M', "Monster", COLOR_RED,
+            "M", "m", ";", "Monster", COLOR_RED,
             monster_attack_power,monster_attack_range, monster_chase_range, monster_attack_cooldown,
             monster_health, monster_health
         };
@@ -1137,28 +1140,28 @@ void spawn_monsters(int count, float rating, EntityManager& entityManager, vecto
 
 /*___             _         _
  | _ \___ _ _  __| |___ _ _(_)_ _  __ _
- |   / -_) ' \/ _` / -_) '_| | ' \/ _` |
+ |   / -_) " \/ _` / -_) "_| | " \/ _` |
  |_|_\___|_||_\__,_\___|_| |_|_||_\__, |
                                   |___/
  section:rendering */
 
 void render_buffer(
-        const vector<pair<char, pair<int, int>>>& draw_buffer,
+        const vector<pair<string, pair<int, int>>>& draw_buffer,
         const vector<vector<Tile>>& game_map,
-        const vector<pair<pair<int, int>, pair<char, int>>> entities,
+        const vector<pair<pair<int, int>, pair<string, int>>> entities,
         int start_x, int start_y) {
 
     log(DEV_LOG_FILE, "rendering buffer");
 
     int py, px;
     short player_color;
-    vector<vector<pair<char, int>>> frame(LINES-3, vector<pair<char, int>>(COLS, {'?',COLOR_BLACK}));
+    vector<vector<pair<string, int>>> frame(LINES-3, vector<pair<string, int>>(COLS, {"?",COLOR_BLACK}));
 
 
     for (const auto& entity: entities) {
         int y = entity.first.first - start_y;
         int x = entity.first.second - start_x;
-        char ch = entity.second.first;
+        wstring ch = entity.second.first;
         short color = get_color_pair_index(COLOR_BLACK,entity.second.second);
         if (ch == PLAYER_TILE) py = y, px = x, player_color = color;
         if (x < 0 || x >= COLS || y < 0 || y >= LINES-3) continue;
@@ -1171,7 +1174,7 @@ void render_buffer(
         int Y = y - start_y;
         int X = x - start_x;
 
-        char ch = tile.first;
+        wstring ch = tile.first;
         short color = get_color_pair_index(COLOR_BLACK,COLOR_BLACK);
 
         if (game_map[x][y].visible) { // visible environment
@@ -1181,7 +1184,7 @@ void render_buffer(
         }
 
         if (X < 0 || X >= COLS || Y < 0 || Y >= LINES-3) continue;
-        if (frame[Y][X].first == '?') frame[Y][X] = make_pair(ch, color);
+        if (frame[Y][X].first == "?") frame[Y][X] = make_pair(ch, color);
     }
 
     //draw player last
@@ -1190,14 +1193,14 @@ void render_buffer(
 
     // Render frame
     clear();
-    char pixel_char;
+    wstring pixel_char;
     short pixel_color;
     for (int i = 0; i < LINES-3; ++i) {
         for (int j = 0; j < COLS; ++j) {
             pixel_char = frame[i][j].first;
             pixel_color = frame[i][j].second;
             attron(COLOR_PAIR(pixel_color));
-            mvaddch(i,j, pixel_char);
+            mvaddwstr(i,j, pixel_char.c_wstr());
             attroff(COLOR_PAIR(pixel_color));
         }
     }
@@ -1210,7 +1213,7 @@ void render_buffer(
 
 /*___     _            __
  |_ _|_ _| |_ ___ _ _ / _|__ _ __ ___
-  | || ' \  _/ -_) '_|  _/ _` / _/ -_)
+  | || " \  _/ -_) "_|  _/ _` / _/ -_)
  |___|_||_\__\___|_| |_| \__,_\__\___|
  section:interface */
 
@@ -1225,7 +1228,7 @@ void draw_UI(PlayerStats& playerStats) {
     int y = LINES - (orb_diameter/2) - 2;
     int player_level = playerStats.level;
     int player_color = playerStats.color;
-    string player_class = playerStats.class_name;
+    wstring player_class = playerStats.class_name;
 
     //draw background for hud
     int ui_bg = get_color_pair_index(8,8);
@@ -1236,7 +1239,7 @@ void draw_UI(PlayerStats& playerStats) {
     attron(COLOR_PAIR(ui_bg));
     for (int hy = 0; hy <= 3; ++hy) {
         for (int hx = 0; hx < COLS; ++hx) {
-            mvprintw(LINES-hy,hx,".");
+            mvaddwstr(LINES-hy,hx,".");
         }
     }
     attroff(COLOR_PAIR(ui_bg));
@@ -1251,18 +1254,17 @@ void draw_UI(PlayerStats& playerStats) {
                 && (ox != 0 && oy!=orb_diameter/2+1)
                 && (ox!=orb_diameter+1 && oy!=orb_diameter/2+1)){
                 int color_pair;
-                char ch;
+                wstring ch;
                     if (health_level >= orb_size - (((oy) * orb_diameter) - ox)) {
-                        ch = get_random_character({' ',' ',' ','~'});
+                        ch = get_random_character({" "," "," ","~"});
                         color_pair = get_color_pair_index(COLOR_BLACK,COLOR_RED);
                     } else{
-                        ch =get_random_character({' ',' ',' ',' ',' ',' ',' ',' ','.'});
+                        ch =get_random_character({" "," "," "," "," "," "," "," ","."});
                         color_pair = get_color_pair_index(8,COLOR_BLACK);
                     }
 
                 attron(COLOR_PAIR(color_pair));
-                string str_ch(1, ch);
-                mvprintw(y+oy,1+ox,str_ch.c_str());
+                mvaddwstr(y+oy,1+ox,ch.c_wstr());
                 attroff(COLOR_PAIR(color_pair));
             }
             //draw boundary
@@ -1270,20 +1272,19 @@ void draw_UI(PlayerStats& playerStats) {
                 || (ox==0 || ox==orb_diameter+1) && !(oy==0 || oy==orb_diameter/2+1)
                 || (ox==1 || ox==orb_diameter) && (oy==1 || oy==orb_diameter/2)) {
                 int orb_boundary_color = get_color_pair_index(7,8);
-                char orb_boundary_ch = ' ';
+                wstring orb_boundary_ch = " ";
                 if ((ox==1 && oy==1) || (ox==orb_diameter && oy==orb_diameter/2)) {
-                    orb_boundary_ch = '/';
+                    orb_boundary_ch = "/";
                 } else if ((ox==1 && oy==orb_diameter/2) || (ox==orb_diameter && oy==1)) {
-                    orb_boundary_ch = '\\';
+                    orb_boundary_ch = "\\";
                 } else if ((ox==0 || ox==orb_diameter+1) && (oy>1 && oy<orb_diameter/2)){
-                    orb_boundary_ch = '|';
+                    orb_boundary_ch = "|";
                 } else if ((oy==0 || oy==orb_diameter/2+1) && (ox>1 && ox<orb_diameter)){
-                    orb_boundary_ch = '-';
+                    orb_boundary_ch = "-";
                 }
 
-                string str_ch(1,orb_boundary_ch);
                 attron(COLOR_PAIR(orb_boundary_color));
-                mvprintw(y+oy,1+ox,str_ch.c_str());
+                mvaddwstr(y+oy,1+ox,orb_boundary_ch.c_wstr());
                 attroff(COLOR_PAIR(orb_boundary_color));
 
 
@@ -1302,18 +1303,17 @@ void draw_UI(PlayerStats& playerStats) {
                 && (ox != 0 && oy!=orb_diameter/2+1)
                 && (ox!=orb_diameter+1 && oy!=orb_diameter/2+1)){
                 int color_pair;
-                char ch;
+                wstring ch;
                     if (energy_level >= orb_size - (((oy) * orb_diameter) - ox)) {
-                        ch = get_random_character({' ',' ',' ','~'});
+                        ch = get_random_character({" "," "," ","~"});
                         color_pair = get_color_pair_index(COLOR_BLACK,get_player_color(playerStats));
                     } else{
-                        ch =get_random_character({' ',' ',' ',' ',' ',' ',' ',' ','.'});
+                        ch =get_random_character({" "," "," "," "," "," "," "," ","."});
                         color_pair = get_color_pair_index(8,COLOR_BLACK);
                     }
 
                 attron(COLOR_PAIR(color_pair));
-                string str_ch(1, ch);
-                mvprintw(y+oy,COLS-ox-2,str_ch.c_str());
+                mvaddwstr(y+oy,COLS-ox-2,ch.c_wstr());
                 attroff(COLOR_PAIR(color_pair));
             }
             //draw boundary
@@ -1321,20 +1321,19 @@ void draw_UI(PlayerStats& playerStats) {
                 || (ox==0 || ox==orb_diameter+1) && !(oy==0 || oy==orb_diameter/2+1)
                 || (ox==1 || ox==orb_diameter) && (oy==1 || oy==orb_diameter/2)) {
                 int orb_boundary_color = get_color_pair_index(7,8);
-                char orb_boundary_ch = ' ';
+                wstring orb_boundary_ch = " ";
                 if ((ox==1 && oy==1) || (ox==orb_diameter && oy==orb_diameter/2)) {
-                    orb_boundary_ch = '\\';
+                    orb_boundary_ch = "\\";
                 } else if ((ox==1 && oy==orb_diameter/2) || (ox==orb_diameter && oy==1)) {
-                    orb_boundary_ch = '/';
+                    orb_boundary_ch = "/";
                 } else if ((ox==0 || ox==orb_diameter+1) && (oy>1 && oy<orb_diameter/2)){
-                    orb_boundary_ch = '|';
+                    orb_boundary_ch = "|";
                 } else if ((oy==0 || oy==orb_diameter/2+1) && (ox>1 && ox<orb_diameter)){
-                    orb_boundary_ch = '-';
+                    orb_boundary_ch = "-";
                 }
 
-                string str_ch(1,orb_boundary_ch);
                 attron(COLOR_PAIR(orb_boundary_color));
-                mvprintw(y+oy,COLS-ox-2,str_ch.c_str());
+                mvaddwstr(y+oy,COLS-ox-2,orb_boundary_ch.c_wstr());
                 attroff(COLOR_PAIR(orb_boundary_color));
 
 
@@ -1349,7 +1348,7 @@ void draw_UI(PlayerStats& playerStats) {
 
     //draw level and class name
     mvprintw(LINES-3, x, "%s",
-             player_class.c_str()
+             player_class.c_wstr()
             );
     mvprintw(LINES-2, x, "LVL%d",
              player_level
@@ -1371,7 +1370,7 @@ void draw_UI(PlayerStats& playerStats) {
 
 
     for (int i = 0; i < log_size; i++) {
-        mvprintw(y + i, x, combat_log[combat_log.size() - log_size + i].c_str());
+        mvaddwstr(y + i, x, combat_log[combat_log.size() - log_size + i].c_wstr());
     }
 
 
@@ -1381,7 +1380,7 @@ void draw_UI(PlayerStats& playerStats) {
 
 /*__  __
  |  \/  |___ _ _ _  _ ___
- | |\/| / -_) ' \ || (_-<
+ | |\/| / -_) " \ || (_-<
  |_|  |_\___|_||_\_,_/__/
  section:menus */
 void print_class_menu() {
@@ -1550,7 +1549,9 @@ pair<int, int> get_player_spawn_coords(vector<vector<Tile>> game_map, EntityMana
 
 int main() {
     log(DEV_LOG_FILE, "Running file_crawler");
-
+    
+    setlocale(LC_ALL, "");
+    
     initscr();
     log(DEV_LOG_FILE, "initialized screen");
     int frame_count = 0;
@@ -1646,7 +1647,7 @@ int main() {
 
     Entity playerEntity = entityManager.createEntity();
     entityManager.getPlayerStats()[playerEntity] = playerStats;
-    entityManager.getPositions()[playerEntity] = {0,0};//put player at origin so that spawning them doesn't freak out later
+    entityManager.getPositions()[playerEntity] = {0,0};//put player at origin so that spawning them doesn"t freak out later
     log(DEV_LOG_FILE, "initialized entity manager");
 
     int item_count = round(0.001333 * (HEIGHT * WIDTH));
@@ -1704,14 +1705,14 @@ int main() {
 
 
         // initialize empty draw buffer
-        vector<pair<char, pair<int, int>>> draw_buffer;
+        vector<pair<string, pair<int, int>>> draw_buffer;
 
         for (int y = start_y; y < end_y; ++y) {
             for (int x = start_x; x < end_x; ++x) {
                 if (x < 0 || x >= WIDTH)     continue;
                 if (y < 0 || y >= HEIGHT)    continue;
                 
-                char ch = game_map[x][y].ch;
+                wstring ch = game_map[x][y].ch;
                 draw_buffer.push_back(make_pair(ch, make_pair(y, x)));
 
                 if (is_in_set({x, y}, player_fov)) {
@@ -1731,7 +1732,7 @@ int main() {
         auto& monsters = entityManager.getMonsterComponents();
         auto& items = entityManager.getItemComponents();
 
-        vector<pair<pair<int, int>, pair<char, int>>> visible_entities;
+        vector<pair<pair<int, int>, pair<string, int>>> visible_entities;
 
         //draw player as a visible character
         visible_entities.push_back(make_pair(make_pair(player_y, player_x),make_pair(PLAYER_TILE, playerStats.color)));
@@ -1741,16 +1742,16 @@ int main() {
             if (monsters.find(entity) != monsters.end()) {
                 const PositionComponent& position = entry.second;
                 if (is_in_set({position.x, position.y}, player_fov)) {
-                    char entity_tile;
+                    wstring entity_tile;
                     int entity_color;
                     if (monsters[entity].health > monsters[entity].total_health/2) {
-                        entity_tile = monsters[entity].character;
+                        entity_tile = monsters[entity].characterFullHealth;
                         entity_color = monsters[entity].color;
                     } else if (monsters[entity].health > monsters[entity].total_health/5 ) {
-                        entity_tile = tolower(monsters[entity].character);
+                        entity_tile = monsters[entity].characterMidHealth;
                         entity_color = monsters[entity].color;
                     } else {
-                        entity_tile = ';';
+                        entity_tile = monsters[entity].characterLowHealth;
                         entity_color = monsters[entity].color;
                     }
                     //add entities visible to player
@@ -1759,7 +1760,7 @@ int main() {
             } else if (items.find(entity) != items.end()) {
                 const PositionComponent& position = entry.second;
                 if (is_in_set({position.x, position.y}, player_fov)) {
-                    char entity_tile = items[entity].character;
+                    wstring entity_tile = items[entity].character;
                     int entity_color = items[entity].color;
                     visible_entities.push_back(make_pair(make_pair(position.y, position.x), make_pair(entity_tile, entity_color)));
                 }
