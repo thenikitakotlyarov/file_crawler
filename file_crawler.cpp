@@ -58,7 +58,7 @@ const string GAME_LOG_FILE = "game_log.txt";
 const int UI_LOG_COUNT = 7;
 
 const int FPS = 15;
-const int WIDTH = 512, HEIGHT = 512 ;
+const int WIDTH = 100, HEIGHT = 100  ;
 const int PLAYER_MAX_HP = 100;
 const int PLAYER_MAX_EP = 100;
 const int PLAYER_FOV_RADIUS = 12;
@@ -1160,7 +1160,7 @@ void render_buffer(
         char ch = entity.second.first;
         short color = get_color_pair_index(COLOR_BLACK,entity.second.second);
         if (ch == PLAYER_TILE) py = y, px = x, player_color = color;
-        if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) continue;
+        if (x < 0 || x >= COLS || y < 0 || y >= LINES-3) continue;
         frame[y][x].first = ch, frame[y][x].second = color;
     }
 
@@ -1179,7 +1179,7 @@ void render_buffer(
             color = get_color_pair_index(8, COLOR_BLACK);
         }
 
-        if (X < 0 || X >= WIDTH || Y < 0 || Y >= HEIGHT) continue;
+        if (X < 0 || X >= COLS || Y < 0 || Y >= LINES-3) continue;
         if (frame[Y][X].first == '?') frame[Y][X] = make_pair(ch, color);
     }
 
@@ -1372,7 +1372,6 @@ void draw_UI(PlayerStats& playerStats) {
     for (int i = 0; i < log_size; i++) {
         mvprintw(y + i, x, combat_log[combat_log.size() - log_size + i].c_str());
     }
-
 
 
 }
@@ -1687,7 +1686,7 @@ int main() {
         start_x = min(start_x, WIDTH - COLS);
         int end_x = start_x + COLS;
         int start_y = max(0, player_y - LINES / 2);
-        start_y = min(start_y, HEIGHT - LINES);
+        start_y = min(start_y, HEIGHT - LINES - 3);
         int end_y = start_y + LINES - 3;
 
         // get player fov
@@ -1802,6 +1801,7 @@ int main() {
             add_combat_log("Leveled up!");
             playerStats.level = player_level;
             playerStats.class_name = get_player_class_name(playerStats);
+            playerStats.color = get_player_color(playerStats);
             entityManager.getPlayerStats()[playerEntity] = playerStats;
             monster_count = monster_count * 12 /10;
             monster_difficulty = monster_difficulty * 12 /10;
@@ -1814,7 +1814,7 @@ int main() {
         log(DEV_LOG_FILE, "updated monster system");
 
         draw_UI(playerStats);
-        // mvprintw(0,0,"(x%d,y%d)",player_x,player_y);
+        mvprintw(0,0,"(x%d,y%d)",player_x,player_y);
 
 
         int key = getch();
