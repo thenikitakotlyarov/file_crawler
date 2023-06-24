@@ -58,7 +58,7 @@ const string GAME_LOG_FILE = "game_log.txt";
 const int UI_LOG_COUNT = 7;
 
 const int FPS = 15;
-const int WIDTH = 100, HEIGHT = 100  ;
+const int WIDTH = 2048, HEIGHT = 2048;
 const int PLAYER_MAX_HP = 100;
 const int PLAYER_MAX_EP = 100;
 const int PLAYER_FOV_RADIUS = 12;
