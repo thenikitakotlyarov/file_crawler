@@ -1809,9 +1809,6 @@ int main() {
 
         }
 
-        monsterSystem.update();
-        log(DEV_LOG_FILE, "updated monster system");
-
         draw_UI(playerStats);
         wchar_t player_coord_buf[256];
         swprintf(player_coord_buf, 256, L"(x%d,y%d)", player_x, player_y);
@@ -1819,6 +1816,7 @@ int main() {
 
 
 
+        set<int> monsters_killed_to_remove;
         int key = getch();
         if (key != ERR) {
             pair<int,int> delta = {0,0};
@@ -1914,7 +1912,7 @@ int main() {
 
                             if (monster.health <= 0) {
                                 add_combat_log("Player has defeated a monster.");
-                                entityManager.destroyEntity(monsterEntity);
+                                monsters_killed_to_remove.insert(monsterEntity);
                             }
 
 
@@ -1946,6 +1944,13 @@ int main() {
         }
 
         entityManager.getPositions()[playerEntity] = {player_x, player_y};
+        for (int monsterEntity: monsters_killed_to_remove) {
+            entityManager.destroyEntity(monsterEntity);
+        }
+        monsterSystem.update();
+        log(DEV_LOG_FILE, "updated monster system");
+
+
 
         auto frameEnd = chrono::steady_clock::now();
         auto frameDuration = chrono::duration_cast<chrono::milliseconds>(frameEnd - frameStart);
