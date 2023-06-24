@@ -58,9 +58,9 @@ const string GAME_LOG_FILE = "game_log.txt";
 const int UI_LOG_COUNT = 7;
 
 const int FPS = 15;
-const int WIDTH = 2048, HEIGHT = 2048;
+const int WIDTH = 1000, HEIGHT = 1000;
 const int PLAYER_MAX_HP = 100;
-const int PLAYER_MAX_EP = 100;
+const int PLAYER_MAX_EP = 150;
 const int PLAYER_FOV_RADIUS = 12;
 const int PLAYER_MEMORY_RADIUS = 3*PLAYER_FOV_RADIUS;
 
@@ -977,102 +977,103 @@ public:
         auto& monsters = entityManager.getMonsterComponents();
 
         for (const auto& entry : positions) {
-            Entity entity = entry.first;
+            if (get_random_int(1,7)%3==0) {
+                Entity entity = entry.first;
 
-            // Skip non-monster entities
-            if (monsters.find(entity) == monsters.end())
-                continue;
+                // Skip non-monster entities
+                if (monsters.find(entity) == monsters.end())
+                    continue;
 
-            PositionComponent& monsterPosition = positions[entity];
-            PositionComponent& playerPosition = positions[0];
-            // AIComponent& ai = entityManager.getAIComponents()[entity];
-            MonsterComponent& monster = monsters[entity];
+                PositionComponent& monsterPosition = positions[entity];
+                PositionComponent& playerPosition = positions[0];
+                // AIComponent& ai = entityManager.getAIComponents()[entity];
+                MonsterComponent& monster = monsters[entity];
 
-            monster.cooldown = max(0, monster.cooldown - 1);
-            int dx = monsterPosition.x - playerPosition.x;
-            int dy = monsterPosition.y - playerPosition.y;
-            double distance = sqrt(dx * dx + dy * dy);
+                monster.cooldown = max(0, monster.cooldown - 1);
+                int dx = monsterPosition.x - playerPosition.x;
+                int dy = monsterPosition.y - playerPosition.y;
+                double distance = sqrt(dx * dx + dy * dy);
 
-            if (distance <= monster.chaseRadius) {
-                log(DEV_LOG_FILE, "monster", entity, " chases player");
+                if (distance <= monster.chaseRadius) {
+                    log(DEV_LOG_FILE, "monster", entity, " chases player");
 
-                // Get the path from the monster to the player
-                log(DEV_LOG_FILE, "monster", entity, " is pathing");
-                vector<Node> path = aStar(monsterPosition, playerPosition, game_map);
-                log(DEV_LOG_FILE, "monster", entity, " found path");
-                int new_x = monsterPosition.x;
-                int new_y = monsterPosition.y;
-                // Move the monster to the next node in the path if it exists
-                if (!path.empty()) {
-                    log(DEV_LOG_FILE, "monster", entity, " taking path");
-                    // introduce a little noise to monster path
-                    new_x = max(1,min(WIDTH-1,path[1].x));
-                    new_y = max(1,min(HEIGHT-1,path[1].y));
-                } else {
-                    log(DEV_LOG_FILE, "monster", entity, " wanders");
-                    int wander_x, wander_y = 0;
-                    // introduce a little noise to monster path
-                    if ( get_random_int(1,FPS) == FPS ) {
-                        int wander_x = get_random_int(-1,1);
-                    }
-                    if ( get_random_int(1,FPS) == FPS ) {
-                        int wander_y = get_random_int(-1,1);
-                    }
-                    new_x = max(1,min(WIDTH-1,monsterPosition.x+wander_x));
-                    new_y = max(1,min(HEIGHT-1,monsterPosition.y+wander_y));
-
-                }
-
-
-                // Get all positions
-                const auto& all_positions = entityManager.getPositions();
-
-                // Flag to indicate whether the new position is occupied
-                bool is_occupied = false;
-
-                // Check if the new position is occupied by the player or another monster
-                for (const auto& pos_entry : all_positions) {
-                    if ((pos_entry.second.x == new_x) && (pos_entry.second.y == new_y)) {
-                        is_occupied = true;
-                        break;
-                    }
-                }
-
-                log(DEV_LOG_FILE, "monster", entity, " moving along path");
-                // Only move the monster to the new position if it's not occupied
-                if (!is_occupied and check_if_in(GROUND_TILES, game_map[new_x][new_y].ch)) {
-                    monsterPosition.x = new_x;
-                    monsterPosition.y = new_y;
-
-                    entityManager.getPositions()[entity] = {monsterPosition.x, monsterPosition.y};
-                }
-
-                log(DEV_LOG_FILE, "checking monster", entity, "'s attack range");
-                set<pair<int, int>> monster_attack_range =
-                    calculate_fov(
-                        game_map,
-                        monsterPosition.x, monsterPosition.y,
-                        monster.attackRadius
-                    );
-                log(DEV_LOG_FILE, "monster", entity, "'s attack range set");
-
-
-                if (distance <= monster.attackRadius && monster.cooldown == 0
-                    && is_in_set({playerPosition.x, playerPosition.y}, monster_attack_range) ) {
-                    log(DEV_LOG_FILE, "monster", entity, " attacks player");
-
-                    int damage = max(0,get_random_int(1, monster.attackPower) - get_random_int(0,playerStats.defense));
-                    playerStats.health -= damage;
-                    monster.cooldown = get_random_int(FPS / 3, FPS * 4 / 3);
-
-                    if (damage > 0) {
-                        add_combat_log("Player took " + to_string(damage) + " damage from a monster.");
+                    // Get the path from the monster to the player
+                    log(DEV_LOG_FILE, "monster", entity, " is pathing");
+                    vector<Node> path = aStar(monsterPosition, playerPosition, game_map);
+                    log(DEV_LOG_FILE, "monster", entity, " found path");
+                    int new_x = monsterPosition.x;
+                    int new_y = monsterPosition.y;
+                    // Move the monster to the next node in the path if it exists
+                    if (!path.empty()) {
+                        log(DEV_LOG_FILE, "monster", entity, " taking path");
+                        // introduce a little noise to monster path
+                        new_x = max(1,min(WIDTH-1,path[1].x));
+                        new_y = max(1,min(HEIGHT-1,path[1].y));
                     } else {
-                        add_combat_log("Player blocked the monster's attack.");
+                        log(DEV_LOG_FILE, "monster", entity, " wanders");
+                        int wander_x, wander_y = 0;
+                        // introduce a little noise to monster path
+                        if ( get_random_int(1,FPS) == FPS ) {
+                            int wander_x = get_random_int(-1,1);
+                        }
+                        if ( get_random_int(1,FPS) == FPS ) {
+                            int wander_y = get_random_int(-1,1);
+                        }
+                        new_x = max(1,min(WIDTH-1,monsterPosition.x+wander_x));
+                        new_y = max(1,min(HEIGHT-1,monsterPosition.y+wander_y));
+
+                    }
+
+
+                    // Get all positions
+                    const auto& all_positions = entityManager.getPositions();
+
+                    // Flag to indicate whether the new position is occupied
+                    bool is_occupied = false;
+
+                    // Check if the new position is occupied by the player or another monster
+                    for (const auto& pos_entry : all_positions) {
+                        if ((pos_entry.second.x == new_x) && (pos_entry.second.y == new_y)) {
+                            is_occupied = true;
+                            break;
+                        }
+                    }
+
+                    log(DEV_LOG_FILE, "monster", entity, " moving along path");
+                    // Only move the monster to the new position if it's not occupied
+                    if (!is_occupied and check_if_in(GROUND_TILES, game_map[new_x][new_y].ch)) {
+                        monsterPosition.x = new_x;
+                        monsterPosition.y = new_y;
+
+                        entityManager.getPositions()[entity] = {monsterPosition.x, monsterPosition.y};
+                    }
+
+                    log(DEV_LOG_FILE, "checking monster", entity, "'s attack range");
+                    set<pair<int, int>> monster_attack_range =
+                        calculate_fov(
+                            game_map,
+                            monsterPosition.x, monsterPosition.y,
+                            monster.attackRadius
+                        );
+                    log(DEV_LOG_FILE, "monster", entity, "'s attack range set");
+
+
+                    if (distance <= monster.attackRadius && monster.cooldown == 0
+                        && is_in_set({playerPosition.x, playerPosition.y}, monster_attack_range) ) {
+                        log(DEV_LOG_FILE, "monster", entity, " attacks player");
+
+                        int damage = max(0,get_random_int(1, monster.attackPower) - get_random_int(0,playerStats.defense));
+                        playerStats.health -= damage;
+                        monster.cooldown = get_random_int(FPS / 3, FPS * 4 / 3);
+
+                        if (damage > 0) {
+                            add_combat_log("Player took " + to_string(damage) + " damage from a monster.");
+                        } else {
+                            add_combat_log("Player blocked the monster's attack.");
+                        }
                     }
                 }
             }
-
         }
     }
 };
@@ -1648,13 +1649,15 @@ int main() {
     entityManager.getPositions()[playerEntity] = {0,0};//put player at origin so that spawning them doesn't freak out later
     log(DEV_LOG_FILE, "initialized entity manager");
 
-    int item_count = round(0.001 * (HEIGHT * WIDTH));
+    int item_count = round(0.001333 * (HEIGHT * WIDTH));
     int monster_count = round(0.00125 *  (HEIGHT * WIDTH));
+
     float monster_difficulty = 1.0;
 
     spawn_items(item_count ,entityManager, game_map);
     spawn_monsters(monster_count, monster_difficulty, entityManager, game_map);
-    monster_count = monster_count;//rescale for difficulty progression handled in player-level-up logic later
+    item_count = item_count/10;
+    monster_count = monster_count/3;//rescale for difficulty progression handled in player-level-up logic later
     MonsterSystem monsterSystem(entityManager, game_map, playerStats);
     log(DEV_LOG_FILE, "spawned items and monsters");
 
@@ -1803,9 +1806,11 @@ int main() {
             playerStats.class_name = get_player_class_name(playerStats);
             playerStats.color = get_player_color(playerStats);
             entityManager.getPlayerStats()[playerEntity] = playerStats;
-            monster_count = monster_count * 12 /10;
-            monster_difficulty = monster_difficulty * 12 /10;
+            item_count = item_count * 11/10;
+            monster_count = monster_count * 12/10;
+            monster_difficulty = monster_difficulty * 11/10;
 
+            spawn_items(item_count,entityManager,game_map);
             spawn_monsters(monster_count,monster_difficulty,entityManager,game_map);//congrats the player with friends!
 
         }
@@ -1886,8 +1891,10 @@ int main() {
                 // Player attack
                 auto& playerPosition = positions[playerEntity];
                 auto& monsters = entityManager.getMonsterComponents();
-                if (playerStats.energy >= 10) {
+                if (playerStats.energy >=7) {
                     for (const auto& entry : monsters) {
+                        const int player_max_arc = playerStats.attack/10;
+                        int hit_monsters = 0;
                         Entity monsterEntity = entry.first;
                         PositionComponent& monsterPosition = positions[monsterEntity];
                         MonsterComponent& monster = monsters[monsterEntity];
@@ -1895,8 +1902,10 @@ int main() {
                         if (abs(playerPosition.x - monsterPosition.x) <= playerStats.speed
                         && abs(playerPosition.y - monsterPosition.y) <= playerStats.speed
                         && is_in_set({monsterPosition.x, monsterPosition.y}, player_fov) ) {
+                            playerStats.energy -= 5;
                             int damage = get_random_int(0, playerStats.attack);
                             monster.health -= damage;
+                            hit_monsters++;
 
                             if (damage > 0) {
                                 add_combat_log("Player dealt " + to_string(damage) + " damage to a monster.");
@@ -1908,10 +1917,12 @@ int main() {
                                 add_combat_log("Player has defeated a monster.");
                                 entityManager.destroyEntity(monsterEntity);
                             }
-                            break;
+
+
+                            if (hit_monsters>player_max_arc) break;
                         }
                     }
-                    playerStats.energy -= 10;
+                playerStats.energy -= 2;
 
                 }
 

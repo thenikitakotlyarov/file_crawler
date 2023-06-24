@@ -28,7 +28,7 @@ if [[ "$OS" == "Linux" ]]; then
         # Pacman package manager (Arch, Manjaro, Garuda Linux, etc.)
         echo "Installing Linux dependencies using Pacman..."
         sudo pacman -Syu
-        sudo pacman -S ncurses libnoise openssl libssl crypto++ sdl2 sdl2_mixer gcc-libs
+        sudo pacman -Sy ncurses libnoise openssl crypto++ sdl2 sdl2_mixer gcc-libs
         echo "Linux dependencies installed."
     else
         echo "Unsupported Linux package manager."
