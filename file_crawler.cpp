@@ -69,14 +69,20 @@ const bool sound = false;
 Mix_Chunk* PLAYER_FOOTSTEP_SOUND = nullptr;
 const int PLAYER_FOOTSTEP_SOUND_COUNT = 6;
 
-const vector<wstring> GROUND_TILES = {L".",L",",L"`",L"\"",L"'"};
-const vector<wstring> WALL_TILES = {L"[",L"]",L"{L",L"}",L"=",L"|",L"+",L"-",L"_",L"/",L"\\",};
-const vector<wstring> TRAP_TILES = {L"&",L"#"};
+const vector<wstring> GROUND_TILES = {L"⠁",L"⠂",L"⠃",L"⠄",L"⠅",L"⠆",L"⠇",L"⠈",L"⠉",L"⠊",L"⠋",L"⠌",L"⠍",L"⠎",L"⠏",L"⠐",L"⠑",L"⠒",L"⠓",L"⠔",L"⠕",L"⠖",L"⠗",L"⠘",L"⠙",L"⠚",L"⠛",L"⠜",L"⠝",L"⠞",L"⠟",L"⠠",L"⠡",L"⠢",L"⠣",L"⠤",L"⠥",L"⠦",L"⠧",L"⠨",L"⠩",L"⠪",L"⠫",L"⠬",L"⠭",L"⠮",L"⠯",L"⠰",L"⠱",L"⠲",L"⠳",L"⠴",L"⠵",L"⠶",L"⠷",L"⠸",L"⠹",L"⠺",L"⠻",L"⠼",L"⠽",L"⠾",L"⠿",L"⡀",L"⡁",L"⡂",L"⡃",L"⡄",L"⡅",L"⡆",L"⡇",L"⡈",L"⡉",L"⡊",L"⡋",L"⡌",L"⡍",L"⡎",L"⡏",L"⡐",L"⡑",L"⡒",L"⡓",L"⡔",L"⡕",L"⡖",L"⡗",L"⡘",L"⡙",L"⡚",L"⡛",L"⡜",L"⡝",L"⡞",L"⡟",L"⡠",L"⡡",L"⡢",L"⡣",L"⡤",L"⡥",L"⡦",L"⡧",L"⡨",L"⡩",L"⡪",L"⡫",L"⡬",L"⡭",L"⡮",L"⡯",L"⡰",L"⡱",L"⡲",L"⡳",L"⡴",L"⡵",L"⡶",L"⡷",L"⡸",L"⡹",L"⡺",L"⡻",L"⡼",L"⡽",L"⡾",L"⡿",L"⢀",L"⢁",L"⢂",L"⢃",L"⢄",L"⢅",L"⢆",L"⢇",L"⢈",L"⢉",L"⢊",L"⢋",L"⢌",L"⢍",L"⢎",L"⢏",L"⢐",L"⢑",L"⢒",L"⢓",L"⢔",L"⢕",L"⢖",L"⢗",L"⢘",L"⢙",L"⢚",L"⢛",L"⢜",L"⢝",L"⢞",L"⢟",L"⢠",L"⢡",L"⢢",L"⢣",L"⢤",L"⢥",L"⢦",L"⢧",L"⢨",L"⢩",L"⢪",L"⢫",L"⢬",L"⢭",L"⢮",L"⢯",L"⢰",L"⢱",L"⢲",L"⢳",L"⢴",L"⢵",L"⢶",L"⢷",L"⢸",L"⢹",L"⢺",L"⢻",L"⢼",L"⢽",L"⢾",L"⢿",L"⣀",L"⣁",L"⣂",L"⣃",L"⣄",L"⣅",L"⣆",L"⣇",L"⣈",L"⣉",L"⣊",L"⣋",L"⣌",L"⣍",L"⣎",L"⣏",L"⣐",L"⣑",L"⣒",L"⣓",L"⣔",L"⣕",L"⣖",L"⣗",L"⣘",L"⣙",L"⣚",L"⣛",L"⣜",L"⣝",L"⣞",L"⣟",L"⣠",L"⣡",L"⣢",L"⣣",L"⣤",L"⣥",L"⣦",L"⣧",L"⣨",L"⣩",L"⣪",L"⣫",L"⣬",L"⣭",L"⣮",L"⣯",L"⣰",L"⣱",L"⣲",L"⣳",L"⣴",L"⣵",L"⣶",L"⣷",L"⣸",L"⣹",L"⣺",L"⣻",L"⣼",L"⣽",L"⣾",L"⣿"};
+
+
+const vector<wstring> WALL_TILES = {L"▀",L"▁",L"▂",L"▃",L"▄",L"▅",L"▆",L"▇",L"█",L"▉",L"▊",L"▋",L"▌",L"▍",L"▎",L"▏",L"▐",L"░",L"▒",L"▓",L"▔",L"▕",L"▖",L"▗",L"▘",L"▙",L"▚",L"▛",L"▜",L"▝",L"▞",L"▟"};
+
+const vector<wstring> TRAP_TILES = {L"&",L"#",L"人"};
 const vector<wstring> VOID_TILES = {L" "};
 
 
-const wstring PLAYER_TILE = L"Δ";
+const wstring PLAYER_TILE = L"ᚤ";
 
+const vector<wstring> MONSTER_LOW_HP_TILES = {L"亡", L"亢", L"四", L"五", L"六", L"七", L"八", L"九", L"口", L"日", L"月", L"木", L"水", L"火", L"竹", L"卩", L"廾", L"心", L"攵", L"文", L"斗", L"斤", L"方", L"无", L"曰", L"欠", L"歹", L"殳", L"毋", L"比", L"毛", L"氏"};
+const vector<wstring> MONSTER_MID_HP_TILES = {L"手", L"卯", L"米", L"虍", L"马", L"羊", L"羽", L"回", L"民", L"生", L"用", L"田", L"白", L"皮", L"目", L"矛", L"石", L"示", L"禾", L"立", L"老", L"而", L"耒", L"聿", L"肉", L"臣", L"自", L"至", L"臼", L"舌", L"舛", L"舟", L"艮", L"色", L"虎", L"血", L"行", L"衣", L"西", L"見", L"角", L"言", L"谷", L"豆", L"豕", L"豸", L"貝", L"赤", L"走", L"足", L"身", L"車", L"齐", L"辛", L"亿", L"仄", L"仅", L"仆", L"仇", L"今", L"介", L"仍", L"从", L"仑", L"仓", L"仔", L"仕", L"他", L"付", L"仙", L"仝", L"令", L"以", L"仪"};
+const vector<wstring> MONSTER_HIGH_HP_TILES = {L"麦", L"黄", L"黍", L"黑", L"黹", L"黽", L"鼠", L"鼻", L"齿", L"龍", L"龠", L"亀", L"龟", L"亜", L"亞", L"交", L"亦", L"亨", L"亩", L"享", L"京", L"亭", L"亮", L"亲"};
 
 
 /*_                   _
@@ -1113,7 +1119,10 @@ void spawn_monsters(int count, float rating, EntityManager& entityManager, vecto
             monster_attack_cooldown
         };*/
         entityManager.getMonsterComponents()[monsterEntity] = {
-            L"M", L"m", L";", "Monster", COLOR_RED,
+            get_random_character(MONSTER_HIGH_HP_TILES),
+            get_random_character(MONSTER_MID_HP_TILES),
+            get_random_character(MONSTER_LOW_HP_TILES),
+            "Monster", COLOR_RED,
             monster_attack_power,monster_attack_range, monster_chase_range, monster_attack_cooldown,
             monster_health, monster_health
         };
