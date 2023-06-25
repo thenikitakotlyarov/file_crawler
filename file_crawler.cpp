@@ -301,7 +301,7 @@ vector<vector<Tile>> generate_game_map() {
             } else if (value < 0.8) {
                 ch = get_random_character(WALL_TILES);
                 color = get_tile_color(wall_swatch);
-                height = get_random_int(0,5);
+                height = get_random_int(3,7);
             }
 
             Tile this_tile = {ch, color, false, false, height};
@@ -1064,7 +1064,7 @@ void render_buffer(
         frame[Y][X] = make_pair(ch, color);//if (frame[Y][X].first == L"?")
 
         int degrade = 0;
-        if (Y <= py + 12) {
+        if (Y <= LINES- py - 3) {
             for ( int h = 1; h <= game_map[x][y].z; ++h) {
                 if (Y-h+degrade/2 < 0 || Y+h-degrade/2 >= LINES-3) continue;
                 if (h > 2) {
@@ -1073,7 +1073,7 @@ void render_buffer(
                     ch = L"░";
                 }
                 frame[Y-h+degrade/2][X] = make_pair(ch, color);//if (frame[Y][X].first == L"?")
-                if (Y > py) {
+                if (Y >= py-3) {
                     degrade++;
                 }
 
@@ -1089,7 +1089,7 @@ void render_buffer(
         wstring ch = entity.second.first;
         short color = get_color_pair_index(COLOR_BLACK,entity.second.second);
         if (x < 0 || x >= COLS || y < 0 || y >= LINES-3) continue;
-        if (!check_if_in(GROUND_TILES, game_map[x+start_x][y+start_y].ch)) continue;
+        if (!check_if_in(GROUND_TILES, frame[y][x].first)) continue;
         frame[y][x].first = ch, frame[y][x].second = color;
     }
 
@@ -1461,8 +1461,13 @@ int main() {
     log(DEV_LOG_FILE, "Running file_crawler");
     
     setlocale(LC_ALL, "");
+
     
     initscr();
+    // Enable the keypad for the standard screen
+    keypad(stdscr, TRUE);
+    mousemask(ALL_MOUSE_EVENTS, NULL);
+
     log(DEV_LOG_FILE, "initialized screen");
     int frame_count = 0;
 
@@ -1592,6 +1597,7 @@ int main() {
     set<pair<int, int>> player_fov = {};
     log(DEV_LOG_FILE, "starting game loop");
     while (true) {
+        nodelay(stdscr, TRUE);
 
         auto frameStart = chrono::steady_clock::now();
 
@@ -1734,131 +1740,160 @@ int main() {
 
 
         set<int> monsters_killed_to_remove;
+        queue<int> input_buffer;
+
+
         int key = getch();
         if (key != ERR) {
-            pair<int,int> delta = {0,0};
-            if (key=='w' || key=='a' || key=='s' || key=='d') {
-                pair<int,int> direction;
-                if (key=='w')
-                    direction = {0,-1};
-                else if (key=='a')
-                    direction = {-1,0};
-                else if (key=='s')
-                    direction = {0,1};
-                else if (key=='d')
-                    direction = {1,0};
-                delta = move_player(entityManager, playerStats, game_map, direction, 0);
-                //forgive me
-                bool occupied = false;
-                for (const auto& entry : monsters) {
-                    Entity monsterEntity = entry.first;
-                    PositionComponent& monsterPosition = positions[monsterEntity];
+            input_buffer.push(key);
+        }
 
-                    if (monsterPosition.x == player_x + delta.first
-                        && monsterPosition.y == player_y + delta.second) {
-                        occupied = true;
-                        break;
+
+        while (!input_buffer.empty()) {
+            int key = input_buffer.front();
+            input_buffer.pop();
+
+
+            if ((key == KEY_MOUSE)) { // && getmouse(&event) == OK) {
+
+                MEVENT event;
+                if ((getmouse(&event) == OK)
+                    && (event.bstate & BUTTON1_PRESSED)){
+
+                    if (chrono::steady_clock::now() <= frameStart - chrono::seconds(1/FPS)) break;
+                    // Player primary attack
+                    auto& playerPosition = positions[playerEntity];
+                    auto& monsters = entityManager.getMonsterComponents();
+                    if (playerStats.energy >=2) {
+                        playerStats.energy -= 2;
+                        for (const auto& entry : monsters) {
+                            const int player_max_arc = playerStats.attack/10;
+                            int hit_monsters = 0;
+                            Entity monsterEntity = entry.first;
+                            PositionComponent& monsterPosition = positions[monsterEntity];
+                            MonsterComponent& monster = monsters[monsterEntity];
+
+                            if (abs(playerPosition.x - monsterPosition.x) <= playerStats.speed
+                            && abs(playerPosition.y - monsterPosition.y) <= playerStats.speed
+                            && is_in_set({monsterPosition.x, monsterPosition.y}, player_fov)
+                            && playerStats.energy >= 5 ) {
+                                playerStats.energy -= 5;
+                                int damage = get_random_int(0, playerStats.attack);
+                                monster.health -= damage;
+                                hit_monsters++;
+
+                                if (damage > 0) {
+                                    add_combat_log("Player dealt " + to_string(damage) + " damage to a monster.");
+                                } else {
+                                    add_combat_log("Player's attack was blocked by a monster.");
+                                }
+
+                                if (monster.health <= 0) {
+                                    add_combat_log("Player has defeated a monster.");
+                                    monsters_killed_to_remove.insert(monsterEntity);
+                                }
+
+
+                                if (hit_monsters>player_max_arc) break;
+                            }
+                        }
                     }
-                }
-                if (!occupied){
-                    player_x += delta.first;
-                    player_y += delta.second;
+
+
                 }
 
-            } else if (key=='W' || key=='A' || key=='S' || key=='D') {
-                pair<int,int> direction;
-                if (key=='W')
-                    direction = {0,-1};
-                else if (key=='A')
-                    direction = {-1,0};
-                else if (key=='S')
-                    direction = {0,1};
-                else if (key=='D')
-                    direction = {1,0};
-                sprinting += 0.2f; // This is your acceleration rate, adjust as needed
-                if (sprinting > playerStats.speed) sprinting = playerStats.speed; // Cap the sprinting speed
-                delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
-                //forgive me
-                bool occupied = false;
-                for (const auto& entry : monsters) {
-                    Entity monsterEntity = entry.first;
-                    PositionComponent& monsterPosition = positions[monsterEntity];
-
-                    if (monsterPosition.x == delta.first
-                        && monsterPosition.y == delta.second) {
-                        occupied = true;
-                        break;
-                    }
-                }
-                if (!occupied) {
-                    player_x += delta.first;
-                    player_y += delta.second;
-                    playerPosition.x = player_x;
-                    playerPosition.y = player_y;
-                    positions[0] = playerPosition;
-                }
-            } else if (key == 'q') {
-                break;
-            } else if (key == ' ') {
-                // Player attack
-                auto& playerPosition = positions[playerEntity];
-                auto& monsters = entityManager.getMonsterComponents();
-                if (playerStats.energy >=2) {
-                    playerStats.energy -= 2;
+            } else if (key != ERR) {
+                pair<int,int> delta = {0,0};
+                if (key=='w' || key=='a' || key=='s' || key=='d') {
+                    pair<int,int> direction;
+                    if (key=='w')
+                        direction = {0,-1};
+                    else if (key=='a')
+                        direction = {-1,0};
+                    else if (key=='s')
+                        direction = {0,1};
+                    else if (key=='d')
+                        direction = {1,0};
+                    delta = move_player(entityManager, playerStats, game_map, direction, 0);
+                    //forgive me
+                    bool occupied = false;
                     for (const auto& entry : monsters) {
-                        const int player_max_arc = playerStats.attack/10;
-                        int hit_monsters = 0;
                         Entity monsterEntity = entry.first;
                         PositionComponent& monsterPosition = positions[monsterEntity];
-                        MonsterComponent& monster = monsters[monsterEntity];
 
-                        if (abs(playerPosition.x - monsterPosition.x) <= playerStats.speed
-                        && abs(playerPosition.y - monsterPosition.y) <= playerStats.speed
-                        && is_in_set({monsterPosition.x, monsterPosition.y}, player_fov)
-                        && playerStats.energy >= 5 ) {
-                            playerStats.energy -= 5;
-                            int damage = get_random_int(0, playerStats.attack);
-                            monster.health -= damage;
-                            hit_monsters++;
+                        if (monsterPosition.x == player_x + delta.first
+                            && monsterPosition.y == player_y + delta.second) {
+                            occupied = true;
+                            break;
+                        }
+                    }
+                    if (!occupied){
+                        player_x += delta.first;
+                        player_y += delta.second;
+                    }
 
-                            if (damage > 0) {
-                                add_combat_log("Player dealt " + to_string(damage) + " damage to a monster.");
-                            } else {
-                                add_combat_log("Player's attack was blocked by a monster.");
-                            }
+                } else if (key=='W' || key=='A' || key=='S' || key=='D') {
+                    pair<int,int> direction;
+                    if (key=='W')
+                        direction = {0,-1};
+                    else if (key=='A')
+                        direction = {-1,0};
+                    else if (key=='S')
+                        direction = {0,1};
+                    else if (key=='D')
+                        direction = {1,0};
+                    sprinting += 0.2f; // This is your acceleration rate, adjust as needed
+                    if (sprinting > playerStats.speed) sprinting = playerStats.speed; // Cap the sprinting speed
+                    delta = move_player(entityManager, playerStats, game_map, direction, sprinting);
+                    //forgive me
+                    bool occupied = false;
+                    for (const auto& entry : monsters) {
+                        Entity monsterEntity = entry.first;
+                        PositionComponent& monsterPosition = positions[monsterEntity];
 
-                            if (monster.health <= 0) {
-                                add_combat_log("Player has defeated a monster.");
-                                monsters_killed_to_remove.insert(monsterEntity);
-                            }
+                        if (monsterPosition.x == delta.first
+                            && monsterPosition.y == delta.second) {
+                            occupied = true;
+                            break;
+                        }
+                    }
+                    if (!occupied) {
+                        player_x += delta.first;
+                        player_y += delta.second;
+                        playerPosition.x = player_x;
+                        playerPosition.y = player_y;
+                        positions[0] = playerPosition;
+                    }
+                } else if (key == 'q') {
+                    return 1;
+                } else if (key == ' ') {
+                    continue;//TODO:implement hold/sprint/jump position?
 
+                } else if (key == 'e' ) {
+                    //player interact
+                    auto& playerPosition = positions[playerEntity];
+                    auto& items = entityManager.getItemComponents();
 
-                            if (hit_monsters>player_max_arc) break;
+                    for (const auto& entry : items) {
+                        Entity itemEntity = entry.first;
+                        PositionComponent& itemPosition = positions[itemEntity];
+                        ItemComponent& item = items[itemEntity];
+                        if (playerPosition.x == itemPosition.x && playerPosition.y == itemPosition.y) {
+                            item.effect(playerStats);
+                            entityManager.destroyEntity(itemEntity);
+                            add_combat_log("Picked up " + item.name);
+                            break;
                         }
                     }
                 }
+            } else {
+                sprinting -= 0.1f;
+                if (sprinting < 0.0f) sprinting = 0.0f;
+            }
 
-            } else if (key == 'e' ) {
-                //player interact
-                auto& playerPosition = positions[playerEntity];
-                auto& items = entityManager.getItemComponents();
-
-                for (const auto& entry : items) {
-                    Entity itemEntity = entry.first;
-                    PositionComponent& itemPosition = positions[itemEntity];
-                    ItemComponent& item = items[itemEntity];
-                    if (playerPosition.x == itemPosition.x && playerPosition.y == itemPosition.y) {
-                        item.effect(playerStats);
-                        entityManager.destroyEntity(itemEntity);
-                        add_combat_log("Picked up " + item.name);
-                        break;
-                    }
-                }
-            } 
-        } else {
-            sprinting -= 0.1f;
-            if (sprinting < 0.0f) sprinting = 0.0f;
         }
+
+
 
         entityManager.getPositions()[playerEntity] = {player_x, player_y};
         for (int monsterEntity: monsters_killed_to_remove) {
@@ -1898,6 +1933,8 @@ int main() {
         //clear draw_buffer
         visible_entities.clear();
         draw_buffer.clear();
+        queue<int> empty;
+        swap(input_buffer, empty);
 
 
 
