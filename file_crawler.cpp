@@ -1014,36 +1014,79 @@ void spawn_monsters(int count, float rating, EntityManager& entityManager, vecto
 }
 
 
-
 /*___             _         _
- | _ \___ _ _  __| |___ _ _(_)_ _  __ _
+ | _ \___ _ _  __| |___ _ _(_)_ _  ___
  |   / -_) " \/ _` / -_) "_| | " \/ _` |
  |_|_\___|_||_\__,_\___|_| |_|_||_\__, |
                                   |___/
  section:rendering */
 
-void render_buffer(
-        const vector<pair<wstring, pair<int, int>>>& draw_buffer,
-        const vector<vector<Tile>>& game_map,
-        const vector<pair<pair<int, int>, pair<wstring, int>>> entities,
-        int start_x, int start_y) {
+// Create frame with default values
+vector<vector<pair<wstring, int>>> CreateFrame(int height, int width) {
+    return vector<vector<pair<wstring, int>>>(height, vector<pair<wstring, int>>(width, {L"?",COLOR_BLACK}));
+}
 
-    log(DEV_LOG_FILE, "rendering buffer");
-
-    int py, px;
-    short player_color;
-    vector<vector<pair<wstring, int>>> frame(LINES-3, vector<pair<wstring, int>>(COLS, {L"?",COLOR_BLACK}));
-
+// Handle entities on frame
+void HandleEntitiesOnFrame(
+    vector<vector<pair<wstring, int>>>& frame,
+    const vector<pair<pair<int, int>, pair<wstring, int>>>& entities,
+    int start_x, int start_y, int player_x, int player_y) {
 
     for (const auto& entity: entities) {
         int y = entity.first.first - start_y;
         int x = entity.first.second - start_x;
+
+        if (y == player_y && x == player_x) continue;
+
         wstring ch = entity.second.first;
-        short color = get_color_pair_index(COLOR_BLACK,entity.second.second);
+        short color = get_color_pair_index(COLOR_BLACK, entity.second.second);
+        if (x < 0 || x >= COLS || y < 0 || y >= LINES-3) continue;
+        if (!check_if_in(GROUND_TILES, frame[y][x].first)) continue;
+
+        frame[y][x].first = ch, frame[y][x].second = color;
+    }
+}
+
+// Render frame on screen
+void RenderFrame(const vector<vector<pair<wstring, int>>>& frame) {
+    clear();
+    for (int i = 0; i < LINES-3; ++i) {
+        for (int j = 0; j < COLS; ++j) {
+            const wstring& pixel_char = frame[i][j].first;
+            short pixel_color = frame[i][j].second;
+            attron(COLOR_PAIR(pixel_color));
+            mvaddwstr(i,j, pixel_char.c_str());
+            attroff(COLOR_PAIR(pixel_color));
+        }
+    }
+    doupdate();
+}
+
+// Main rendering function
+void render_buffer(
+    const vector<pair<wstring, pair<int, int>>>& draw_buffer,
+    const vector<vector<Tile>>& game_map,
+    const vector<pair<pair<int, int>, pair<wstring, int>>>& entities,
+    int start_x, int start_y) {
+
+    log(DEV_LOG_FILE, "rendering buffer");
+
+    vector<vector<pair<wstring, int>>> frame = CreateFrame(LINES-3, COLS);
+    int py, px;
+    short player_color;
+
+    // Populate frame with entities and identify player
+    for (const auto& entity: entities) {
+        int y = entity.first.first - start_y;
+        int x = entity.first.second - start_x;
+        wstring ch = entity.second.first;
+        short color = get_color_pair_index(COLOR_BLACK, entity.second.second);
         if (ch == PLAYER_TILE) py = y, px = x, player_color = color;
         if (x < 0 || x >= COLS || y < 0 || y >= LINES-3) continue;
     }
 
+    // Populate frame with tiles from draw_buffer
+    // ... (code block same as your original)
 
     for (const auto& tile : draw_buffer) {
         int y = tile.second.first;
@@ -1064,59 +1107,35 @@ void render_buffer(
         frame[Y][X] = make_pair(ch, color);//if (frame[Y][X].first == L"?")
 
         int degrade = 0;
-        if (Y <= LINES- py - 3) {
+        if (Y < py ) {
             for ( int h = 1; h <= game_map[x][y].z; ++h) {
-                if (Y-h+degrade/2 < 0 || Y+h-degrade/2 >= LINES-3) continue;
+                if (Y-h+degrade/2 < 0 || Y-h+degrade/2 >= LINES-3) continue;
                 if (h > 2) {
                     ch = L"▒";
                 } else if (h > 5 ) {
                     ch = L"░";
                 }
                 frame[Y-h+degrade/2][X] = make_pair(ch, color);//if (frame[Y][X].first == L"?")
-                if (Y >= py-3) {
+                if (Y >= py-7 ) {
                     degrade++;
                 }
 
             }
         }
+
     }
 
 
-    for (const auto& entity: entities) {
-        int y = entity.first.first - start_y;
-        int x = entity.first.second - start_x;
-        if (py == y && px == x) continue;
-        wstring ch = entity.second.first;
-        short color = get_color_pair_index(COLOR_BLACK,entity.second.second);
-        if (x < 0 || x >= COLS || y < 0 || y >= LINES-3) continue;
-        if (!check_if_in(GROUND_TILES, frame[y][x].first)) continue;
-        frame[y][x].first = ch, frame[y][x].second = color;
-    }
+    // Overlay other entities on top of frame
+    HandleEntitiesOnFrame(frame, entities, start_x, start_y, px, py);
 
-
-    //draw player last if not behind wall
+    // Overlay player on top of frame if not behind wall
     if (check_if_in(GROUND_TILES, frame[py][px].first)) {
         frame[py][px] = make_pair(PLAYER_TILE, player_color);
     }
 
-
-
-    // Render frame
-    clear();
-    wstring pixel_char;
-    short pixel_color;
-    for (int i = 0; i < LINES-3; ++i) {
-        for (int j = 0; j < COLS; ++j) {
-            pixel_char = frame[i][j].first;
-            pixel_color = frame[i][j].second;
-            attron(COLOR_PAIR(pixel_color));
-            mvaddwstr(i,j, pixel_char.c_str());
-            attroff(COLOR_PAIR(pixel_color));
-        }
-    }
-
-    // Actually render
-    doupdate();
+    // Render frame on screen
+    RenderFrame(frame);
 }
 
 
