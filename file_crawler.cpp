@@ -1466,7 +1466,8 @@ int main() {
     initscr();
     // Enable the keypad for the standard screen
     keypad(stdscr, TRUE);
-    mousemask(ALL_MOUSE_EVENTS, NULL);
+    mouseinterval(0);  // Report mouse events immediately
+    mousemask(ALL_MOUSE_EVENTS, nullptr);  // Enable mouse events
 
     log(DEV_LOG_FILE, "initialized screen");
     int frame_count = 0;
