@@ -1,2 +1,3 @@
 #!/bin/bash
-./build/file_crawler 
+
+kitty --config data/theme.conf -e build/Game  
