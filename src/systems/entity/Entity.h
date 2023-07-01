@@ -3,10 +3,12 @@
 
 #include "components/Frame.h"
 #include "components/GameMap.h"
+#include "components/EntityMap.h"
 #include "components/Position.h"
 #include "components/player/Player.h"
 #include "components/enemy/Monster.h"
 #include "components/item/Item.h"
+#include "components/Entity.h"
 
 #include "templates/item/BaseItems.h"
 #include "templates/enemy/BaseEnemies.h"
@@ -17,9 +19,6 @@
 using namespace std;
 
 
-struct Entity {
-    unsigned long id;
-};
 
 class EntitySystem {
 public:
@@ -34,17 +33,17 @@ public:
 
     void Update();
 
-    Entity createEntity();
+    Entity createEntity(Position pos);
 
     void destroyEntity(Entity entity_id);
 
-    vector<Entity> getEntities();
+    const EntityMap& getEntities();
 
-    unordered_map<unsigned long, Position> getPositions();
 
     void setPlayer(Player player);
 
-    Player getPlayer();
+    const Entity& getPlayer();
+    const Position& getPlayerPosition();
 
     void setGamemap(GameMap game_map);
 
@@ -55,18 +54,18 @@ public:
 
     void spawnItems();
 
-    unordered_map<unsigned long, Monster> getMonsters();
+    map<Entity, Monster> getMonsters();
 
-    unordered_map<unsigned long, Item> getItems();
+    map<Entity, Item> getItems();
 
-    void movePlayer(pair<int,int> direction);
+    void moveEntity(Entity entity, pair<int,int> direction);
 
     set<pair<int, int>> calculate_fov(
-            GameMap& game_map,
+            const GameMap& game_map,
             int center_x, int center_y,
             int radius);
 
-    Frame renderEntities2D(Frame frame, GameMap game_map,
+    Frame renderEntities2D(Frame frame, const GameMap& game_map,
                            int start_y, int start_x,
                            int end_y, int end_x);
 
@@ -75,12 +74,17 @@ private:
     bool Initialize();
 
     Player currentPlayer;
+    Position currentPlayerPosition;
     GameMap currentMap;
 
-    vector<Entity> entities;
-    unordered_map<unsigned long, Position> positions;
-    unordered_map<unsigned long, Monster> monsters;
-    unordered_map<unsigned long, Item> items;
+    EntityMap entityMap;
+    map<Entity, Position> positionMap;
+    map<Entity, Monster> monsters;
+    map<Entity, Item> items;
+
+    unsigned long nextEntityId = 1;
+
+    Entity vacantEntity;
 
 
 

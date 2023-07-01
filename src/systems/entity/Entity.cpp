@@ -18,58 +18,50 @@ EntitySystem::~EntitySystem() {
 bool EntitySystem::Initialize() {
     // Initialize systems
     //Positions[player_start_coords.first][player_start_coords.second] = 0;
+    vacantEntity = {nextEntityId};
+    nextEntityId++;
 
 
     return true;
 }
 
-void EntitySystem::Update() {
-    //update entity positions based on game map
-    for (auto& monster: monsters) {
-        positions[monster.first] =
-                monster.second.Update(monster.second,positions[monster.first],
-                              currentPlayer,positions[0],
-                              currentMap);
-    }
 
+// Use std::move to avoid copying
+void EntitySystem::setPlayer(Player player) {
+    currentPlayer = std::move(player);
+};
+
+// Use std::move to avoid copying
+void EntitySystem::setGamemap(GameMap game_map) {
+    currentMap = std::move(game_map);
+    entityMap = {
+            currentMap.meta,
+            vector<vector<Entity>>(currentMap.data.size(),
+                                   vector<Entity>(currentMap.data[0].size(), vacantEntity)
+            )
+    };
 
 }
 
-Entity EntitySystem::createEntity() {
-    Entity entity = {entities.size()};
-    entities.push_back(entity);
+
+// Use reserve for known size vectors
+Entity EntitySystem::createEntity(Position pos) {
+    Entity entity = {nextEntityId,
+                     true};
+    nextEntityId++;
+    entityMap.data[pos.x][pos.y] = entity;
+    positionMap[entity] = pos;
     return entity;
 }
 
 void EntitySystem::destroyEntity(Entity entity) {
-    positions.erase(entity.id);
-    //currentPlayer.erase(entity.id);
-    monsters.erase(entity.id);
-    entities[entity.id].id = -1;
-
+    Position entityPosition = positionMap[entity];
+    entityMap.data[entityPosition.x][entityPosition.y] = vacantEntity;
+    positionMap.erase(entity);
+    if (monsters.find(entity) != monsters.end()) monsters.erase(entity);
+    if (items.find(entity) != items.end()) items.erase(entity);
 }
 
-
-vector<Entity> EntitySystem::getEntities() {
-    return entities;
-}
-
-unordered_map<unsigned long, Position> EntitySystem::getPositions() {
-    return positions;
-}
-
-
-void EntitySystem::setPlayer(Player player) {
-    currentPlayer = player;
-};
-
-Player EntitySystem::getPlayer() {
-    return currentPlayer;
-}
-
-void EntitySystem::setGamemap(GameMap game_map) {
-    currentMap = game_map;
-}
 
 void EntitySystem::spawnPlayer() {
     int x = get_random_int(1, WIDTH - 1), y = get_random_int(1, HEIGHT - 1);
@@ -82,7 +74,10 @@ void EntitySystem::spawnPlayer() {
     }
 
 
-    positions[0] = Position{x, y};
+    Position playerPosition = {x, y};
+    currentPlayerPosition = playerPosition;
+    createEntity(playerPosition);
+
 
 }
 
@@ -100,9 +95,8 @@ void EntitySystem::spawnMonsters() {
                 x = get_random_int(0, WIDTH - 1);
                 y = get_random_int(0, HEIGHT - 1);
             } while (!check_if_in(GROUND_TILES, currentMap.data[x][y].ch));
-            Entity monsterEntity = createEntity();
-            positions[monsterEntity.id] = Position{x, y};
-            monsters[monsterEntity.id] = monster;
+            Entity monsterEntity = createEntity(Position{x, y});
+            monsters[monsterEntity] = monster;
         }
     }
 
@@ -122,20 +116,60 @@ void EntitySystem::spawnItems() {
                 x = get_random_int(0, WIDTH - 1);
                 y = get_random_int(0, HEIGHT - 1);
             } while (!check_if_in(GROUND_TILES, currentMap.data[x][y].ch));
-            Entity itemEntity = createEntity();
-            positions[itemEntity.id] = Position{x, y};
-            items[itemEntity.id] = item;
+            Entity itemEntity = createEntity(Position{x, y});
+            entityMap.data[x][y] = itemEntity;
+            items[itemEntity] = item;
         }
     }
 }
 
 
-unordered_map<unsigned long, Monster> EntitySystem::getMonsters() {
+void EntitySystem::Update() {
+    unsigned long start_x = max(0, currentPlayerPosition.x - 50);
+    unsigned long start_y = max(0, currentPlayerPosition.y - 50);
+    unsigned long end_x = min((int) entityMap.data.size(), currentPlayerPosition.x + 50);
+    unsigned long end_y = min((int) entityMap.data[0].size(), currentPlayerPosition.y + 50);
+
+    for (int i = start_y; i < end_y; i++) {
+        for (int j = start_x; j < end_x; j++) {
+            Entity &entity_ref = entityMap.data[j][i];
+            if (entity_ref.id > 2 && monsters.find(entity_ref) != monsters.end()) {
+                if (get_random_int(1, 3) == 3) {//randomly
+
+                    Monster monster = monsters[entity_ref];
+
+                    Position intent_d = monster.Update(monster, positionMap[entity_ref], currentPlayer,
+                                                       currentPlayerPosition,
+                                                       currentMap);
+                    pair<int, int> move_d = make_pair(intent_d.x - positionMap[entity_ref].x,
+                                                      intent_d.y - positionMap[entity_ref].y);
+                    moveEntity(entity_ref, move_d);
+                }
+            }
+        }
+    }
+}
+
+
+// Use const reference to avoid copying
+const EntityMap &EntitySystem::getEntities() {
+    return entityMap;
+}
+
+const Entity &EntitySystem::getPlayer() {
+    return entityMap.data[currentPlayerPosition.x][currentPlayerPosition.y];
+}
+
+const Position &EntitySystem::getPlayerPosition() {
+    return currentPlayerPosition;
+}
+
+map<Entity, Monster> EntitySystem::getMonsters() {
     return monsters;
 }
 
 
-unordered_map<unsigned long, Item> EntitySystem::getItems() {
+map<Entity, Item> EntitySystem::getItems() {
     return items;
 }
 
@@ -146,34 +180,54 @@ void EntitySystem::CleanUp() {
 
 }
 
-void EntitySystem::movePlayer(pair<int, int> direction) {
+void EntitySystem::moveEntity(Entity entity, pair<int, int> direction) {
     int distance = 1;
     pair<int, int> delta = {0, 0};
-    Position playerPosition = getPositions()[0];
+
+    Position pos = positionMap[entity];
+
 
     for (int i = 0; i < distance; i++) {
         int dx = delta.first + direction.first;
         int dy = delta.second + direction.second;
-        if (check_if_in(GROUND_TILES, currentMap.data[playerPosition.x + dx][playerPosition.y + dy].ch)) {
+
+        // Check if dx and dy are within the map's bounds
+        if (pos.x + dx < 0 || pos.x + dx >= currentMap.data.size() ||
+            pos.y + dy < 0 || pos.y + dy >= currentMap.data[0].size()) {
+            continue;
+        }
+
+        if (check_if_in(GROUND_TILES, currentMap.data[pos.x + dx][pos.y + dy].ch)) {
+//            && (!entity.transient && entityMap.data[pos.x + dx][pos.y + dy].id == 1)) {
             delta = {dx, dy};
-        } else if (check_if_in(TRAP_TILES, currentMap.data[playerPosition.x + dx][playerPosition.y + dy].ch)) {
+        } else if (check_if_in(TRAP_TILES, currentMap.data[pos.x + dx][pos.y + dy].ch)) {
             int damage = get_random_int(1, 5);
-            currentPlayer.current_health -= damage;
+            if (entity.id == 2) currentPlayer.current_health -= damage;
             delta = {dx, dy};
             break;
         } else {
-            break; // Stop the loop if the player hits a wall
+            break; // Stop the loop if the entity hits a wall
         }
     }
+    if (abs(delta.first) + abs(delta.second) > 0) {
 
-    positions[0] = {playerPosition.x + delta.first, playerPosition.y + delta.second};
+        Position new_pos = {pos.x + delta.first, pos.y + delta.second};
+        entityMap.data[pos.x][pos.y] = vacantEntity;
+        entityMap.data[new_pos.x][new_pos.y] = entity;
+
+        if (entity.id == 2) {
+            currentPlayerPosition = new_pos;
+        }
+
+        positionMap[entity] = new_pos;
+    }
 
 
 }
 
 
 set<pair<int, int>> EntitySystem::calculate_fov(
-        GameMap &game_map,
+        const GameMap &game_map,
         int center_x, int center_y,
         int radius) {
 
@@ -207,27 +261,27 @@ set<pair<int, int>> EntitySystem::calculate_fov(
 }
 
 
-Frame EntitySystem::renderEntities2D(Frame frame, GameMap game_map,
-                                     int start_y, int start_x,
-                                     int end_y, int end_x) {
+Frame EntitySystem::renderEntities2D(Frame frame, const GameMap& game_map, int start_y, int start_x, int end_y, int end_x) {
     Position position;
+    for (int i = start_y; i < end_y; i++) {
+        for (int j = start_x; j < end_x; j++) {
+            Entity entity_ref = entityMap.data[j][i];
+            if (entity_ref.id > 1) {
+                if (items.find(entity_ref) != items.end()) {
+                    frame.data[i - start_y][j - start_x].first = items[entity_ref].character;
+                    frame.data[i - start_y][j - start_x].second.first = items[entity_ref].color;
 
+                } else if (monsters.find(entity_ref) != monsters.end()) {
+                    frame.data[i - start_y][j - start_x].first = monsters[entity_ref].characterFullHealth;
+                    frame.data[i - start_y][j - start_x].second.first = monsters[entity_ref].color;
 
-    for (const auto &entity: entities) {
-        position = positions[entity.id];
-        if (start_x >= position.x || position.x >= end_x || start_y >= position.y || position.y >= end_y) continue;
+                } else {//tis the player
+                    frame.data[i - start_y][j - start_x].first = L"@";
+                    frame.data[i - start_y][j - start_x].second.first = currentPlayer.color;
+                }
 
-        if (monsters.find(entity.id) != monsters.end()) {
-            frame.data[position.y - start_y][position.x - start_x].first = monsters[entity.id].characterFullHealth;
-            frame.data[position.y - start_y][position.x - start_x].second.first = monsters[entity.id].color;
-        } else if (items.find(entity.id) != items.end()) {
-            frame.data[position.y - start_y][position.x - start_x].first = items[entity.id].character;
-            frame.data[position.y - start_y][position.x - start_x].second.first = items[entity.id].color;
-
+            }
         }
     }
-
-
     return frame;
 }
-

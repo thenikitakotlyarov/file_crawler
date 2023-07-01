@@ -7,6 +7,8 @@
 #include "components/GameMap.h"
 #include "components/Position.h"
 #include "components/Tile.h"
+#include "components/EntityMap.h"
+#include "components/Entity.h"
 #include "systems/entity/Entity.h"
 #include "systems/generation/GameMap.h"
 #include "systems/interface/UI.h"

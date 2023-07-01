@@ -30,7 +30,7 @@ void UISystem::CleanUp() {
 }
 
 void UISystem::Update() {
-    // Update entities...
+    // Update entityMap...
 
 }
 
@@ -119,7 +119,7 @@ UISystem::BlankFrame(int y, int x) {
             y,
             vector<pair<wstring, pair<int, int>>>(
                     x, {
-                            L"?",
+                            L" ",
                             make_pair(COLOR_RED, COLOR_BLACK)
                     }
             )

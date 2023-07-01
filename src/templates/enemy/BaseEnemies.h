@@ -6,3 +6,5 @@
 #include "components/enemy/Monster.h"
 
 Monster getBasicMonster();
+
+Monster getSkeleton();

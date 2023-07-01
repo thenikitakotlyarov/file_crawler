@@ -6,6 +6,8 @@
 ./components/GameMap.h
 ./components/Position.h
 ./components/Tile.h
+./components/EntityMap.h
+./components/Entity.h
 ./systems/entity/Entity.h
 ./systems/generation/GameMap.h
 ./systems/interface/UI.h

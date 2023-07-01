@@ -5,7 +5,7 @@
 
 using namespace std;
 
-struct Frame{
+struct Frame {
     string meta;
     vector<vector<pair<wstring, pair<int, int>>>> data;
 };

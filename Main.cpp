@@ -43,7 +43,6 @@ int main() {
         frame_count++;
         auto frameStart = chrono::steady_clock::now();
 
-
         if (GAME.running == 1) {
             render(GAME.CARD_TITLE(LINES, COLS));
 
@@ -69,10 +68,11 @@ int main() {
             render(GAME.MENU_SETTINGS(LINES, COLS));
 
         } else if (GAME.running >= 10) {//player is playing the game; states over 10 coincide with playable levels
-            if (!GAME.READY_TO_PLAY) render(GAME.MENU_LOAD_GAME(LINES,COLS));
-            else render(GAME.PLAY_GAME(LINES,COLS));
+            if (!GAME.READY_TO_PLAY) render(GAME.MENU_LOAD_GAME(LINES, COLS));
+            else render(GAME.PLAY_GAME(LINES, COLS));
 
         }
+
 
         GAME.Update(get_input());
 

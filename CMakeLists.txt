@@ -13,16 +13,12 @@ add_compile_options(-Wno-deprecated-declarations) # suppresses warnings
 add_compile_options(-g) # debugging
 
 # Grab all the source files
-file(GLOB SOURCES
+file(GLOB_RECURSE SOURCES
         "src/*.cpp"
-        "src/utilities/*.cpp" "src/utilities/math/*.cpp" "src/utilities/noise/*.cpp" "src/utilities/pathfinding/*.cpp" "src/utilities/render/*.cpp"
-        "src/templates/*.cpp" "src/templates/enemy/*.cpp" "src/templates/item/*.cpp" "src/templates/player/*.cpp"
-        "src/systems/*.cpp" "src/systems/audio/*.cpp" "src/systems/entity/*.cpp" "src/systems/generation/*.cpp" "src/systems/graphics/*.cpp" "src/systems/input/*.cpp" "src/systems/interface/*.cpp" "src/systems/logging/*.cpp" "src/systems/pathfinding/*.cpp"
-        "src/components/*.cpp" "src/components/enemy/*.cpp" "src/components/item/*.cpp" "src/components/player/*.cpp" "src/components/menu/*.cpp"
         )
 
 # add the executable
-add_executable(Game Main.cpp ${SOURCES} src/systems/entity/Entity.cpp src/systems/entity/Entity.h)
+add_executable(Game Main.cpp ${SOURCES})
 
 # Link against required libraries
 target_link_libraries(Game ncurses noise ssl crypto SDL2 SDL2_mixer)

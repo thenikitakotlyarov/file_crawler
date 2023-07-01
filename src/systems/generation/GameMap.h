@@ -24,7 +24,7 @@ public:
     GameMap unveilMap(GameMap game_map,  set<pair<int,int>> current_fov);
     GameMap reveilMap(GameMap game_map,  set<pair<int,int>> current_fov);
 
-    Frame renderMap2D(Frame frame, GameMap current_map,
+    Frame renderMap2D(Frame frame, const GameMap& current_map,
                       int start_y, int start_x,
                       int end_y, int end_x);
 

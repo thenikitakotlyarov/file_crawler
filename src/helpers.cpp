@@ -100,8 +100,7 @@ double cost(const GameMap &game_map, int x2, int y2) {
     return 1.0;
 }
 
-vector<Node> aStar(const Position &start, const Position &goal,
-                   const GameMap &game_map) {
+vector<Node> aStar(const Position &start, const Position &goal, const GameMap &game_map) {
 
     vector<vector<bool>> closedSet(WIDTH, vector<bool>(HEIGHT, false));
     vector<vector<Node *>> openSet(WIDTH, vector<Node *>(HEIGHT, nullptr));
@@ -134,20 +133,21 @@ vector<Node> aStar(const Position &start, const Position &goal,
 
         closedSet[current->x][current->y] = true;
 
-        for (int dx = -1; dx <= 1; dx++) {
-            for (int dy = -1; dy <= 1; dy++) {
-                int x = current->x + dx + get_random_int(-1, 1);
-                int y = current->y + dy + get_random_int(-1, 1);
+        // revised neighbor iteration (N, E, S, W)
+        vector<pair<int, int>> directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};  // E, S, W, N
 
-                if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT && !closedSet[x][y]) {
-                    double tentativeG = current->g + cost(game_map, x, y);
+        for (auto& dir : directions) {
+            int x = current->x + dir.first;
+            int y = current->y + dir.second;
 
-                    if (openSet[x][y] == nullptr && tentativeG != INFINITY) {
-                        openSet[x][y] = new Node(x, y, current, tentativeG, heuristic(game_map, x, y, goal.x, goal.y));
-                        queue.push(openSet[x][y]);
-                    } else if (tentativeG < openSet[x][y]->g) {
-                        openSet[x][y]->g = tentativeG;
-                    }
+            if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT && !closedSet[x][y]) {
+                double tentativeG = current->g + cost(game_map, x, y);
+
+                if (openSet[x][y] == nullptr && tentativeG != INFINITY) {
+                    openSet[x][y] = new Node(x, y, current, tentativeG, heuristic(game_map, x, y, goal.x, goal.y));
+                    queue.push(openSet[x][y]);
+                } else if (openSet[x][y] != nullptr && tentativeG < openSet[x][y]->g) {
+                    openSet[x][y]->g = tentativeG;
                 }
             }
         }
@@ -163,8 +163,13 @@ vector<Node> aStar(const Position &start, const Position &goal,
 }
 
 
+
 int get_input() {
+    nodelay(stdscr, TRUE); // make getch non-blocking
+
     int key = getch();
+    //while (key != ERR) {} // discard the rest of the input
+
     int input = 0;
     if (key != ERR) input = key;
     return input;

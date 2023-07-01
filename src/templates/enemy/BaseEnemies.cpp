@@ -2,17 +2,17 @@
 
 Monster getBasicMonster() {
     float rating = 1.0f;
-    pair<int, int> attack_power_dis = {rating*1, rating*20};
-    pair<int, int> attack_range_dis = {rating*1, rating*7};
-    pair<int, int> chase_dis = {rating*7, rating*25};
-    pair<int, int> attack_cooldown_dis = {rating*1, rating*7};
-    pair<int, int> health_dis = {rating*5, rating*25};
+    pair<int, int> attack_power_dis = {rating * 1, rating * 20};
+    pair<int, int> attack_range_dis = {rating * 1, rating * 7};
+    pair<int, int> chase_dis = {rating * 7, rating * 25};
+    pair<int, int> attack_cooldown_dis = {rating * 1, rating * 7};
+    pair<int, int> health_dis = {rating * 5, rating * 25};
 
-    const int monster_attack_power = get_random_int(attack_power_dis.first,attack_power_dis.second);
-    const int monster_attack_range = get_random_int(attack_range_dis.first,attack_range_dis.second);
-    const int monster_chase_range = get_random_int(chase_dis.first,chase_dis.second);
-    const int monster_attack_cooldown = FPS*get_random_int(attack_cooldown_dis.first,attack_cooldown_dis.second);
-    const int monster_health = get_random_int(health_dis.first,health_dis.second);
+    const int monster_attack_power = get_random_int(attack_power_dis.first, attack_power_dis.second);
+    const int monster_attack_range = get_random_int(attack_range_dis.first, attack_range_dis.second);
+    const int monster_chase_range = get_random_int(chase_dis.first, chase_dis.second);
+    const int monster_attack_cooldown = FPS * get_random_int(attack_cooldown_dis.first, attack_cooldown_dis.second);
+    const int monster_health = get_random_int(health_dis.first, health_dis.second);
 
 
     return {
@@ -23,7 +23,8 @@ Monster getBasicMonster() {
             COLOR_RED, 1,
             monster_attack_power, monster_attack_range, monster_chase_range, monster_attack_cooldown,
             monster_health, monster_health,
-            [](Monster &self, Position &monster_pos, Player &player_stats, Position &player_pos, GameMap &game_map)->Position  {
+            [](Monster &self, Position &monster_pos, Player &player_stats, Position &player_pos,
+               GameMap &game_map) -> Position {
                 Position new_pos;
                 self.cooldown = max(0, self.cooldown - 1);
                 int dx = monster_pos.x - player_pos.x;
@@ -55,8 +56,26 @@ Monster getBasicMonster() {
                     }
                 }
 
+                if (1) {//(get_random_int(1,15) == 15) {
+                    int choice = get_random_int(0, 2);
+                    int neg = get_random_int(0, 1);
+                    if (choice > 1) {
+                        if (!neg) new_pos.x += 1;
+                        else new_pos.x -= 1;
+                    } else if (choice > 0) {
+                        if (!neg) new_pos.y += 1;
+                        else new_pos.y -= 1;
+
+                    }
+                }
+
 
                 return new_pos;
             }
     };
+}
+
+
+Monster getSkeleton() {
+
 }

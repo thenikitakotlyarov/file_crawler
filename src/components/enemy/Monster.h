@@ -27,4 +27,6 @@ struct Monster{
     int total_health;
     int health;
     function<Position(Monster&,Position&, Player&, Position&, GameMap&)> Update;
+
+
 };

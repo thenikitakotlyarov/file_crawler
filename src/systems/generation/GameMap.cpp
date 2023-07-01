@@ -138,7 +138,7 @@ GameMap MapSystem::genCave(int height, int width) {
     }
 
 
-    GameMap game_map = {"Cave",data};
+    GameMap game_map = {"Cave",data};//TODO:move up to avoid copying?
 
     return game_map;
 }
@@ -160,7 +160,7 @@ GameMap MapSystem::reveilMap(GameMap game_map, set<pair<int, int>> current_fov) 
     return game_map;
 }
 
-Frame MapSystem::renderMap2D(Frame frame, GameMap current_map, int start_y, int start_x, int end_y, int end_x) {
+Frame MapSystem::renderMap2D(Frame frame, const GameMap& current_map, int start_y, int start_x, int end_y, int end_x) {
     int max_map_y = current_map.data.size();
     int max_map_x = current_map.data[0].size();
 

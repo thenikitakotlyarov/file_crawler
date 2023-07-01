@@ -136,16 +136,15 @@ void Game::Update(int player_input) {
                 if (player_input == '0') running = 2;
             } else {// we running bois; take the player's input as commands for the player character
                 if (player_input == 'w') {
-                    SysEntity.movePlayer(make_pair(0,-1));
+                    SysEntity.moveEntity(SysEntity.getPlayer(), make_pair(0, -1));
                 } else if (player_input == 'a') {
-                    SysEntity.movePlayer(make_pair(-1,0));
+                    SysEntity.moveEntity(SysEntity.getPlayer(), make_pair(-1, 0));
                 } else if (player_input == 's') {
-                    SysEntity.movePlayer(make_pair(0,1));
+                    SysEntity.moveEntity(SysEntity.getPlayer(), make_pair(0, 1));
                 } else if (player_input == 'd') {
-                    SysEntity.movePlayer(make_pair(1,0));
+                    SysEntity.moveEntity(SysEntity.getPlayer(), make_pair(1, 0));
                 }
             }
-
 
 
         }
@@ -175,6 +174,8 @@ Frame Game::MENU_MAIN(int y, int x) {
 
 Frame Game::MENU_NEW_GAME(int y, int x) {
     Frame frame = SysUI.BlankFrame(y, x);
+
+    READY_TO_PLAY = false;
 
     frame = SysUI.getNewGameMenu(frame);
 
@@ -211,7 +212,7 @@ Frame Game::DEBUG_COLOR(int y, int x) {
 
 Frame Game::PLAY_GAME(int y, int x) {
     Frame frame = SysUI.BlankFrame(y, x);
-    Position player_position = SysEntity.getPositions()[SysEntity.getEntities()[0].id];
+    Position player_position = SysEntity.getPlayerPosition();
 
     int start_x = max(0, player_position.x - COLS / 2);
     start_x = min(start_x, WIDTH - COLS);
@@ -225,7 +226,7 @@ Frame Game::PLAY_GAME(int y, int x) {
             CURRENT_MAP, player_position.x, player_position.y, CURRENT_PLAYER.dexterity
     );
 
-    CURRENT_MAP = SysMap.unveilMap(CURRENT_MAP,current_player_fov);
+    CURRENT_MAP = SysMap.unveilMap(CURRENT_MAP, current_player_fov);
 
     //frame = SysRender.r2D(frame, CURRENT_MAP);
     frame = SysMap.renderMap2D(frame, CURRENT_MAP, start_y, start_x, end_y, end_x);
@@ -239,14 +240,16 @@ Frame Game::PLAY_GAME(int y, int x) {
                 if (i > y / 10 && i < y * 4 / 5 && j > x / 3 && j < x * 2 / 3) {
                     frame.data[i][j].first = ' ';
                     frame.data[i][j].second = make_pair(COLOR_BLACK, COLOR_BLACK);
-                } else frame.data[i][j].second = make_pair(COLOR_GREY, COLOR_BLACK);
+                } else {
+                    frame.data[i][j].second = make_pair(COLOR_GREY, COLOR_BLACK);
+                }
             }
         }
     }
 
     SysEntity.Update();
 
-    CURRENT_MAP = SysMap.reveilMap(CURRENT_MAP,current_player_fov);
+    CURRENT_MAP = SysMap.reveilMap(CURRENT_MAP, current_player_fov);
 
     //frame = SysRender.bloom(frame);
 
