@@ -39,6 +39,7 @@ struct Player {
 
 
     Skill* primarySkill;
+    Skill* secondarySkill;
 
 
 };

@@ -145,28 +145,48 @@ void Game::Update(int player_input) {
                 if ((player_input == KEY_MOUSE)) { // && getmouse(&event) == OK) {
 
                     MEVENT event;
-                    if ((getmouse(&event) == OK)
-                        && (event.bstate & BUTTON1_PRESSED)) {
+                    if (getmouse(&event) == OK) {
+                        if (event.bstate & BUTTON1_PRESSED) {
 
-                        Entity playerEntity = SysEntity.getPlayer();
-                        Position playerPosition = SysEntity.getPlayerPosition();
+                            Position playerPosition = SysEntity.getPlayerPosition();
 
-                        pair<int, vector<Intent>> strike = CURRENT_PLAYER.primarySkill->Use(
-                                CURRENT_PLAYER, playerPosition,
-                                SysEntity.calculate_fov(CURRENT_MAP,
-                                                        playerPosition.x,
-                                                        playerPosition.y,
-                                                        CURRENT_PLAYER.dexterity),
-                                SysEntity.getMonsters(),
-                                SysEntity.getPositions()
-                        );
-                        SysEntity.getCurrentPlayer().current_energy -= strike.first;
-                        for (auto &combat: strike.second) {
-                            SysEntity.combatEntities(combat);
+                            pair<int, vector<Intent>> strike = CURRENT_PLAYER.primarySkill->Use(
+                                    CURRENT_PLAYER, playerPosition,
+                                    SysEntity.calculate_fov(CURRENT_MAP,
+                                                            playerPosition.x,
+                                                            playerPosition.y,
+                                                            CURRENT_PLAYER.dexterity),
+                                    SysEntity.getMonsters(),
+                                    SysEntity.getPositions()
+                            );
+                            SysEntity.getCurrentPlayer().current_energy -= strike.first;
+                            for (auto &combat: strike.second) {
+                                SysEntity.combatEntities(combat);
+
+                            }
+
+
+                        } else if (event.bstate & BUTTON3_PRESSED) {
+
+                            Position playerPosition = SysEntity.getPlayerPosition();
+
+                            pair<int, vector<Intent>> strike = CURRENT_PLAYER.secondarySkill->Use(
+                                    CURRENT_PLAYER, playerPosition,
+                                    SysEntity.calculate_fov(CURRENT_MAP,
+                                                            playerPosition.x,
+                                                            playerPosition.y,
+                                                            CURRENT_PLAYER.dexterity),
+                                    SysEntity.getMonsters(),
+                                    SysEntity.getPositions()
+                            );
+                            SysEntity.getCurrentPlayer().current_energy -= strike.first;
+                            for (auto &combat: strike.second) {
+                                SysEntity.combatEntities(combat);
+
+                            }
+
 
                         }
-
-
                     }
 
                 } else if (player_input == 'w') {
@@ -186,13 +206,13 @@ void Game::Update(int player_input) {
                     Intent playerIntent = {playerEntity, IntentType::Move, make_pair(1, 0)};
                     SysEntity.moveEntity(playerIntent);
                 } else if (player_input == 0) {
-                    if (!get_random_int(0,99)) {// 1/100 chance of occurring
+                    if (!get_random_int(0, 99)) {// 1/100 chance of occurring
                         SysEntity.getCurrentPlayer().current_health = min(CURRENT_PLAYER.max_health,
                                                                           CURRENT_PLAYER.current_health + 1 +
                                                                           CURRENT_PLAYER.constitution / 10);
                     }
 
-                    if (!get_random_int(0,24)) {// 1/25 chance of occurring
+                    if (!get_random_int(0, 24)) {// 1/25 chance of occurring
                         SysEntity.getCurrentPlayer().current_energy = min(CURRENT_PLAYER.max_energy,
                                                                           CURRENT_PLAYER.current_energy + 1 +
                                                                           CURRENT_PLAYER.willpower / 10);
@@ -292,7 +312,7 @@ Frame Game::PLAY_GAME(int y, int x, const int c_fps) {
 
 
     set<pair<int, int>> current_player_fov = EntitySystem::calculate_fov(
-            CURRENT_MAP, player_position.x, player_position.y, 15+CURRENT_PLAYER.dexterity/10
+            CURRENT_MAP, player_position.x, player_position.y, 15 + CURRENT_PLAYER.dexterity / 10
     );
 
     CURRENT_MAP = MapSystem::unveilMap(CURRENT_MAP, current_player_fov);
