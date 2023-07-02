@@ -10,15 +10,15 @@
 
 Player getAdventurerTemplate();
 Player getBarbarianTemplate();
-Player getBladeTemplate();
+Player getDuelistTemplate();
+Player getFighterTemplate();
 Player getRogueTemplate();
-Player getScoutTemplate();
 Player getRangerTemplate();
-Player getNecromancerTemplate();
+Player getDruidTemplate();
 Player getSorcererTemplate();
-Player getMonkTemplate();
+Player getBardTemplate();
 Player getWizardTemplate();
+Player getMonkTemplate();
 Player getClericTemplate();
-Player getSpellswordTemplate();
 Player getPaladinTemplate();
 Player getRandomTemplate();

@@ -77,7 +77,7 @@ private:
 
     static Frame &
     getAttackSlot(Frame &frame, int y, int x, int height,
-                  int skill_index, pair<int, int> color);
+                  vector<vector<wstring>> icon, pair<int, int> color);
 
     Frame &
     getLevelingButton(Frame &frame, int y, int x, int height,

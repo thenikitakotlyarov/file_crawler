@@ -32,10 +32,10 @@ struct Player {
 
     int constitution;
     int strength;
-    int endurance;
     int dexterity;
-    int intelligence;
     int willpower;
+    int intelligence;
+    int faith;
 
 
     Skill* primarySkill;

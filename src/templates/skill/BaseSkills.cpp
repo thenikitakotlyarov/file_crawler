@@ -1,15 +1,28 @@
 #include "BaseSkills.h"
 
-Skill* getBasicAttack() {
+Skill *getBasicAttack() {
     unsigned long id = 0;
+
     string name = "Basic Attack";
-    vector<vector<wstring>> icon (3,vector<wstring>(3,L"a"));
+
+    vector<vector<wstring>> icon = {
+            {
+                    L" ", L" ", L"▞", L" ", L" ", L" ", L" ", L" "
+            },
+            {
+                    L"0", L"═", L"A", L"t", L"t", L"a", L"c", L"k"
+            },
+            {
+                    L" ", L" ", L"▚", L" ", L" ", L" ", L" ", L" "
+            },
+    };
+
 
     Skill skill = {
-            id,name,icon,
-            [](Player &self, Position &player_pos, const set<pair<int,int>> player_fov,
-               map<Entity, Monster> monsters, map<Entity,Position> positions)
-                    -> pair<int,vector<Intent>>  {
+            id, name, icon,
+            [](Player &self, Position &player_pos, const set<pair<int, int>> player_fov,
+               map<Entity, Monster> monsters, map<Entity, Position> positions)
+                    -> pair<int, vector<Intent>> {
                 int cost = 2;
                 vector<Intent> attack_targets;
 
@@ -24,7 +37,7 @@ Skill* getBasicAttack() {
 
                         if (abs(player_pos.x - monsterPosition.x) <= self.dexterity
                             && abs(player_pos.y - monsterPosition.y) <= self.dexterity
-                            && is_position_in_fov(monsterPosition,player_fov)
+                            && is_position_in_fov(monsterPosition, player_fov)
                             && self.current_energy >= cost + 5) {
                             cost += 5;
                             int damage = get_random_int(0, self.strength);
@@ -41,7 +54,6 @@ Skill* getBasicAttack() {
                         }
                     }
                 }
-
 
 
                 return make_pair(cost, attack_targets);

@@ -1,174 +1,146 @@
 #include "BaseClasses.h"
 
 Player getAdventurerTemplate() {
-    Player Adventurer = {
-            "", "Adventurer", COLOR_WHITE,
+    return {
+            "", "Adventurer", COLOR_LGREY,
             1, 0,
             100, 100, 100,
             100, 100, 100,
-            4, 4, 4, 4, 4, 4,
+            10, 10, 10, 10, 10, 10,
 
             getBasicAttack()
     };
-
-
-    return Adventurer;
 }
 
 
 Player getBarbarianTemplate() {
-    Player Barbarian = {
+    return {
             "", "Barbarian", COLOR_RED,
             1, 0,
             100, 100, 100,
             100, 100, 100,
-            4, 4, 4, 4, 4, 4
+            15, 12, 7, 7, 7, 12
     };
 
-    return Barbarian;
 }
 
 
-Player getBladeTemplate() {
-    Player Blade = {
-            "", "Blade", COLOR_ORANGE,
+Player getDuelistTemplate() {
+    return {
+            "", "Duelist", COLOR_ORANGE,
             1, 0,
             100, 100, 100,
             100, 100, 100,
-            4, 4, 4, 4, 4, 4
+            13,13,10,7,7,10
     };
+}
 
-    return Blade;
+
+Player getFighterTemplate() {
+    return {
+            "", "Fighter", COLOR_LGREEN,
+            1, 0,
+            100, 100, 100,
+            100, 100, 100,
+            12,15,12,7,7,7
+    };
 }
 
 
 Player getRogueTemplate() {
-    Player Rogue = {
+    return {
             "", "Rogue", COLOR_YELLOW,
             1, 0,
             100, 100, 100,
             100, 100, 100,
-            4, 4, 4, 4, 4, 4
+            10,13,13,10,7,7
     };
-
-    return Rogue;
 }
-
-
-Player getScoutTemplate() {
-    Player Scout = {
-            "", "Scout", COLOR_LGREEN,
-            1, 0,
-            100, 100, 100,
-            100, 100, 100,
-            4, 4, 4, 4, 4, 4
-    };
-
-    return Scout;
-}
-
 
 Player getRangerTemplate() {
-    Player Ranger = {
+    return {
             "", "Ranger", COLOR_GREEN,
             1, 0,
             100, 100, 100,
             100, 100, 100,
-            4, 4, 4, 4, 4, 4
+            7,12,15,12,7,7
     };
-
-    return Ranger;
 }
 
 
-Player getNecromancerTemplate() {
-    Player Necromancer = {
-            "", "Necromancer", COLOR_CYAN,
+Player getDruidTemplate() {
+    return {
+            "", "Druid", COLOR_CYAN,
             1, 0,
             100, 100, 100,
             100, 100, 100,
-            4, 4, 4, 4, 4, 4
+            7,10,13,13,10,7
     };
-
-    return Necromancer;
 }
 
 
 Player getSorcererTemplate() {
-    Player Sorcerer = {
+    return {
             "", "Sorcerer", COLOR_AMARINE,
             1, 0,
             100, 100, 100,
             100, 100, 100,
-            4, 4, 4, 4, 4, 4
+            7,7,12,15,12,7
     };
-
-    return Sorcerer;
 }
 
 
-Player getMonkTemplate() {
-    Player Monk = {
-            "", "Monk", COLOR_LBLUE,
+Player getBardTemplate() {
+    return {
+            "", "Bard", COLOR_LBLUE,
             1, 0,
             100, 100, 100,
             100, 100, 100,
-            4, 4, 4, 4, 4, 4
+            7,7,10,13,13,10
     };
-
-    return Monk;
 }
 
 
 Player getWizardTemplate() {
-    Player Wizard = {
+    return {
             "", "Wizard", COLOR_BLUE,
             1, 0,
             100, 100, 100,
             100, 100, 100,
-            4, 4, 4, 4, 4, 4
+            7,7,7,12,15,12
     };
+}
 
-    return Wizard;
+Player getMonkTemplate() {
+    return {
+            "", "Monk", COLOR_LBLUE,
+            1, 0,
+            100, 100, 100,
+            100, 100, 100,
+            10,7,7,10,13,13
+    };
 }
 
 
 Player getClericTemplate() {
-    Player Cleric = {
+    return {
             "", "Cleric", COLOR_PURPLE,
             1, 0,
             100, 100, 100,
             100, 100, 100,
-            4, 4, 4, 4, 4, 4
+            12,7,7,7,12,15
     };
-
-    return Cleric;
-}
-
-
-Player getSpellswordTemplate() {
-    Player Spellsword = {
-            "", "Spellsword", COLOR_PINK,
-            1, 0,
-            100, 100, 100,
-            100, 100, 100,
-            4, 4, 4, 4, 4, 4
-    };
-
-    return Spellsword;
 }
 
 
 Player getPaladinTemplate() {
-    Player Paladin = {
+    return {
             "", "Paladin", COLOR_MAGENTA,
             1, 0,
             100, 100, 100,
             100, 100, 100,
-            4, 4, 4, 4, 4, 4
+            12,10,7,7,10,13
     };
-
-    return Paladin;
 }
 
 
@@ -180,34 +152,34 @@ Player getRandomTemplate() {
             Random = getBarbarianTemplate();
             break;
         case (1):
-            Random = getBladeTemplate();
+            Random = getDuelistTemplate();
             break;
         case (2):
-            Random = getRogueTemplate();
+            Random = getFighterTemplate();
             break;
         case (3):
-            Random = getScoutTemplate();
+            Random = getRogueTemplate();
             break;
         case (4):
             Random = getRangerTemplate();
             break;
         case (5):
-            Random = getNecromancerTemplate();
+            Random = getDruidTemplate();
             break;
         case (6):
             Random = getSorcererTemplate();
             break;
         case (7):
-            Random = getMonkTemplate();
+            Random = getBardTemplate();
             break;
         case (8):
             Random = getWizardTemplate();
             break;
         case (9):
-            Random = getClericTemplate();
+            Random = getMonkTemplate();
             break;
         case (10):
-            Random = getSpellswordTemplate();
+            Random = getClericTemplate();
             break;
         case (11):
             Random = getPaladinTemplate();

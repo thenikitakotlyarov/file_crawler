@@ -69,34 +69,34 @@ void Game::Update(int player_input) {
             CURRENT_PLAYER = getBarbarianTemplate();
             running = 10;
         } else if (player_input == '3') {
-            CURRENT_PLAYER = getBladeTemplate();
+            CURRENT_PLAYER = getDuelistTemplate();
             running = 10;
         } else if (player_input == '4') {
-            CURRENT_PLAYER = getRogueTemplate();
+            CURRENT_PLAYER = getFighterTemplate();
             running = 10;
         } else if (player_input == '5') {
-            CURRENT_PLAYER = getScoutTemplate();
+            CURRENT_PLAYER = getRogueTemplate();
             running = 10;
         } else if (player_input == '6') {
             CURRENT_PLAYER = getRangerTemplate();
             running = 10;
         } else if (player_input == '7') {
-            CURRENT_PLAYER = getNecromancerTemplate();
+            CURRENT_PLAYER = getDruidTemplate();
             running = 10;
         } else if (player_input == '8') {
             CURRENT_PLAYER = getSorcererTemplate();
             running = 10;
         } else if (player_input == '9') {
-            CURRENT_PLAYER = getMonkTemplate();
+            CURRENT_PLAYER = getBardTemplate();
             running = 10;
         } else if (tolower(player_input) == 'a') {
             CURRENT_PLAYER = getWizardTemplate();
             running = 10;
         } else if (tolower(player_input) == 'b') {
-            CURRENT_PLAYER = getClericTemplate();
+            CURRENT_PLAYER = getMonkTemplate();
             running = 10;
         } else if (tolower(player_input) == 'c') {
-            CURRENT_PLAYER = getSpellswordTemplate();
+            CURRENT_PLAYER = getClericTemplate();
             running = 10;
         } else if (tolower(player_input) == 'd') {
             CURRENT_PLAYER = getPaladinTemplate();
@@ -292,7 +292,7 @@ Frame Game::PLAY_GAME(int y, int x, const int c_fps) {
 
 
     set<pair<int, int>> current_player_fov = EntitySystem::calculate_fov(
-            CURRENT_MAP, player_position.x, player_position.y, CURRENT_PLAYER.dexterity
+            CURRENT_MAP, player_position.x, player_position.y, 15+CURRENT_PLAYER.dexterity/10
     );
 
     CURRENT_MAP = MapSystem::unveilMap(CURRENT_MAP, current_player_fov);

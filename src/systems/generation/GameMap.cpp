@@ -223,7 +223,7 @@ Frame MapSystem::renderMap2D(Frame frame, const GameMap &current_map, int start_
 
             } else if (current_map.data[map_x][map_y].visited) {
                 frame.data[i][j].first = current_map.data[map_x][map_y].ch;
-                frame.data[i][j].second.first = COLOR_LGREY;
+                frame.data[i][j].second.first = COLOR_GREY;
 
             }
 

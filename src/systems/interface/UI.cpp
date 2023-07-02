@@ -198,7 +198,6 @@ Frame UISystem::getGameOverCard(Frame frame) {
     }
 
 
-
     return frame;
 }
 
@@ -229,34 +228,34 @@ UISystem::getNewGameMenu(Frame frame) {
     frame = addText(frame, 6, 5, L"Barbarian!", make_pair(COLOR_WHITE, COLOR_BLACK));
 
     frame = addText(frame, 7, 1, L"3:", make_pair(COLOR_WHITE, COLOR_BLACK));
-    frame = addText(frame, 7, 5, L"Blade!", make_pair(COLOR_WHITE, COLOR_BLACK));
+    frame = addText(frame, 7, 5, L"Duelist!", make_pair(COLOR_WHITE, COLOR_BLACK));
 
     frame = addText(frame, 8, 1, L"4:", make_pair(COLOR_WHITE, COLOR_BLACK));
-    frame = addText(frame, 8, 5, L"Rogue!", make_pair(COLOR_WHITE, COLOR_BLACK));
+    frame = addText(frame, 8, 5, L"Fighter!", make_pair(COLOR_WHITE, COLOR_BLACK));
 
     frame = addText(frame, 9, 1, L"5:", make_pair(COLOR_WHITE, COLOR_BLACK));
-    frame = addText(frame, 9, 5, L"Scout!", make_pair(COLOR_WHITE, COLOR_BLACK));
+    frame = addText(frame, 9, 5, L"Rogue!", make_pair(COLOR_WHITE, COLOR_BLACK));
 
     frame = addText(frame, 10, 1, L"6:", make_pair(COLOR_WHITE, COLOR_BLACK));
     frame = addText(frame, 10, 5, L"Ranger!", make_pair(COLOR_WHITE, COLOR_BLACK));
 
     frame = addText(frame, 11, 1, L"7:", make_pair(COLOR_WHITE, COLOR_BLACK));
-    frame = addText(frame, 11, 5, L"Necromancer!", make_pair(COLOR_WHITE, COLOR_BLACK));
+    frame = addText(frame, 11, 5, L"Druid!", make_pair(COLOR_WHITE, COLOR_BLACK));
 
     frame = addText(frame, 12, 1, L"8:", make_pair(COLOR_WHITE, COLOR_BLACK));
     frame = addText(frame, 12, 5, L"Sorcerer!", make_pair(COLOR_WHITE, COLOR_BLACK));
 
     frame = addText(frame, 13, 1, L"9:", make_pair(COLOR_WHITE, COLOR_BLACK));
-    frame = addText(frame, 13, 5, L"Monk!", make_pair(COLOR_WHITE, COLOR_BLACK));
+    frame = addText(frame, 13, 5, L"Bard!", make_pair(COLOR_WHITE, COLOR_BLACK));
 
     frame = addText(frame, 14, 1, L"A:", make_pair(COLOR_WHITE, COLOR_BLACK));
     frame = addText(frame, 14, 5, L"Wizard!", make_pair(COLOR_WHITE, COLOR_BLACK));
 
     frame = addText(frame, 15, 1, L"B:", make_pair(COLOR_WHITE, COLOR_BLACK));
-    frame = addText(frame, 15, 5, L"Cleric!", make_pair(COLOR_WHITE, COLOR_BLACK));
+    frame = addText(frame, 15, 5, L"Monk!", make_pair(COLOR_WHITE, COLOR_BLACK));
 
     frame = addText(frame, 16, 1, L"C:", make_pair(COLOR_WHITE, COLOR_BLACK));
-    frame = addText(frame, 16, 5, L"Spellsword!", make_pair(COLOR_WHITE, COLOR_BLACK));
+    frame = addText(frame, 16, 5, L"Cleric!", make_pair(COLOR_WHITE, COLOR_BLACK));
 
     frame = addText(frame, 17, 1, L"D:", make_pair(COLOR_WHITE, COLOR_BLACK));
     frame = addText(frame, 17, 5, L"Paladin!", make_pair(COLOR_WHITE, COLOR_BLACK));
@@ -383,7 +382,7 @@ UISystem::getOrb(Frame &frame,
                 && (j != diameter + 1 && i != diameter / 2 + 1)) {
                 pair<int, int> color_pair;
                 wstring ch;
-                if (level >= 100*(orb_size - (((i) * diameter) - j))/orb_size) {
+                if (level >= 100 * (orb_size - (((i) * diameter) - j)) / orb_size) {
                     ch = get_random_character({L" ", L" ", L" ", L"~"});
                     color_pair.first = color.first;
                     color_pair.second = color.second;
@@ -426,7 +425,7 @@ UISystem::getOrb(Frame &frame,
 
 Frame &
 UISystem::getAttackSlot(Frame &frame, int y, int x, int height,
-                        int skill_index, pair<int, int> color) {
+                        vector<vector<wstring>> icon, pair<int, int> color) {
     int width = height * 2;
     for (int i = 0; i < height; i++) {
         if (y + i >= LINES) break;
@@ -439,6 +438,9 @@ UISystem::getAttackSlot(Frame &frame, int y, int x, int height,
             else if (i == height - 1 && j == width - 1) ch = L"┛";
             else if (i == 0 || i == height - 1) ch = L"━";
             else if (j == 0 || j == width - 1) ch = L"┃";
+            else if (i > 0 && j > 0
+                     && i <= icon.size()
+                     && j <= icon[0].size()) ch = icon[i - 1][j - 1];
             else ch = L" ";
 
             frame.data[y + i][x + j].first = ch;
@@ -541,7 +543,7 @@ UISystem::getInGameHud(Frame frame, const Player &player, const int c_fps) {
     x = max(0, min(COLS - 1, orb_diameter + 4));
 
     frame = getAttackSlot(frame, y, x, dock_height - 1,
-                          0, make_pair(COLOR_GREY, COLOR_BLACK));
+                          player.primarySkill->icon, make_pair(COLOR_GREY, COLOR_BLACK));
 
     //draw left attribute button
     y = max(0, min(LINES - 1, y + 1));
@@ -591,7 +593,7 @@ UISystem::getInGameHud(Frame frame, const Player &player, const int c_fps) {
     x = max(0, min(COLS - 1, x - (dock_height - 1) * 2 - 1));
 
     frame = getAttackSlot(frame, y, x,
-                          dock_height - 1, 0,
+                          dock_height - 1, player.primarySkill->icon,
                           make_pair(COLOR_GREY, COLOR_BLACK));
 
 
