@@ -2,12 +2,53 @@
 
 Player getAdventurerTemplate() {
     Player Adventurer = {
-            "","Adventurer",COLOR_WHITE,
-            1,0,
-            100,100,100,
-            100,100,100,
-            4,4,4,4,4,4
+            "", "Adventurer", COLOR_WHITE,
+            1, 0,
+            100, 100, 100,
+            100, 100, 100,
+            4, 4, 4, 4, 4, 4,
+            [](Player &self, Position &player_pos, const set<pair<int,int>> player_fov,
+                    map<Entity, Monster> monsters, map<Entity,Position> positions)
+                    -> vector<Intent>  {
+                vector<Intent> attack_targets;
+
+                // Player primary attack
+                if (self.current_energy >= 2) {
+                    self.current_energy -= 2;
+                    for (const auto &entry: monsters) {
+                        const int player_max_arc = self.dexterity / 10;
+                        int hit_monsters = 0;
+                        Entity monsterEntity = entry.first;
+                        Position monsterPosition = positions[monsterEntity];
+                        Monster &monster = monsters[monsterEntity];
+
+                        if (abs(player_pos.x - monsterPosition.x) <= self.dexterity
+                            && abs(player_pos.y - monsterPosition.y) <= self.dexterity
+                            && is_position_in_fov(monsterPosition,player_fov)
+                            && self.current_energy >= 5) {
+                            self.current_energy -= 5;
+                            int damage = get_random_int(0, self.strength);
+                            attack_targets.push_back({
+                                monsterEntity,
+                                IntentType::Attack,
+                                {},
+                                monsterEntity,
+                                damage
+                            });
+                            hit_monsters++;
+
+                            if (hit_monsters > player_max_arc) break;
+                        }
+                    }
+                }
+
+
+                return attack_targets;
+            }
+
+
     };
+
 
     return Adventurer;
 }
@@ -15,11 +56,11 @@ Player getAdventurerTemplate() {
 
 Player getBarbarianTemplate() {
     Player Barbarian = {
-            "","Barbarian",COLOR_RED,
-            1,0,
-            100,100,100,
-            100,100,100,
-            4,4,4,4,4,4
+            "", "Barbarian", COLOR_RED,
+            1, 0,
+            100, 100, 100,
+            100, 100, 100,
+            4, 4, 4, 4, 4, 4
     };
 
     return Barbarian;
@@ -28,11 +69,11 @@ Player getBarbarianTemplate() {
 
 Player getBladeTemplate() {
     Player Blade = {
-            "","Blade",COLOR_ORANGE,
-            1,0,
-            100,100,100,
-            100,100,100,
-            4,4,4,4,4,4
+            "", "Blade", COLOR_ORANGE,
+            1, 0,
+            100, 100, 100,
+            100, 100, 100,
+            4, 4, 4, 4, 4, 4
     };
 
     return Blade;
@@ -41,11 +82,11 @@ Player getBladeTemplate() {
 
 Player getRogueTemplate() {
     Player Rogue = {
-            "","Rogue",COLOR_YELLOW,
-            1,0,
-            100,100,100,
-            100,100,100,
-            4,4,4,4,4,4
+            "", "Rogue", COLOR_YELLOW,
+            1, 0,
+            100, 100, 100,
+            100, 100, 100,
+            4, 4, 4, 4, 4, 4
     };
 
     return Rogue;
@@ -54,11 +95,11 @@ Player getRogueTemplate() {
 
 Player getScoutTemplate() {
     Player Scout = {
-            "","Scout",COLOR_LGREEN,
-            1,0,
-            100,100,100,
-            100,100,100,
-            4,4,4,4,4,4
+            "", "Scout", COLOR_LGREEN,
+            1, 0,
+            100, 100, 100,
+            100, 100, 100,
+            4, 4, 4, 4, 4, 4
     };
 
     return Scout;
@@ -67,11 +108,11 @@ Player getScoutTemplate() {
 
 Player getRangerTemplate() {
     Player Ranger = {
-            "","Ranger",COLOR_GREEN,
-            1,0,
-            100,100,100,
-            100,100,100,
-            4,4,4,4,4,4
+            "", "Ranger", COLOR_GREEN,
+            1, 0,
+            100, 100, 100,
+            100, 100, 100,
+            4, 4, 4, 4, 4, 4
     };
 
     return Ranger;
@@ -80,11 +121,11 @@ Player getRangerTemplate() {
 
 Player getNecromancerTemplate() {
     Player Necromancer = {
-            "","Necromancer",COLOR_CYAN,
-            1,0,
-            100,100,100,
-            100,100,100,
-            4,4,4,4,4,4
+            "", "Necromancer", COLOR_CYAN,
+            1, 0,
+            100, 100, 100,
+            100, 100, 100,
+            4, 4, 4, 4, 4, 4
     };
 
     return Necromancer;
@@ -93,11 +134,11 @@ Player getNecromancerTemplate() {
 
 Player getSorcererTemplate() {
     Player Sorcerer = {
-            "","Sorcerer",COLOR_AMARINE,
-            1,0,
-            100,100,100,
-            100,100,100,
-            4,4,4,4,4,4
+            "", "Sorcerer", COLOR_AMARINE,
+            1, 0,
+            100, 100, 100,
+            100, 100, 100,
+            4, 4, 4, 4, 4, 4
     };
 
     return Sorcerer;
@@ -106,11 +147,11 @@ Player getSorcererTemplate() {
 
 Player getMonkTemplate() {
     Player Monk = {
-            "","Monk",COLOR_LBLUE,
-            1,0,
-            100,100,100,
-            100,100,100,
-            4,4,4,4,4,4
+            "", "Monk", COLOR_LBLUE,
+            1, 0,
+            100, 100, 100,
+            100, 100, 100,
+            4, 4, 4, 4, 4, 4
     };
 
     return Monk;
@@ -119,11 +160,11 @@ Player getMonkTemplate() {
 
 Player getWizardTemplate() {
     Player Wizard = {
-            "","Wizard",COLOR_BLUE,
-            1,0,
-            100,100,100,
-            100,100,100,
-            4,4,4,4,4,4
+            "", "Wizard", COLOR_BLUE,
+            1, 0,
+            100, 100, 100,
+            100, 100, 100,
+            4, 4, 4, 4, 4, 4
     };
 
     return Wizard;
@@ -132,11 +173,11 @@ Player getWizardTemplate() {
 
 Player getClericTemplate() {
     Player Cleric = {
-            "","Cleric",COLOR_PURPLE,
-            1,0,
-            100,100,100,
-            100,100,100,
-            4,4,4,4,4,4
+            "", "Cleric", COLOR_PURPLE,
+            1, 0,
+            100, 100, 100,
+            100, 100, 100,
+            4, 4, 4, 4, 4, 4
     };
 
     return Cleric;
@@ -145,11 +186,11 @@ Player getClericTemplate() {
 
 Player getSpellswordTemplate() {
     Player Spellsword = {
-            "","Spellsword",COLOR_PINK,
-            1,0,
-            100,100,100,
-            100,100,100,
-            4,4,4,4,4,4
+            "", "Spellsword", COLOR_PINK,
+            1, 0,
+            100, 100, 100,
+            100, 100, 100,
+            4, 4, 4, 4, 4, 4
     };
 
     return Spellsword;
@@ -158,11 +199,11 @@ Player getSpellswordTemplate() {
 
 Player getPaladinTemplate() {
     Player Paladin = {
-            "","Paladin",COLOR_MAGENTA,
-            1,0,
-            100,100,100,
-            100,100,100,
-            4,4,4,4,4,4
+            "", "Paladin", COLOR_MAGENTA,
+            1, 0,
+            100, 100, 100,
+            100, 100, 100,
+            4, 4, 4, 4, 4, 4
     };
 
     return Paladin;
@@ -170,7 +211,7 @@ Player getPaladinTemplate() {
 
 
 Player getRandomTemplate() {
-    int choice = get_random_int(0,11);
+    int choice = get_random_int(0, 11);
     Player Random;
     switch (choice) {
         case (0):

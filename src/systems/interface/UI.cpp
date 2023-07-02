@@ -35,9 +35,28 @@ void UISystem::Update() {
 }
 
 
+Frame UISystem::getFpsLabel(Frame &frame, const int c_fps) {
+    wstringstream ss;
+    ss << L"FPS: " << c_fps;
+
+    wstring fps_text = ss.str();
+    int fps_text_length = fps_text.size();
+
+    // Top right position
+    int x_position = COLS - fps_text_length;
+    int y_position = 0;  // Top row
+
+    pair<int, int> color = {COLOR_WHITE, COLOR_BLACK}; // Assume {1, 0} as the color pair
+
+    frame = addText(frame, y_position, x_position, fps_text, color);
+
+    return frame;
+}
+
+
 Frame &
 UISystem::addBar(Frame &frame, int y, int x, int length, float level,
-                 wstring icon, pair<int, int> color) {
+                 const wstring &icon, pair<int, int> color) {
     for (int i = 0; i <= length; i++) {
         if (x + i >= COLS) break;
         wstring ch;
@@ -164,6 +183,25 @@ UISystem::getLoadCard(Frame frame) {
 
     return frame;
 }
+
+
+Frame UISystem::getGameOverCard(Frame frame) {
+    frame.meta = "Game Over Card";
+    for (int i = 0; i < frame.data.size(); i++) {
+        for (int j = 0; j < frame.data[i].size(); j++) {
+            if ((j + 1) % 3 != 0) {
+                frame.data[i][j].first = L"G";
+            } else {
+                frame.data[i][j].first = L"z";
+            }
+        }
+    }
+
+
+
+    return frame;
+}
+
 
 Frame
 UISystem::getMainMenu(Frame frame) {
@@ -310,7 +348,7 @@ Frame &UISystem::getPlayerTag(Frame &frame, int y, int x, int player_level, cons
     return frame;
 }
 
-Frame &UISystem::getUiBg(Frame &frame, int dock_height, const pair<int, int> &ui_bg_color) const {
+Frame &UISystem::getUiBg(Frame &frame, int dock_height, const pair<int, int> &ui_bg_color) {
     for (int hy = LINES - dock_height; hy < LINES; ++hy) {
         if (hy < 0) break;
         for (int hx = 0; hx < COLS; ++hx) {
@@ -345,7 +383,7 @@ UISystem::getOrb(Frame &frame,
                 && (j != diameter + 1 && i != diameter / 2 + 1)) {
                 pair<int, int> color_pair;
                 wstring ch;
-                if (level >= orb_size - (((i) * diameter) - j)) {
+                if (level >= 100*(orb_size - (((i) * diameter) - j))/orb_size) {
                     ch = get_random_character({L" ", L" ", L" ", L"~"});
                     color_pair.first = color.first;
                     color_pair.second = color.second;
@@ -354,7 +392,7 @@ UISystem::getOrb(Frame &frame,
                     color_pair = make_pair(COLOR_GREY, COLOR_BLACK);
                 }
 
-                frame.data[y + i][x + j].first = ch.c_str();
+                frame.data[y + i][x + j].first = ch;
                 frame.data[y + i][x + j].second = make_pair(color_pair.first, color_pair.second);
 
             }
@@ -374,7 +412,7 @@ UISystem::getOrb(Frame &frame,
                     orb_boundary_ch = L"⹏";
                 }
 
-                frame.data[y + i][x + j].first = orb_boundary_ch.c_str();
+                frame.data[y + i][x + j].first = orb_boundary_ch;
                 frame.data[y + i][x + j].second = make_pair(orb_boundary_color.first,
                                                             orb_boundary_color.second);
 
@@ -472,7 +510,7 @@ UISystem::getPotionBar(Frame &frame, int y, int x, int slot_height, int slot_wid
 
 
 Frame
-UISystem::getInGameHud(Frame frame, Player player) {
+UISystem::getInGameHud(Frame frame, const Player &player, const int c_fps) {
     //draw level and class name
     int y, x;
 
@@ -493,7 +531,7 @@ UISystem::getInGameHud(Frame frame, Player player) {
     y = max(0, min(LINES - 1, LINES - (orb_diameter / 2) - 2));
     x = max(0, min(COLS - 1, 1));
 
-    int health_level = 100;// static_cast<int>(static_cast<float>(playerStats.health) / PLAYER_MAX_HP * orb_size);
+    int health_level = static_cast<int>(static_cast<float>(player.current_health) / player.max_health * 100);
     frame = getOrb(frame, y, x, orb_diameter,
                    health_level, make_pair(COLOR_BLACK, COLOR_RED));
 
@@ -524,8 +562,9 @@ UISystem::getInGameHud(Frame frame, Player player) {
 
     //draw stamina bar
     y = max(0, min(LINES - 1, y + 1));
+    int stamina_level = static_cast<int>(static_cast<float>(player.current_stamina) / player.max_stamina);
     frame = addBar(frame, y, x,
-                   COLS / 6, 1.0f, L"ᗢ",
+                   COLS / 6, stamina_level, L"ᗢ",
                    make_pair(COLOR_ORANGE, COLOR_BLACK));
 
 
@@ -539,7 +578,7 @@ UISystem::getInGameHud(Frame frame, Player player) {
     //draw energy orb
     y = max(0, min(LINES - 1, LINES - (orb_diameter / 2) - 2));
     x = max(0, min(COLS - 1, COLS - orb_diameter - 3));
-    int energy_level = 100;// static_cast<int>(static_cast<float>(playerStats.energy) / PLAYER_MAX_EP * orb_size);
+    int energy_level = static_cast<int>(static_cast<float>(player.current_energy) / player.max_energy * 100);
 
     frame = getOrb(frame, y, x,
                    orb_diameter, energy_level,
@@ -577,6 +616,8 @@ UISystem::getInGameHud(Frame frame, Player player) {
     //for (int i = 0; i < log_size; i++) {
     //    mvaddstr(y + i, x, combat_log[combat_log.size() - log_size + i].c_str());
     //}
+
+    frame = getFpsLabel(frame, c_fps);
 
 
     return frame;

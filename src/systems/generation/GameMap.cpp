@@ -30,8 +30,8 @@ void MapSystem::CleanUp() {
 }
 
 
-int MapSystem::get_tile_color(const vector<int> swatch) {
-    return swatch[get_random_int(0,swatch.size() - 1)];
+int MapSystem::get_tile_color(const vector<int> &swatch) {
+    return swatch[get_random_int(0, swatch.size() - 1)];
 }
 
 
@@ -48,8 +48,8 @@ GameMap MapSystem::genCave(int height, int width) {
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
             wstring ch = get_random_character(VOID_TILES);
-            short color = get_color_pair_index(COLOR_WHITE,COLOR_BLACK);
-            int height;
+            short color = get_color_pair_index(COLOR_WHITE, COLOR_BLACK);
+            int tile_z;
             Tile void_tile = {ch, color, false, false, 0};
             data[x][y] = void_tile;
             double value = perlin.GetValue(x / 10.0, y / 10.0, 0.0);
@@ -58,18 +58,18 @@ GameMap MapSystem::genCave(int height, int width) {
             if (value < 0.2) {
                 ch = get_random_character(GROUND_TILES);
                 color = get_tile_color(ground_swatch);
-                height = 0;
+                tile_z = 0;
             } else if (value < 0.21) {
                 ch = get_random_character(TRAP_TILES);
                 color = get_tile_color(trap_swatch);
-                height = 0;
+                tile_z = 0;
             } else if (value < 0.8) {
                 ch = get_random_character(WALL_TILES);
                 color = get_tile_color(wall_swatch);
-                height = get_random_int(3,7);
+                tile_z = get_random_int(3, 7);
             }
 
-            Tile this_tile = {ch, color, false, false, height};
+            Tile this_tile = {ch, color, false, false, tile_z};
             data[x][y] = this_tile;
         }
     }
@@ -79,14 +79,14 @@ GameMap MapSystem::genCave(int height, int width) {
     queue<pair<int, int>> q;
 
     // Start flood fill from a random point on top edge
-    int initial_x = get_random_int(1, width-1);
-    int initial_y = get_random_int(1, height-1);
+    int initial_x = get_random_int(1, width - 1);
+    int initial_y = get_random_int(1, height - 1);
     while (!check_if_in(GROUND_TILES, data[initial_x][initial_y].ch)) {
-        initial_x += max(1,min(width-1,get_random_int(-1,1)));
-        initial_y += max(1,min(height-1,get_random_int(-1,1)));
+        initial_x += max(1, min(width - 1, get_random_int(-1, 1)));
+        initial_y += max(1, min(height - 1, get_random_int(-1, 1)));
     }
     visited[initial_x][initial_y] = true;
-    q.push({initial_x, initial_y});
+    q.emplace(initial_x, initial_y);
 
     // Perform flood fill
     while (!q.empty()) {
@@ -95,15 +95,19 @@ GameMap MapSystem::genCave(int height, int width) {
         q.pop();
 
         // Check neighboring cells
-        const vector<pair<int, int>> neighbors = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-        for (const auto& neighbor : neighbors) {
+        const vector<pair<int, int>> neighbors = {{-1, 0},
+                                                  {1,  0},
+                                                  {0,  -1},
+                                                  {0,  1}};
+        for (const auto &neighbor: neighbors) {
             int nx = x + neighbor.first;
             int ny = y + neighbor.second;
 
             // Check if neighbor is within bounds and an open area
-            if (nx >= 0 && nx < width && ny >= 0 && ny < height && check_if_in(GROUND_TILES, data[nx][ny].ch) && !visited[nx][ny]) {
+            if (nx >= 0 && nx < width && ny >= 0 && ny < height && check_if_in(GROUND_TILES, data[nx][ny].ch) &&
+                !visited[nx][ny]) {
                 visited[nx][ny] = true;
-                q.push({nx, ny});
+                q.emplace(nx, ny);
             }
         }
     }
@@ -114,9 +118,9 @@ GameMap MapSystem::genCave(int height, int width) {
             if (!visited[x][y] && check_if_in(GROUND_TILES, data[x][y].ch)) {
                 wstring ch = get_random_character(WALL_TILES);
                 short color = get_tile_color(wall_swatch);
-                int height = get_random_int(0,5);
-                Tile this_tile = {ch, color, false, false, height};
-                data[x][y] =  this_tile;
+                int tile_z = get_random_int(0, 5);
+                Tile this_tile = {ch, color, false, false, tile_z};
+                data[x][y] = this_tile;
             }
         }
     }
@@ -138,12 +142,12 @@ GameMap MapSystem::genCave(int height, int width) {
     }
 
 
-    GameMap game_map = {"Cave",data};//TODO:move up to avoid copying?
+    GameMap game_map = {"Cave", data};//TODO:move up to avoid copying?
 
     return game_map;
 }
 
-GameMap MapSystem::unveilMap(GameMap game_map, set<pair<int, int>> current_fov) {
+GameMap &MapSystem::unveilMap(GameMap &game_map, const set<pair<int, int>> &current_fov) {
     for (const auto coords: current_fov) {
         game_map.data[coords.first][coords.second].visible = true;
         game_map.data[coords.first][coords.second].visited = true;
@@ -152,22 +156,67 @@ GameMap MapSystem::unveilMap(GameMap game_map, set<pair<int, int>> current_fov) 
     return game_map;
 }
 
-GameMap MapSystem::reveilMap(GameMap game_map, set<pair<int, int>> current_fov) {
+GameMap &MapSystem::veilMap(GameMap &game_map, const set<pair<int, int>> &current_fov) {
     for (const auto coords: current_fov) {
         game_map.data[coords.first][coords.second].visible = false;
+    }
+
+
+    return game_map;
+}
+
+GameMap &MapSystem::forgetMap(GameMap &game_map, pair<int, int> player_pos, int mem_mult) {
+
+
+    // Forget distant visited tiles
+
+    for (int i = 0; i < 360; i++) {
+        double rad = i * (M_PI / 180.0);
+        double dx = cos(rad), dy = sin(rad) / 2;
+        double x = player_pos.first, y = player_pos.second;
+        int ix, iy;
+
+
+
+        //pass 1
+        x += 3*mem_mult*dx;
+        y += 3*mem_mult*dy;
+        ix = round(x), iy = round(y);
+        if (ix < 0 || ix >= game_map.data.size() || iy < 0 || iy >= game_map.data[0].size()) continue;
+        if (get_random_int(0,32)) continue;
+        else game_map.data[ix][iy].visited = false;
+
+        //pass 2
+        x += (mem_mult*7/2)*dx;
+        y += (mem_mult*7/2)*dy;
+        iy = round(y);
+        ix = round(x);
+        if (ix < 0 || ix >= game_map.data.size() || iy < 0 || iy >= game_map.data[0].size()) continue;
+        if (get_random_int(0,16)) continue;
+        else game_map.data[ix][iy].visited = false;
+
+        //pass 3
+        x += (mem_mult*13/3)*dx;
+        y += (mem_mult*13/3)*dy;
+        ix = round(x), iy = round(y);
+        if (ix < 0 || ix >= game_map.data.size() || iy < 0 || iy >= game_map.data[0].size()) continue;
+        if (get_random_int(0,8)) continue;
+        else game_map.data[ix][iy].visited = false;
+
     }
 
     return game_map;
 }
 
-Frame MapSystem::renderMap2D(Frame frame, const GameMap& current_map, int start_y, int start_x, int end_y, int end_x) {
+
+Frame MapSystem::renderMap2D(Frame frame, const GameMap &current_map, int start_y, int start_x, int end_y, int end_x) {
     int max_map_y = current_map.data.size();
     int max_map_x = current_map.data[0].size();
 
     for (int i = 0; i < end_y - start_y; i++) {
         for (int j = 0; j < end_x - start_x; j++) {
-            int map_y = max(0, min(max_map_y,i+start_y));
-            int map_x = max(0, min(max_map_x,j+start_x));
+            int map_y = max(0, min(max_map_y, i + start_y));
+            int map_x = max(0, min(max_map_x, j + start_x));
             if (current_map.data[map_x][map_y].visible) {
                 frame.data[i][j].first = current_map.data[map_x][map_y].ch;
                 frame.data[i][j].second.first = current_map.data[map_x][map_y].color;

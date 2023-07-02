@@ -20,11 +20,29 @@ public:
     void Update();
 
 
-    Frame BlankFrame(int y, int x);
+    static Frame BlankFrame(int y, int x);
+
+
+    static Frame &
+    addBar(Frame &frame, int y, int x, int length, float level,
+           const wstring &icon, pair<int, int> color);
+
+    static Frame &
+    addButton(Frame &frame, int y, int x, int height, int width,
+              pair<int, int> color);
+
+    static Frame &
+    addText(Frame &frame, int y, int x, wstring text,
+            pair<int, int> color);
+
+
+    Frame getFpsLabel(Frame &frame, const int c_fps);
 
     Frame getTitleCard(Frame frame);
 
     Frame getLoadCard(Frame frame);
+
+    Frame getGameOverCard(Frame frame);
 
     Frame getMainMenu(Frame frame);
 
@@ -34,42 +52,30 @@ public:
 
     Frame getSettingsMenu(Frame frame);
 
-    Frame getColorDebug(Frame frame);
+    static Frame getColorDebug(Frame frame);
 
-    Frame getInGameHud(Frame frame, Player player);
+
+    Frame getInGameHud(Frame frame, const Player &player, const int c_fps);
 
 
 private:
     bool Initialize();
 
 
-    Frame &
-    addBar(Frame &frame, int y, int x, int length, float level,
-           wstring icon, pair<int, int> color);
-
-    Frame &
-    addButton(Frame &frame, int y, int x, int height, int width,
-              pair<int, int> color);
-
-    Frame &
-    addText(Frame &frame, int y, int x, wstring text,
-            pair<int, int> color);
-
-
-    Frame &
+    static Frame &
     getUiBg(Frame &frame, int dock_height,
-            const pair<int, int> &ui_bg_color) const;
+            const pair<int, int> &ui_bg_color);
 
-    Frame &
+    static Frame &
     getPlayerTag(Frame &frame, int y, int x,
                  int player_level, const string &player_class,
                  int color);
 
-    Frame &
+    static Frame &
     getOrb(Frame &frame, int y, int x, int diameter, int level,
            pair<int, int> color);
 
-    Frame &
+    static Frame &
     getAttackSlot(Frame &frame, int y, int x, int height,
                   int skill_index, pair<int, int> color);
 

@@ -2,6 +2,7 @@
 
 #include "helpers.h"
 #include "components/player/Player.h"
+#include "components/enemy/Monster.h"
 
 
 Player getAdventurerTemplate();

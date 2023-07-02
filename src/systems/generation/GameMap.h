@@ -21,10 +21,13 @@ public:
 
     GameMap genCave(int height, int width);
 
-    GameMap unveilMap(GameMap game_map,  set<pair<int,int>> current_fov);
-    GameMap reveilMap(GameMap game_map,  set<pair<int,int>> current_fov);
+    static GameMap& unveilMap(GameMap &game_map, const set<pair<int, int>> &current_fov);
 
-    Frame renderMap2D(Frame frame, const GameMap& current_map,
+    static GameMap& veilMap(GameMap &game_map, const set<pair<int, int>> &current_fov);
+
+    static GameMap& forgetMap(GameMap &game_map, const pair<int,int> player_pos, int mem_mult);
+
+    static Frame renderMap2D(Frame frame, const GameMap &current_map,
                       int start_y, int start_x,
                       int end_y, int end_x);
 
@@ -33,5 +36,5 @@ private:
     bool Initialize();
 
 
-    int get_tile_color(const vector<int> swatch);
+    static int get_tile_color(const vector<int>& swatch);
 };

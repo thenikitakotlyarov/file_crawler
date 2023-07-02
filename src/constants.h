@@ -19,7 +19,7 @@ using namespace std;
 #define COLOR_PURPLE    13
 #define COLOR_PINK      14
 #define COLOR_MAGENTA   15
-#define FPS 30
+#define FPS 60
 #define DEV_LOG_FILE "dev_log.txt"
 #define GAME_LOG_FILE = "game_log.txt"
 #define UI_LOG_COUNT 7
@@ -28,7 +28,7 @@ using namespace std;
 #define PLAYER_MAX_HP 100
 #define PLAYER_MAX_EP 150
 #define PLAYER_FOV_RADIUS 12
-#define PLAYER_MEMORY_RADIUS 3*PLAYER_FOV_RADIUS
+#define PLAYER_MEMORY_RADIUS (3*PLAYER_FOV_RADIUS)
 #define sound false
 #define PLAYER_FOOTSTEP_SOUND_COUNT 6
 #define PLAYER_TILE L"ᚤ"

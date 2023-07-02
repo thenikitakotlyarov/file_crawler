@@ -9,6 +9,7 @@
 #include "components/enemy/Monster.h"
 #include "components/item/Item.h"
 #include "components/Entity.h"
+#include "components/Intent.h"
 
 #include "templates/item/BaseItems.h"
 #include "templates/enemy/BaseEnemies.h"
@@ -22,6 +23,7 @@ using namespace std;
 
 class EntitySystem {
 public:
+
     EntitySystem();
 
     ~EntitySystem();
@@ -33,20 +35,26 @@ public:
 
     void Update();
 
-    Entity createEntity(Position pos);
+    Entity createEntity(Position pos, bool transience);
 
     void destroyEntity(Entity entity_id);
 
-    const EntityMap& getEntities();
+    const EntityMap &getEntities();
 
 
-    void setPlayer(Player player);
+    void setPlayer(Player& player);
+    void setGameMap(const GameMap& game_map);
 
-    const Entity& getPlayer();
-    const Position& getPlayerPosition();
 
-    void setGamemap(GameMap game_map);
+    const Entity &getPlayer();
 
+    Player getCurrentPlayer();
+
+    const Position &getPlayerPosition();
+
+    const Position &getPosition(Entity);
+
+    const map<Entity, Position> &getPositions();
 
     void spawnPlayer();
 
@@ -54,18 +62,26 @@ public:
 
     void spawnItems();
 
-    map<Entity, Monster> getMonsters();
+    map<Entity, Monster>& getMonsters();
 
     map<Entity, Item> getItems();
 
-    void moveEntity(Entity entity, pair<int,int> direction);
 
-    set<pair<int, int>> calculate_fov(
-            const GameMap& game_map,
+    void handleIntent(const Intent &intent);
+
+    void moveEntity(const Intent &intent);
+
+
+    void damageEntity(const Entity entity, const int damage);
+
+    void combatEntities(const Intent &intent);
+
+    static set<pair<int, int>> calculate_fov(
+            const GameMap &game_map,
             int center_x, int center_y,
             int radius);
 
-    Frame renderEntities2D(Frame frame, const GameMap& game_map,
+    Frame renderEntities2D(Frame frame, const GameMap &game_map,
                            int start_y, int start_x,
                            int end_y, int end_x);
 
@@ -83,9 +99,6 @@ private:
     map<Entity, Item> items;
 
     unsigned long nextEntityId = 1;
-
-    Entity vacantEntity;
-
 
 
 };

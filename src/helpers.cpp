@@ -29,7 +29,13 @@ bool is_in_set(const T &element, const Container &set) {
 }
 
 
-bool check_if_in(const vector<wstring> &char_array, const wstring compare) {
+bool is_position_in_fov(const Position position, const set<pair<int, int>> fov) {
+    pair<int,int> element = make_pair(position.x,position.y);
+    return is_in_set(element, fov);
+}
+
+
+bool check_if_in(const vector<wstring> &char_array, const wstring& compare) {
     bool found = false;
     for (const std::wstring &str: char_array) {
         if (str == compare) {
@@ -88,6 +94,17 @@ vector<int> get_wall_swatch() {
     };
     return options[get_random_int(0, options.size() - 1)];
 }
+
+
+bool isAdjacent(const Position &pos1, const Position &pos2) {
+    // Check if the two positions are next to each other on the grid
+    int dx = abs(pos1.x - pos2.x);
+    int dy = abs(pos1.y - pos2.y);
+
+    return (dx <= 1 && dy <= 1);
+}
+
+
 
 
 double heuristic(const GameMap &game_map, int x1, int y1, int x2, int y2) {
@@ -196,7 +213,6 @@ void render(const Frame &frame) {
     wnoutrefresh(stdscr);
     doupdate();
 }
-
 
 
 

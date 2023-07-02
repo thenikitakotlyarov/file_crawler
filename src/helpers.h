@@ -22,7 +22,7 @@
 #include <thread>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
-#include <locale.h>
+#include <clocale>
 
 #include "components/Frame.h"
 #include "components/Position.h"
@@ -35,14 +35,17 @@ using namespace std;
 
 wstring int_to_hex_str(int i);
 
-int get_random_int(const int min, const int max);
+int get_random_int(int min, int max);
 
 wstring get_random_character(const vector<wstring> &char_array);
 
-bool check_if_in(const vector<wstring> &char_array, const wstring compare);
+bool check_if_in(const vector<wstring> &char_array, const wstring& compare);
 
 template<typename T, class Container>
 bool is_in_set(const T &element, const Container &set);
+
+bool is_position_in_fov(const Position position, const set<pair<int,int>> fov);
+
 
 int get_color_pair_index(int fg_idx, int bg_idx);
 
@@ -55,12 +58,11 @@ vector<int> get_trap_swatch();
 
 vector<int> get_wall_swatch();
 
-int get_input();
-
-void render(const Frame &frame);
-
-
 //pathfinding begin
+
+bool isAdjacent(const Position& pos1, const Position& pos2);
+
+
 struct Node {
     int x, y;
     double g, h;
@@ -87,3 +89,10 @@ vector<Node> aStar(const Position &start, const Position &goal,
                    const GameMap &game_map);
 
 //pathfinding end
+
+
+
+int get_input();
+
+void render(const Frame &frame);
+

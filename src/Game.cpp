@@ -120,10 +120,15 @@ void Game::Update(int player_input) {
         switch (player_input) {
         }
 
+    } else if (running == 999) {
+        if (player_input == 27 || player_input == '0') running = 2;
+        switch (player_input) {
+        }
+
     } else if (running <= 10) {// in game
         if (!READY_TO_PLAY) {
             CURRENT_MAP = SysMap.genCave(1024, 1024);
-            SysEntity.setGamemap(CURRENT_MAP);
+            SysEntity.setGameMap(CURRENT_MAP);
             SysEntity.setPlayer(CURRENT_PLAYER);
             SysEntity.spawnPlayer();
             SysEntity.spawnItems();
@@ -135,15 +140,56 @@ void Game::Update(int player_input) {
             if (paused) {
                 if (player_input == '0') running = 2;
             } else {// we running bois; take the player's input as commands for the player character
-                if (player_input == 'w') {
-                    SysEntity.moveEntity(SysEntity.getPlayer(), make_pair(0, -1));
+
+
+                if ((player_input == KEY_MOUSE)) { // && getmouse(&event) == OK) {
+
+                    MEVENT event;
+                    if ((getmouse(&event) == OK)
+                        && (event.bstate & BUTTON1_PRESSED)) {
+                        vector<Intent> combat_intent;
+
+                        Entity playerEntity = SysEntity.getPlayer();
+                        Position playerPosition = SysEntity.getPlayerPosition();
+
+                        combat_intent = CURRENT_PLAYER.primarySkill(
+                                CURRENT_PLAYER, playerPosition,
+                                SysEntity.calculate_fov(CURRENT_MAP,
+                                                        playerPosition.x,
+                                                        playerPosition.y,
+                                                        CURRENT_PLAYER.dexterity),
+                                SysEntity.getMonsters(),
+                                SysEntity.getPositions()
+                        );
+                        for (auto &combat: combat_intent) {
+                            SysEntity.combatEntities(combat);
+
+                        }
+
+
+                    }
+
+                } else if (player_input == 'w') {
+                    Entity playerEntity = SysEntity.getPlayer();
+                    Intent playerIntent = {playerEntity, IntentType::Move, make_pair(0, -1)};
+                    SysEntity.moveEntity(playerIntent);
                 } else if (player_input == 'a') {
-                    SysEntity.moveEntity(SysEntity.getPlayer(), make_pair(-1, 0));
+                    Entity playerEntity = SysEntity.getPlayer();
+                    Intent playerIntent = {playerEntity, IntentType::Move, make_pair(-1, 0)};
+                    SysEntity.moveEntity(playerIntent);
                 } else if (player_input == 's') {
-                    SysEntity.moveEntity(SysEntity.getPlayer(), make_pair(0, 1));
+                    Entity playerEntity = SysEntity.getPlayer();
+                    Intent playerIntent = {playerEntity, IntentType::Move, make_pair(0, 1)};
+                    SysEntity.moveEntity(playerIntent);
                 } else if (player_input == 'd') {
-                    SysEntity.moveEntity(SysEntity.getPlayer(), make_pair(1, 0));
+                    Entity playerEntity = SysEntity.getPlayer();
+                    Intent playerIntent = {playerEntity, IntentType::Move, make_pair(1, 0)};
+                    SysEntity.moveEntity(playerIntent);
+                } else if (player_input == 0) {
+                    CURRENT_PLAYER.current_energy = min(CURRENT_PLAYER.max_energy, CURRENT_PLAYER.current_energy + 1 +
+                                                                                   CURRENT_PLAYER.willpower / 10);
                 }
+
             }
 
 
@@ -155,7 +201,7 @@ void Game::Update(int player_input) {
 
 
 Frame Game::CARD_TITLE(int y, int x) {
-    Frame frame = SysUI.BlankFrame(y, x);
+    Frame frame = UISystem::BlankFrame(y, x);
 
     frame = SysUI.getTitleCard(frame);
 
@@ -164,7 +210,7 @@ Frame Game::CARD_TITLE(int y, int x) {
 
 
 Frame Game::MENU_MAIN(int y, int x) {
-    Frame frame = SysUI.BlankFrame(y, x);
+    Frame frame = UISystem::BlankFrame(y, x);
 
     frame = SysUI.getMainMenu(frame);
 
@@ -173,7 +219,7 @@ Frame Game::MENU_MAIN(int y, int x) {
 
 
 Frame Game::MENU_NEW_GAME(int y, int x) {
-    Frame frame = SysUI.BlankFrame(y, x);
+    Frame frame = UISystem::BlankFrame(y, x);
 
     READY_TO_PLAY = false;
 
@@ -184,7 +230,7 @@ Frame Game::MENU_NEW_GAME(int y, int x) {
 
 
 Frame Game::MENU_LOAD_GAME(int y, int x) {
-    Frame frame = SysUI.BlankFrame(y, x);
+    Frame frame = UISystem::BlankFrame(y, x);
 
     frame = SysUI.getLoadCard(frame);
 
@@ -193,7 +239,7 @@ Frame Game::MENU_LOAD_GAME(int y, int x) {
 
 
 Frame Game::MENU_SETTINGS(int y, int x) {
-    Frame frame = SysUI.BlankFrame(y, x);
+    Frame frame = UISystem::BlankFrame(y, x);
 
     frame = SysUI.getSettingsMenu(frame);
 
@@ -202,7 +248,7 @@ Frame Game::MENU_SETTINGS(int y, int x) {
 
 
 Frame Game::DEBUG_COLOR(int y, int x) {
-    Frame frame = SysUI.BlankFrame(y, x);
+    Frame frame = UISystem::BlankFrame(y, x);
 
     frame = SysUI.getColorDebug(frame);
 
@@ -210,8 +256,21 @@ Frame Game::DEBUG_COLOR(int y, int x) {
 }
 
 
-Frame Game::PLAY_GAME(int y, int x) {
-    Frame frame = SysUI.BlankFrame(y, x);
+Frame Game::GAME_OVER(int y, int x) {
+    Frame frame = UISystem::BlankFrame(y, x);
+
+    frame = SysUI.getGameOverCard(frame);
+
+    return frame;
+}
+
+
+Frame Game::PLAY_GAME(int y, int x, const int c_fps) {
+    CURRENT_PLAYER = SysEntity.getCurrentPlayer();
+    if (CURRENT_PLAYER.current_health <= 0) {
+        running = 999;
+    }
+    Frame frame = UISystem::BlankFrame(y, x);
     Position player_position = SysEntity.getPlayerPosition();
 
     int start_x = max(0, player_position.x - COLS / 2);
@@ -222,18 +281,18 @@ Frame Game::PLAY_GAME(int y, int x) {
     int end_y = start_y + LINES - 3;
 
 
-    set<pair<int, int>> current_player_fov = SysEntity.calculate_fov(
+    set<pair<int, int>> current_player_fov = EntitySystem::calculate_fov(
             CURRENT_MAP, player_position.x, player_position.y, CURRENT_PLAYER.dexterity
     );
 
-    CURRENT_MAP = SysMap.unveilMap(CURRENT_MAP, current_player_fov);
+    CURRENT_MAP = MapSystem::unveilMap(CURRENT_MAP, current_player_fov);
 
     //frame = SysRender.r2D(frame, CURRENT_MAP);
-    frame = SysMap.renderMap2D(frame, CURRENT_MAP, start_y, start_x, end_y, end_x);
+    frame = MapSystem::renderMap2D(frame, CURRENT_MAP, start_y, start_x, end_y, end_x);
     frame = SysEntity.renderEntities2D(frame, CURRENT_MAP, start_y, start_x, end_y, end_x);
 
 
-    frame = SysUI.getInGameHud(frame, CURRENT_PLAYER);
+    frame = SysUI.getInGameHud(frame, SysEntity.getCurrentPlayer(), c_fps);
     if (paused) {
         for (int i = 0; i < y; i++) {
             for (int j = 0; j < x; j++) {
@@ -245,13 +304,19 @@ Frame Game::PLAY_GAME(int y, int x) {
                 }
             }
         }
+    } else {
+        SysEntity.Update();
+
     }
 
-    SysEntity.Update();
 
-    CURRENT_MAP = SysMap.reveilMap(CURRENT_MAP, current_player_fov);
+    CURRENT_MAP = MapSystem::veilMap(CURRENT_MAP, current_player_fov);
+    CURRENT_MAP = MapSystem::forgetMap(CURRENT_MAP, make_pair(player_position.x, player_position.y),
+                                       CURRENT_PLAYER.intelligence);
+
 
     //frame = SysRender.bloom(frame);
+
 
     return frame;
 }

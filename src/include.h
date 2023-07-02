@@ -9,6 +9,7 @@
 #include "components/Tile.h"
 #include "components/EntityMap.h"
 #include "components/Entity.h"
+#include "components/Intent.h"
 #include "systems/entity/Entity.h"
 #include "systems/generation/GameMap.h"
 #include "systems/interface/UI.h"

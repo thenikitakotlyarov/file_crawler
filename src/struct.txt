@@ -8,6 +8,7 @@
 ./components/Tile.h
 ./components/EntityMap.h
 ./components/Entity.h
+./components/Intent.h
 ./systems/entity/Entity.h
 ./systems/generation/GameMap.h
 ./systems/interface/UI.h

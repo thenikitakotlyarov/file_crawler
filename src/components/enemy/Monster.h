@@ -5,13 +5,16 @@
 #include "components/player/Player.h"
 #include "components/Position.h"
 #include "components/GameMap.h"
+#include "components/Intent.h"
 #include "helpers.h"
 
 
 using namespace std;
 
 
-struct Monster{
+struct Player;
+
+struct Monster {
     string name;
     wstring characterFullHealth;
     wstring characterMidHealth;
@@ -20,13 +23,21 @@ struct Monster{
 
     int rarity;
 
+    bool transient;
+
     int attackPower;
     int attackRadius;
     int chaseRadius;
     int cooldown;
+
+
     int total_health;
     int health;
-    function<Position(Monster&,Position&, Player&, Position&, GameMap&)> Update;
+
+
+    function<Intent(Monster &, Entity &, Position &, const set<pair<int, int>>,
+                    Player &, Entity &, Position &,
+                    GameMap &)> Update;
 
 
 };
