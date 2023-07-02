@@ -143,7 +143,7 @@ void EntitySystem::Update() {
             }
             for (Entity &entity_ref: entity_refs) {
 
-                    if (entity_ref.id > 1 && monsters.find(entity_ref) != monsters.end()) {
+                if (entity_ref.id > 1 && monsters.find(entity_ref) != monsters.end()) {
                     Monster &monster = monsters[entity_ref];
                     Position &entityPosition = positionMap[entity_ref];
                     if (get_random_int(1, 3) == 3) {
@@ -257,7 +257,7 @@ void EntitySystem::moveEntity(const Intent &intent) {
         } else if (check_if_in(TRAP_TILES, currentMap.data[pos.x + dx][pos.y + dy].ch)) {
 
             if (intent.entity.id == 1) {
-                damageEntity(intent.entity,get_random_int(1, 5));
+                damageEntity(intent.entity, get_random_int(1, 5));
             }
             bool can_place = true;
 
@@ -387,6 +387,6 @@ EntitySystem::renderEntities2D(Frame frame, const GameMap &game_map, int start_y
     return frame;
 }
 
-Player EntitySystem::getCurrentPlayer() {
+Player &EntitySystem::getCurrentPlayer() {
     return currentPlayer;
 }

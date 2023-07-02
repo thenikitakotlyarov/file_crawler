@@ -4,7 +4,7 @@
 #include <vector>
 #include "components/player/Player.h"
 #include "components/Position.h"
-#include "components/GameMap.h"
+#include "components/map/GameMap.h"
 #include "components/Intent.h"
 #include "helpers.h"
 

@@ -26,7 +26,7 @@
 
 #include "components/Frame.h"
 #include "components/Position.h"
-#include "components/GameMap.h"
+#include "components/map/GameMap.h"
 #include "components/Tile.h"
 #include "constants.h"
 

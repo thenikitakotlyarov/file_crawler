@@ -6,13 +6,12 @@
 #include "components/Entity.h"
 #include "components/Intent.h"
 #include "components/enemy/Monster.h"
-
+#include "components/skill/Skill.h"
 
 
 using namespace std;
 
 struct Monster;
-
 
 struct Player {
     string name;
@@ -39,7 +38,7 @@ struct Player {
     int willpower;
 
 
-    function<vector<Intent>(Player&, Position &player_pos, const set<pair<int,int>> player_fov, map<Entity, Monster>& monsters, map<Entity,Position> positions)> primarySkill;
+    Skill* primarySkill;
 
 
 };

@@ -14,7 +14,8 @@ add_compile_options(-g) # debugging
 
 # Grab all the source files
 file(GLOB_RECURSE SOURCES
-        "src/*.cpp"
+
+        "src/*.cpp" "src"
         )
 
 # add the executable

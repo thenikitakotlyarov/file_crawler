@@ -7,46 +7,8 @@ Player getAdventurerTemplate() {
             100, 100, 100,
             100, 100, 100,
             4, 4, 4, 4, 4, 4,
-            [](Player &self, Position &player_pos, const set<pair<int,int>> player_fov,
-                    map<Entity, Monster> monsters, map<Entity,Position> positions)
-                    -> vector<Intent>  {
-                vector<Intent> attack_targets;
 
-                // Player primary attack
-                if (self.current_energy >= 2) {
-                    self.current_energy -= 2;
-                    for (const auto &entry: monsters) {
-                        const int player_max_arc = self.dexterity / 10;
-                        int hit_monsters = 0;
-                        Entity monsterEntity = entry.first;
-                        Position monsterPosition = positions[monsterEntity];
-                        Monster &monster = monsters[monsterEntity];
-
-                        if (abs(player_pos.x - monsterPosition.x) <= self.dexterity
-                            && abs(player_pos.y - monsterPosition.y) <= self.dexterity
-                            && is_position_in_fov(monsterPosition,player_fov)
-                            && self.current_energy >= 5) {
-                            self.current_energy -= 5;
-                            int damage = get_random_int(0, self.strength);
-                            attack_targets.push_back({
-                                monsterEntity,
-                                IntentType::Attack,
-                                {},
-                                monsterEntity,
-                                damage
-                            });
-                            hit_monsters++;
-
-                            if (hit_monsters > player_max_arc) break;
-                        }
-                    }
-                }
-
-
-                return attack_targets;
-            }
-
-
+            getBasicAttack()
     };
 
 

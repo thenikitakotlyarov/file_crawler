@@ -1,6 +1,6 @@
 #pragma once
 
-#include "components/GameMap.h"
+#include "components/map/GameMap.h"
 
 using namespace std;
 

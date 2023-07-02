@@ -147,12 +147,11 @@ void Game::Update(int player_input) {
                     MEVENT event;
                     if ((getmouse(&event) == OK)
                         && (event.bstate & BUTTON1_PRESSED)) {
-                        vector<Intent> combat_intent;
 
                         Entity playerEntity = SysEntity.getPlayer();
                         Position playerPosition = SysEntity.getPlayerPosition();
 
-                        combat_intent = CURRENT_PLAYER.primarySkill(
+                        pair<int, vector<Intent>> strike = CURRENT_PLAYER.primarySkill->Use(
                                 CURRENT_PLAYER, playerPosition,
                                 SysEntity.calculate_fov(CURRENT_MAP,
                                                         playerPosition.x,
@@ -161,7 +160,8 @@ void Game::Update(int player_input) {
                                 SysEntity.getMonsters(),
                                 SysEntity.getPositions()
                         );
-                        for (auto &combat: combat_intent) {
+                        SysEntity.getCurrentPlayer().current_energy -= strike.first;
+                        for (auto &combat: strike.second) {
                             SysEntity.combatEntities(combat);
 
                         }
@@ -186,13 +186,23 @@ void Game::Update(int player_input) {
                     Intent playerIntent = {playerEntity, IntentType::Move, make_pair(1, 0)};
                     SysEntity.moveEntity(playerIntent);
                 } else if (player_input == 0) {
-                    CURRENT_PLAYER.current_energy = min(CURRENT_PLAYER.max_energy, CURRENT_PLAYER.current_energy + 1 +
-                                                                                   CURRENT_PLAYER.willpower / 10);
+                    if (!get_random_int(0,99)) {// 1/100 chance of occurring
+                        SysEntity.getCurrentPlayer().current_health = min(CURRENT_PLAYER.max_health,
+                                                                          CURRENT_PLAYER.current_health + 1 +
+                                                                          CURRENT_PLAYER.constitution / 10);
+                    }
+
+                    if (!get_random_int(0,24)) {// 1/25 chance of occurring
+                        SysEntity.getCurrentPlayer().current_energy = min(CURRENT_PLAYER.max_energy,
+                                                                          CURRENT_PLAYER.current_energy + 1 +
+                                                                          CURRENT_PLAYER.willpower / 10);
+
+                    }
                 }
 
             }
 
-
+            CURRENT_PLAYER = SysEntity.getCurrentPlayer();
         }
 
 

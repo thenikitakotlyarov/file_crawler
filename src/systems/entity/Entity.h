@@ -2,8 +2,8 @@
 
 
 #include "components/Frame.h"
-#include "components/GameMap.h"
-#include "components/EntityMap.h"
+#include "components/map/GameMap.h"
+#include "components/map/EntityMap.h"
 #include "components/Position.h"
 #include "components/player/Player.h"
 #include "components/enemy/Monster.h"
@@ -18,7 +18,6 @@
 #include "helpers.h"
 
 using namespace std;
-
 
 
 class EntitySystem {
@@ -42,13 +41,14 @@ public:
     const EntityMap &getEntities();
 
 
-    void setPlayer(Player& player);
-    void setGameMap(const GameMap& game_map);
+    void setPlayer(Player &player);
+
+    void setGameMap(const GameMap &game_map);
 
 
     const Entity &getPlayer();
 
-    Player getCurrentPlayer();
+    Player &getCurrentPlayer();
 
     const Position &getPlayerPosition();
 
@@ -62,7 +62,7 @@ public:
 
     void spawnItems();
 
-    map<Entity, Monster>& getMonsters();
+    map<Entity, Monster> &getMonsters();
 
     map<Entity, Item> getItems();
 

@@ -5,7 +5,7 @@ Monster getBasicMonster() {
     pair<int, int> attack_power_dis = {rating * 1, rating * 20};
     int attack_range_end = rating * 7;
     pair<int, int> attack_range_dis = {rating * 1, attack_range_end};
-    pair<int, int> chase_dis = {attack_range_end+1, rating * 25};
+    pair<int, int> chase_dis = {attack_range_end + 1, rating * 25};
     pair<int, int> attack_cooldown_dis = {rating * 1, rating * 7};
     pair<int, int> health_dis = {rating * 5, rating * 25};
 
@@ -36,7 +36,8 @@ Monster getBasicMonster() {
                 Position new_pos;
 
                 if (distance <= self.attackRadius
-                    && is_position_in_fov(player_pos, monster_fov)) {
+                    && is_position_in_fov(player_pos, monster_fov)
+                    && self.cooldown == 0) {
                     current_intent = {
                             self_id,
                             IntentType::Attack,
@@ -44,6 +45,7 @@ Monster getBasicMonster() {
                             player_entity,
                             max(0, get_random_int(1, self.attackPower))
                     };
+                    self.cooldown = get_random_int(3,5);//attacks one of every 3 -> 5 turns
 
                 } else if (distance <= self.chaseRadius) {
 
