@@ -274,13 +274,13 @@ Frame MapSystem::renderMap3D(Frame frame, const GameMap &current_map, int start_
                             if (i - h + degrade / 2 < 0 || i - h + degrade / 2 >= LINES - 3) continue;
                             if (h > 5) {
                                 frame.data[i - h + degrade / 2][j].first = L"░";
-                                frame.data[i - h + degrade / 2][j].second.first = current_map.data[map_x][map_y].color;
+                                frame.data[i - h + degrade / 2][j].second.first = frame.data[i][j].second.first;
                             } else if (h > 2) {
                                 frame.data[i - h + degrade / 2][j].first = L"▒";
-                                frame.data[i - h + degrade / 2][j].second.first = current_map.data[map_x][map_y].color;
+                                frame.data[i - h + degrade / 2][j].second.first = frame.data[i][j].second.first;
                             } else {
                                 frame.data[i - h + degrade / 2][j].first = current_map.data[map_x][map_y].ch;
-                                frame.data[i - h + degrade / 2][j].second.first = current_map.data[map_x][map_y].color;
+                                frame.data[i - h + degrade / 2][j].second.first = frame.data[i][j].second.first;
                             }
 
                             if (i >= (LINES-3) / 2 - 7) {

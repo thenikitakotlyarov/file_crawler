@@ -45,7 +45,7 @@ bool check_if_in(const vector<wstring> &char_array, const wstring& compare);
 template<typename T, class Container>
 bool is_in_set(const T &element, const Container &set);
 
-bool is_position_in_fov(const Position position, const set<pair<int,int>> fov);
+bool is_position_in_fov(const Position position, const set<pair<int,int>> &fov);
 
 
 int get_color_pair_index(int fg_idx, int bg_idx);

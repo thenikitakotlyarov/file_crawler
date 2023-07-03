@@ -23,7 +23,7 @@ Player getBarbarianTemplate() {
             15, 12, 7, 7, 7, 12,
 
             getBasicAttack(),
-            getFuriousCharge()
+            getVITBoostedAttack()
     };
 
 }

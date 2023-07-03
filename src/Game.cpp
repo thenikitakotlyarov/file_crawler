@@ -332,7 +332,7 @@ Frame Game::PLAY_GAME(int y, int x, const int c_fps) {
 
     //frame = SysRender.r2D(frame, CURRENT_MAP);
     frame = MapSystem::renderMap3D(frame, CURRENT_MAP, start_y, start_x, end_y, end_x);
-    frame = SysEntity.renderEntities2D(frame, CURRENT_MAP, start_y, start_x, end_y, end_x);
+    frame = SysEntity.renderEntities2D(frame, CURRENT_MAP, current_player_fov, start_y, start_x, end_y, end_x);
 
 
     frame = SysUI.getInGameHud(frame, SysEntity.getCurrentPlayer(), c_fps);

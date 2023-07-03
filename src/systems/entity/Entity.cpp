@@ -354,28 +354,36 @@ set<pair<int, int>> EntitySystem::calculate_fov(
             y += dy;
         }
     }
+    fov.insert({center_x,center_y});
 
     return fov;
 }
 
 
 Frame
-EntitySystem::renderEntities2D(Frame frame, const GameMap &game_map, int start_y, int start_x, int end_y, int end_x) {
+EntitySystem::renderEntities2D(Frame frame, const GameMap &game_map, const set<pair<int,int>> current_fov, int start_y, int start_x, int end_y, int end_x) {
     for (int i = start_y; i < end_y; i++) {
         for (int j = start_x; j < end_x; j++) {
-            vector<Entity> &entity_refs = entityMap.data[j][i];
-            for (Entity &entity_ref: entity_refs) {
-                if (items.find(entity_ref) != items.end()) {
-                    frame.data[i - start_y][j - start_x].first = items[entity_ref].character;
-                    frame.data[i - start_y][j - start_x].second.first = items[entity_ref].color;
+            Position this_pos = {j,i};
+            if (is_position_in_fov(this_pos, current_fov)
+                && check_if_in(GROUND_TILES, frame.data[i - start_y][j - start_x].first)) {
+                vector<Entity> &entity_refs = entityMap.data[j][i];
+                for (Entity &entity_ref: entity_refs) {
+                    if (items.find(entity_ref) != items.end()) {
+                        frame.data[i - start_y][j - start_x].first = items[entity_ref].character;
+                        frame.data[i - start_y][j - start_x].second.first = COLOR_BLACK;
+                        frame.data[i - start_y][j - start_x].second.second = items[entity_ref].color;
 
-                } else if (monsters.find(entity_ref) != monsters.end()) {
-                    frame.data[i - start_y][j - start_x].first = monsters[entity_ref].characterFullHealth;
-                    frame.data[i - start_y][j - start_x].second.first = monsters[entity_ref].color;
 
-                } else {//tis the player
-                    frame.data[i - start_y][j - start_x].first = L"@";
-                    frame.data[i - start_y][j - start_x].second.first = currentPlayer.color;
+                    } else if (monsters.find(entity_ref) != monsters.end()) {
+                        frame.data[i - start_y][j - start_x].first = monsters[entity_ref].characterFullHealth;
+                        frame.data[i - start_y][j - start_x].second.first = monsters[entity_ref].color;
+
+                    } else {//tis the player
+                        frame.data[i - start_y][j - start_x].first = L"@";
+                        frame.data[i - start_y][j - start_x].second.first = currentPlayer.color;
+                    }
+
                 }
 
             }

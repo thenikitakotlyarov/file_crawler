@@ -82,6 +82,7 @@ public:
             int radius);
 
     Frame renderEntities2D(Frame frame, const GameMap &game_map,
+                           const set<pair<int,int>> current_fov,
                            int start_y, int start_x,
                            int end_y, int end_x);
 

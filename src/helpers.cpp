@@ -29,7 +29,7 @@ bool is_in_set(const T &element, const Container &set) {
 }
 
 
-bool is_position_in_fov(const Position position, const set<pair<int, int>> fov) {
+bool is_position_in_fov(const Position position, const set<pair<int, int>>& fov) {
     pair<int,int> element = make_pair(position.x,position.y);
     return is_in_set(element, fov);
 }

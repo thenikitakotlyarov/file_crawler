@@ -80,8 +80,8 @@ private:
                   vector<vector<wstring>> icon, pair<int, int> color);
 
     Frame &
-    getLevelingButton(Frame &frame, int y, int x, int height,
-                      bool active);
+    getMenuButton(Frame &frame, int y, int x, int height,
+                  vector<vector<wstring>> icon, bool active);
 
     Frame &
     getPotionBar(Frame &frame, int y, int x, int slot_height, int slot_width,

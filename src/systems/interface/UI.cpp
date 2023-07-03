@@ -440,7 +440,8 @@ UISystem::getAttackSlot(Frame &frame, int y, int x, int height,
             else if (j == 0 || j == width - 1) ch = L"┃";
             else if (i > 0 && j > 0
                      && i <= icon.size()
-                     && j <= icon[0].size()) ch = icon[i - 1][j - 1];
+                     && j <= icon[0].size())
+                ch = icon[i - 1][j - 1];
             else ch = L" ";
 
             frame.data[y + i][x + j].first = ch;
@@ -452,8 +453,8 @@ UISystem::getAttackSlot(Frame &frame, int y, int x, int height,
 }
 
 Frame &
-UISystem::getLevelingButton(Frame &frame, int y, int x, int height,
-                            bool active) {
+UISystem::getMenuButton(Frame &frame, int y, int x, int height,
+                        vector<vector<wstring>> icon, bool active) {
     int width = height * 2 - 1;
     pair<int, int> color_pair;
 
@@ -469,7 +470,14 @@ UISystem::getLevelingButton(Frame &frame, int y, int x, int height,
 
     //add a plus sign
     if (!active) {
-        frame.data[y + center_y][x + center_x].first = L"☩";
+        for (int i = 0; i < icon.size(); i++) {
+            for (int j = 0; j < icon[0].size(); j++) {
+                if (icon[i][j] != L" ") {
+                    frame.data[y + i][x + j].first = icon[i][j];
+
+                }
+            }
+        }
     } else {
         frame.data[y + center_y][x + center_x].first = L"※";
         frame.data[y + center_y][x + center_x].second = make_pair(color_pair.second, color_pair.first);//flip em colors
@@ -545,34 +553,90 @@ UISystem::getInGameHud(Frame frame, const Player &player, const int c_fps) {
     frame = getAttackSlot(frame, y, x, dock_height - 1,
                           player.primarySkill->icon, make_pair(COLOR_GREY, COLOR_BLACK));
 
-    //draw left attribute button
-    y = max(0, min(LINES - 1, y + 1));
-    x = max(0, min(COLS - 1, x + (dock_height - 1) * 2 + 1));
-
-    frame = getLevelingButton(frame, y, x, dock_height - 3,
-                              false);
 
     //draw player info
-    x = max(0, min(COLS - 1, x + (dock_height - 3) * 2 + 1));
+    y = max(0, min(LINES - 1, y + 1));
+    x = max(0, min(COLS - 1, x + (dock_height - 1) * 2 + 1));
     frame = getPlayerTag(frame, y, x, player.level, player.class_name, player.color);
 
     //draw experience bar
     y = max(0, min(LINES - 1, y + 1));
     frame = addBar(frame, y, x,
-                   COLS / 6, 0.1f, L"☆",
+                   (dock_height - 3) * 2 * 4 - 4, 0.1f, L"☆",
                    make_pair(COLOR_WHITE, COLOR_BLACK));
 
     //draw stamina bar
     y = max(0, min(LINES - 1, y + 1));
     int stamina_level = static_cast<int>(static_cast<float>(player.current_stamina) / player.max_stamina);
     frame = addBar(frame, y, x,
-                   COLS / 6, stamina_level, L"ᗢ",
+                   (dock_height - 3) * 2 * 4 - 4, stamina_level, L"ᗢ",
                    make_pair(COLOR_ORANGE, COLOR_BLACK));
 
 
 
     //draw character menu buttons?
 
+
+    //draw left attributes button
+    y = max(0, min(LINES - 1, LINES - dock_height + 2));
+    x = max(0, min(COLS - 1, (COLS / 2) - (dock_height - 3) * 2 * 3 / 2 - 1));
+
+    frame = getMenuButton(frame, y, x, dock_height - 3,
+                          {
+                                  {L"A",L" ",L" "},
+                                  {L" ",L" ",L"♗"}
+                                  //TODO:come up with coolor icons
+                                  //{L"A", L" ", L"▁", L" ", L" "},
+                                  //{L" ", L"▟", L"⍶", L"▙", L" "},
+                                  //{L" ", L"▟", L"║", L"▙", L" "}
+                          },
+                          false);
+
+
+    //draw center inventory button
+    x = max(0, min(COLS - 1, x + (dock_height - 3) * 2));
+
+    frame = getMenuButton(frame, y, x, dock_height - 3,
+                          {
+                                  {L"I",L" ",L" "},
+                                  {L" ",L" ",L"⌹"}
+                                  //{L"I", L"▄", L"▁", L"▄", L" "},
+                                  //{L" ", L"☋", L"█", L"☋", L" "},
+                                  //{L" ", L"▚", L"█", L"▞", L" "}
+                          },
+                          false);
+
+    //draw right skills button
+    x = max(0, min(COLS - 1, x + (dock_height - 3) * 2));
+
+    frame = getMenuButton(frame, y, x,
+                          dock_height - 3,
+                          {
+                                  {L"S",L" ",L" "},
+                                  {L" ",L" ",L"⁂"}
+                                  //{L"S", L" ", L"█", L" ", L" "},
+                                  //{L" ", L"▚", L"☆", L"▞", L" "},
+                                  //{L" ", L"▟", L"▀", L"▙", L" "}
+                          },
+                          false);
+
+
+
+    //draw right attack slot
+    y = max(0, min(LINES - 1, LINES - dock_height + 1));
+    x = max(0, min(COLS - 1, COLS - orb_diameter - (dock_height - 1) * 2 - 4));
+
+    frame = getAttackSlot(frame, y, x,
+                          dock_height - 1, player.secondarySkill->icon,
+                          make_pair(COLOR_GREY, COLOR_BLACK));
+
+
+    //draw potion slots
+    y = max(0, min(LINES - 1, y + 1));
+    x = max(0, min(COLS - 1, x - (dock_height - 3) * 2 * 4 - 1));
+    frame = getPotionBar(frame, y, x,
+                         dock_height - 3, (dock_height - 3) * 2,
+                         make_pair(COLOR_WHITE, COLOR_BLACK));
 
 
 
@@ -587,29 +651,6 @@ UISystem::getInGameHud(Frame frame, const Player &player, const int c_fps) {
                    make_pair(COLOR_WHITE, player.color));
 
 
-
-    //draw right attack slot
-    y = max(0, min(LINES - 1, LINES - dock_height + 1));
-    x = max(0, min(COLS - 1, x - (dock_height - 1) * 2 - 1));
-
-    frame = getAttackSlot(frame, y, x,
-                          dock_height - 1, player.secondarySkill->icon,
-                          make_pair(COLOR_GREY, COLOR_BLACK));
-
-
-    //draw right skills button
-    y = max(0, min(LINES - 1, y + 1));
-    x = max(0, min(COLS - 1, x - (dock_height - 3) * 2 - 1));
-
-    frame = getLevelingButton(frame, y, x,
-                              dock_height - 3,
-                              true);
-
-    //draw potion slots
-    x = max(0, min(COLS - 1, x - (dock_height - 3) * 2 * 4 - 3));
-    frame = getPotionBar(frame, y, x,
-                         dock_height - 3, (dock_height - 3) * 2,
-                         make_pair(COLOR_WHITE, COLOR_BLACK));
 
     ////draw combat log
     //int log_size = min(LINES - orb_diameter - 2, static_cast<int>(combat_log.size()));
