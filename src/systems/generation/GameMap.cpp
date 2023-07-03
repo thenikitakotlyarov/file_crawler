@@ -142,7 +142,27 @@ GameMap MapSystem::genCave(int height, int width) {
     }
 
 
-    GameMap game_map = {"Cave", data};//TODO:move up to avoid copying?
+    GameMap game_map = {
+            {
+                    "Cave",
+                    {
+                            getPotionTemplate(),
+                            getSerumTemplate(),
+                            getSalveTemplate(),
+                            getVitalityOrbTemplate(),
+                            getPowerOrbTemplate(),
+                            getAgiltyOrbTemplate(),
+                            getFocusOrbTemplate(),
+                            getInsightOrbTemplate(),
+                            getFaithOrbTemplate(),
+                            getSpecialOrbTemplate()
+                    },
+                    {
+                            getBasicMonster()
+                    }
+            },
+            data
+    };
 
     return game_map;
 }
@@ -179,28 +199,28 @@ GameMap &MapSystem::forgetMap(GameMap &game_map, pair<int, int> player_pos, int 
 
 
         //pass 1
-        x += 3*mem_mult*dx;
-        y += 3*mem_mult*dy;
+        x += 3 * mem_mult * dx;
+        y += 3 * mem_mult * dy;
         ix = round(x), iy = round(y);
         if (ix < 0 || ix >= game_map.data.size() || iy < 0 || iy >= game_map.data[0].size()) continue;
-        if (get_random_int(0,32)) continue;
+        if (get_random_int(0, 32)) continue;
         else game_map.data[ix][iy].visited = false;
 
         //pass 2
-        x += (mem_mult*7/2)*dx;
-        y += (mem_mult*7/2)*dy;
+        x += (mem_mult * 7 / 2) * dx;
+        y += (mem_mult * 7 / 2) * dy;
         iy = round(y);
         ix = round(x);
         if (ix < 0 || ix >= game_map.data.size() || iy < 0 || iy >= game_map.data[0].size()) continue;
-        if (get_random_int(0,16)) continue;
+        if (get_random_int(0, 16)) continue;
         else game_map.data[ix][iy].visited = false;
 
         //pass 3
-        x += (mem_mult*13/3)*dx;
-        y += (mem_mult*13/3)*dy;
+        x += (mem_mult * 13 / 3) * dx;
+        y += (mem_mult * 13 / 3) * dy;
         ix = round(x), iy = round(y);
         if (ix < 0 || ix >= game_map.data.size() || iy < 0 || iy >= game_map.data[0].size()) continue;
-        if (get_random_int(0,8)) continue;
+        if (get_random_int(0, 8)) continue;
         else game_map.data[ix][iy].visited = false;
 
     }
@@ -227,6 +247,51 @@ Frame MapSystem::renderMap2D(Frame frame, const GameMap &current_map, int start_
 
             }
 
+        }
+    }
+
+
+    return frame;
+}
+
+Frame MapSystem::renderMap3D(Frame frame, const GameMap &current_map, int start_y, int start_x, int end_y, int end_x) {
+    int max_map_y = current_map.data.size();
+    int max_map_x = current_map.data[0].size();
+
+    frame = renderMap2D(frame, current_map, start_y, start_x, end_y, end_x);
+
+    for (int i = 0; i < frame.data.size(); i++) {
+        for (int j = 0; j < frame.data[0].size(); j++) {
+            int map_y = max(0, min(max_map_y, i + start_y));
+            int map_x = max(0, min(max_map_x, j + start_x));
+
+
+            int degrade = 0;
+            if (current_map.data[map_x][map_y].visited) {
+                if (current_map.data[map_x][map_y].z) {
+                    if (i < (LINES-3) / 2) {
+                        for (int h = 1; h <= current_map.data[map_x][map_y].z; ++h) {
+                            if (i - h + degrade / 2 < 0 || i - h + degrade / 2 >= LINES - 3) continue;
+                            if (h > 5) {
+                                frame.data[i - h + degrade / 2][j].first = L"░";
+                                frame.data[i - h + degrade / 2][j].second.first = current_map.data[map_x][map_y].color;
+                            } else if (h > 2) {
+                                frame.data[i - h + degrade / 2][j].first = L"▒";
+                                frame.data[i - h + degrade / 2][j].second.first = current_map.data[map_x][map_y].color;
+                            } else {
+                                frame.data[i - h + degrade / 2][j].first = current_map.data[map_x][map_y].ch;
+                                frame.data[i - h + degrade / 2][j].second.first = current_map.data[map_x][map_y].color;
+                            }
+
+                            if (i >= (LINES-3) / 2 - 7) {
+                                degrade++;
+                            }
+
+                        }
+                    }
+
+                }
+            }
         }
     }
 

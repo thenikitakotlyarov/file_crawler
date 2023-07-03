@@ -155,7 +155,7 @@ void Game::Update(int player_input) {
                                     SysEntity.calculate_fov(CURRENT_MAP,
                                                             playerPosition.x,
                                                             playerPosition.y,
-                                                            CURRENT_PLAYER.dexterity),
+                                                            CURRENT_PLAYER.agility),
                                     SysEntity.getMonsters(),
                                     SysEntity.getPositions()
                             );
@@ -175,7 +175,7 @@ void Game::Update(int player_input) {
                                     SysEntity.calculate_fov(CURRENT_MAP,
                                                             playerPosition.x,
                                                             playerPosition.y,
-                                                            CURRENT_PLAYER.dexterity),
+                                                            CURRENT_PLAYER.agility),
                                     SysEntity.getMonsters(),
                                     SysEntity.getPositions()
                             );
@@ -205,29 +205,42 @@ void Game::Update(int player_input) {
                     Entity playerEntity = SysEntity.getPlayer();
                     Intent playerIntent = {playerEntity, IntentType::Move, make_pair(1, 0)};
                     SysEntity.moveEntity(playerIntent);
+                } else if (player_input == 'e') {
+                    Position player_pos = SysEntity.getPlayerPosition();
+                    const map<Entity,Item>& items = SysEntity.getItems();
+                    const EntityMap& entityMap = SysEntity.getEntities();
+                    for (const auto& entity: entityMap.data[player_pos.x][player_pos.y]) {
+                        if (items.find(entity) != items.end()) {
+                            items.find(entity)->second.effect(SysEntity.getCurrentPlayer());
+                            SysEntity.destroyEntity(entity);
+                            break;
+                        }
+                    }
                 } else if (player_input == 0) {
                     if (!get_random_int(0, 99)) {// 1/100 chance of occurring
                         SysEntity.getCurrentPlayer().current_health = min(CURRENT_PLAYER.max_health,
                                                                           CURRENT_PLAYER.current_health + 1 +
-                                                                          CURRENT_PLAYER.constitution / 10);
+                                                                          CURRENT_PLAYER.vitality / 10);
                     }
 
                     if (!get_random_int(0, 24)) {// 1/25 chance of occurring
                         SysEntity.getCurrentPlayer().current_energy = min(CURRENT_PLAYER.max_energy,
                                                                           CURRENT_PLAYER.current_energy + 1 +
-                                                                          CURRENT_PLAYER.willpower / 10);
+                                                                          CURRENT_PLAYER.focus / 10);
 
                     }
                 }
-
             }
 
-            CURRENT_PLAYER = SysEntity.getCurrentPlayer();
         }
 
-
+        CURRENT_PLAYER = SysEntity.getCurrentPlayer();
     }
+
+
 }
+
+
 
 
 Frame Game::CARD_TITLE(int y, int x) {
@@ -312,13 +325,13 @@ Frame Game::PLAY_GAME(int y, int x, const int c_fps) {
 
 
     set<pair<int, int>> current_player_fov = EntitySystem::calculate_fov(
-            CURRENT_MAP, player_position.x, player_position.y, 15 + CURRENT_PLAYER.dexterity / 10
+            CURRENT_MAP, player_position.x, player_position.y, 15 + CURRENT_PLAYER.agility / 10
     );
 
     CURRENT_MAP = MapSystem::unveilMap(CURRENT_MAP, current_player_fov);
 
     //frame = SysRender.r2D(frame, CURRENT_MAP);
-    frame = MapSystem::renderMap2D(frame, CURRENT_MAP, start_y, start_x, end_y, end_x);
+    frame = MapSystem::renderMap3D(frame, CURRENT_MAP, start_y, start_x, end_y, end_x);
     frame = SysEntity.renderEntities2D(frame, CURRENT_MAP, start_y, start_x, end_y, end_x);
 
 
@@ -342,7 +355,7 @@ Frame Game::PLAY_GAME(int y, int x, const int c_fps) {
 
     CURRENT_MAP = MapSystem::veilMap(CURRENT_MAP, current_player_fov);
     CURRENT_MAP = MapSystem::forgetMap(CURRENT_MAP, make_pair(player_position.x, player_position.y),
-                                       CURRENT_PLAYER.intelligence);
+                                       CURRENT_PLAYER.insight);
 
 
     //frame = SysRender.bloom(frame);

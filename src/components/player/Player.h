@@ -30,12 +30,12 @@ struct Player {
     int current_stamina;
 
 
-    int constitution;
-    int strength;
-    int dexterity;
-    int willpower;
-    int intelligence;
-    int faith;
+    int vitality;
+    int power;
+    int agility;
+    int focus;
+    int insight;
+    int belief;
 
 
     Skill* primarySkill;

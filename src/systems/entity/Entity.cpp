@@ -89,7 +89,7 @@ void EntitySystem::spawnMonsters() {
             getBasicMonster()
     };
 
-    for (const auto &monster: monsterTemplates) {
+    for (const auto &monster: currentMap.meta.monsterTemplates) {
         for (int i = 0; i < monster.rarity * count; ++i) {
             int x, y;
             do {
@@ -106,11 +106,8 @@ void EntitySystem::spawnMonsters() {
 
 void EntitySystem::spawnItems() {
     int count = round(0.001333 * (currentMap.data.size() * currentMap.data[0].size()));
-    vector<Item> itemTemplates = {
-            getPotionTemplate()
-    };
 
-    for (const auto &item: itemTemplates) {
+    for (const auto &item: currentMap.meta.itemTemplates) {
         for (int i = 0; i < item.rarity * count; ++i) {
             int x, y;
             do {

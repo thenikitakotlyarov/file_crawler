@@ -196,7 +196,7 @@ int get_input() {
 // Render frame on screen
 void render(const Frame &frame) {
 
-    clear();
+    //clear();
 
     for (int i = 0; i < LINES; ++i) {
         for (int j = 0; j < COLS; ++j) {

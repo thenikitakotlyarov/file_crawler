@@ -29,28 +29,26 @@ Skill *getBasicAttack() {
                 // Player primary attack
                 if (self.current_energy > cost) {
                     for (const auto &entry: monsters) {
-                        const int player_max_arc = self.dexterity / 10;
-                        int hit_monsters = 0;
+                        const int player_max_arc = self.agility / 10;
                         Entity monsterEntity = entry.first;
                         Position monsterPosition = positions[monsterEntity];
                         Monster &monster = monsters[monsterEntity];
 
-                        if (abs(player_pos.x - monsterPosition.x) <= self.dexterity
-                            && abs(player_pos.y - monsterPosition.y) <= self.dexterity
+                        if (abs(player_pos.x - monsterPosition.x) <= self.agility
+                            && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
                             && self.current_energy >= cost + 5) {
                             cost += 3;
-                            int damage = get_random_int(0, self.strength);
+                            int damage = get_random_int(0, self.power);
                             attack_targets.push_back({
-                                                             monsterEntity,
+                                                             {1},
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
                                                              damage
                                                      });
-                            hit_monsters++;
 
-                            if (hit_monsters > player_max_arc) break;
+                            break;
                         }
                     }
                 }
@@ -66,7 +64,7 @@ Skill *getBasicAttack() {
 }
 
 
-Skill *getAverageBoostedAttack() {
+Skill *getAVGBoostedAttack() {
     unsigned long id = 0;
 
     string name = "Special Attack";
@@ -95,28 +93,28 @@ Skill *getAverageBoostedAttack() {
                 // Player primary attack
                 if (self.current_energy > cost) {
                     for (const auto &entry: monsters) {
-                        const int player_max_arc = self.dexterity / 10;
+                        const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
                         Entity monsterEntity = entry.first;
                         Position monsterPosition = positions[monsterEntity];
                         Monster &monster = monsters[monsterEntity];
 
-                        if (abs(player_pos.x - monsterPosition.x) <= self.dexterity
-                            && abs(player_pos.y - monsterPosition.y) <= self.dexterity
+                        if (abs(player_pos.x - monsterPosition.x) <= self.agility
+                            && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
                             && self.current_energy >= cost + 5) {
                             cost += 10;
-                            int damage = get_random_int(0, self.strength);
+                            int damage = get_random_int(0, self.power);
                             int bonus =
-                                    (self.strength
-                                     + self.constitution
-                                     + self.faith
-                                     + self.intelligence
-                                     + self.willpower
-                                     + self.dexterity)
+                                    (self.power
+                                     + self.vitality
+                                     + self.belief
+                                     + self.insight
+                                     + self.focus
+                                     + self.agility)
                                     / 6;
                             attack_targets.push_back({
-                                                             monsterEntity,
+                                                             {1},
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
@@ -140,7 +138,7 @@ Skill *getAverageBoostedAttack() {
 }
 
 
-Skill *getDexStrBoostedAttack() {
+Skill *getAGIPOWBoostedAttack() {
     unsigned long id = 0;
 
     string name = "Special Attack";
@@ -169,24 +167,24 @@ Skill *getDexStrBoostedAttack() {
                 // Player primary attack
                 if (self.current_energy > cost) {
                     for (const auto &entry: monsters) {
-                        const int player_max_arc = self.dexterity / 10;
+                        const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
                         Entity monsterEntity = entry.first;
                         Position monsterPosition = positions[monsterEntity];
                         Monster &monster = monsters[monsterEntity];
 
-                        if (abs(player_pos.x - monsterPosition.x) <= self.dexterity
-                            && abs(player_pos.y - monsterPosition.y) <= self.dexterity
+                        if (abs(player_pos.x - monsterPosition.x) <= self.agility
+                            && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
                             && self.current_energy >= cost + 5) {
                             cost += 10;
-                            int damage = get_random_int(0, self.strength);
+                            int damage = get_random_int(0, self.power);
                             int bonus =
-                                    (self.strength
-                                     + self.dexterity)
+                                    (self.power
+                                     + self.agility)
                                     / 2;
                             attack_targets.push_back({
-                                                             monsterEntity,
+                                                             {1},
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
@@ -210,7 +208,7 @@ Skill *getDexStrBoostedAttack() {
 }
 
 
-Skill *getStrBoostedAttack() {
+Skill *getPOWBoostedAttack() {
     unsigned long id = 0;
 
     string name = "Special Attack";
@@ -239,21 +237,21 @@ Skill *getStrBoostedAttack() {
                 // Player primary attack
                 if (self.current_energy > cost) {
                     for (const auto &entry: monsters) {
-                        const int player_max_arc = self.dexterity / 10;
+                        const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
                         Entity monsterEntity = entry.first;
                         Position monsterPosition = positions[monsterEntity];
                         Monster &monster = monsters[monsterEntity];
 
-                        if (abs(player_pos.x - monsterPosition.x) <= self.dexterity
-                            && abs(player_pos.y - monsterPosition.y) <= self.dexterity
+                        if (abs(player_pos.x - monsterPosition.x) <= self.agility
+                            && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
                             && self.current_energy >= cost + 5) {
                             cost += 10;
-                            int damage = get_random_int(0, self.strength);
-                            int bonus = self.strength;
+                            int damage = get_random_int(0, self.power);
+                            int bonus = self.power;
                             attack_targets.push_back({
-                                                             monsterEntity,
+                                                             {1},
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
@@ -277,7 +275,7 @@ Skill *getStrBoostedAttack() {
 }
 
 
-Skill *getStrConBoostedAttack() {
+Skill *getPOWVITBoostedAttack() {
     unsigned long id = 0;
 
     string name = "Special Attack";
@@ -306,24 +304,24 @@ Skill *getStrConBoostedAttack() {
                 // Player primary attack
                 if (self.current_energy > cost) {
                     for (const auto &entry: monsters) {
-                        const int player_max_arc = self.dexterity / 10;
+                        const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
                         Entity monsterEntity = entry.first;
                         Position monsterPosition = positions[monsterEntity];
                         Monster &monster = monsters[monsterEntity];
 
-                        if (abs(player_pos.x - monsterPosition.x) <= self.dexterity
-                            && abs(player_pos.y - monsterPosition.y) <= self.dexterity
+                        if (abs(player_pos.x - monsterPosition.x) <= self.agility
+                            && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
                             && self.current_energy >= cost + 5) {
                             cost += 10;
-                            int damage = get_random_int(0, self.strength);
+                            int damage = get_random_int(0, self.power);
                             int bonus =
-                                    (self.strength
-                                     + self.constitution)
+                                    (self.power
+                                     + self.vitality)
                                     / 2;
                             attack_targets.push_back({
-                                                             monsterEntity,
+                                                             {1},
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
@@ -347,7 +345,7 @@ Skill *getStrConBoostedAttack() {
 }
 
 
-Skill *getConBoostedAttack() {
+Skill *getVITBoostedAttack() {
     unsigned long id = 0;
 
     string name = "Special Attack";
@@ -376,21 +374,21 @@ Skill *getConBoostedAttack() {
                 // Player primary attack
                 if (self.current_energy > cost) {
                     for (const auto &entry: monsters) {
-                        const int player_max_arc = self.dexterity / 10;
+                        const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
                         Entity monsterEntity = entry.first;
                         Position monsterPosition = positions[monsterEntity];
                         Monster &monster = monsters[monsterEntity];
 
-                        if (abs(player_pos.x - monsterPosition.x) <= self.dexterity
-                            && abs(player_pos.y - monsterPosition.y) <= self.dexterity
+                        if (abs(player_pos.x - monsterPosition.x) <= self.agility
+                            && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
                             && self.current_energy >= cost + 5) {
                             cost += 10;
-                            int damage = get_random_int(0, self.strength);
-                            int bonus = self.constitution;
+                            int damage = get_random_int(0, self.power);
+                            int bonus = self.vitality;
                             attack_targets.push_back({
-                                                             monsterEntity,
+                                                             {1},
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
@@ -414,7 +412,7 @@ Skill *getConBoostedAttack() {
 }
 
 
-Skill *getConFaiBoostedAttack() {
+Skill *getVITBELBoostedAttack() {
     unsigned long id = 0;
 
     string name = "Special Attack";
@@ -443,24 +441,24 @@ Skill *getConFaiBoostedAttack() {
                 // Player primary attack
                 if (self.current_energy > cost) {
                     for (const auto &entry: monsters) {
-                        const int player_max_arc = self.dexterity / 10;
+                        const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
                         Entity monsterEntity = entry.first;
                         Position monsterPosition = positions[monsterEntity];
                         Monster &monster = monsters[monsterEntity];
 
-                        if (abs(player_pos.x - monsterPosition.x) <= self.dexterity
-                            && abs(player_pos.y - monsterPosition.y) <= self.dexterity
+                        if (abs(player_pos.x - monsterPosition.x) <= self.agility
+                            && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
                             && self.current_energy >= cost + 5) {
                             cost += 10;
-                            int damage = get_random_int(0, self.strength);
+                            int damage = get_random_int(0, self.power);
                             int bonus =
-                                    (self.constitution
-                                     + self.faith)
+                                    (self.vitality
+                                     + self.belief)
                                     / 2;
                             attack_targets.push_back({
-                                                             monsterEntity,
+                                                             {1},
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
@@ -484,7 +482,7 @@ Skill *getConFaiBoostedAttack() {
 }
 
 
-Skill *getFaiBoostedAttack() {
+Skill *getBELBoostedAttack() {
     unsigned long id = 0;
 
     string name = "Special Attack";
@@ -513,21 +511,21 @@ Skill *getFaiBoostedAttack() {
                 // Player primary attack
                 if (self.current_energy > cost) {
                     for (const auto &entry: monsters) {
-                        const int player_max_arc = self.dexterity / 10;
+                        const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
                         Entity monsterEntity = entry.first;
                         Position monsterPosition = positions[monsterEntity];
                         Monster &monster = monsters[monsterEntity];
 
-                        if (abs(player_pos.x - monsterPosition.x) <= self.dexterity
-                            && abs(player_pos.y - monsterPosition.y) <= self.dexterity
+                        if (abs(player_pos.x - monsterPosition.x) <= self.agility
+                            && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
                             && self.current_energy >= cost + 5) {
                             cost += 10;
-                            int damage = get_random_int(0, self.strength);
-                            int bonus = self.faith;
+                            int damage = get_random_int(0, self.power);
+                            int bonus = self.belief;
                             attack_targets.push_back({
-                                                             monsterEntity,
+                                                             {1},
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
@@ -551,7 +549,7 @@ Skill *getFaiBoostedAttack() {
 }
 
 
-Skill *getFaiIntBoostedAttack() {
+Skill *getBELINSBoostedAttack() {
     unsigned long id = 0;
 
     string name = "Special Attack";
@@ -580,24 +578,24 @@ Skill *getFaiIntBoostedAttack() {
                 // Player primary attack
                 if (self.current_energy > cost) {
                     for (const auto &entry: monsters) {
-                        const int player_max_arc = self.dexterity / 10;
+                        const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
                         Entity monsterEntity = entry.first;
                         Position monsterPosition = positions[monsterEntity];
                         Monster &monster = monsters[monsterEntity];
 
-                        if (abs(player_pos.x - monsterPosition.x) <= self.dexterity
-                            && abs(player_pos.y - monsterPosition.y) <= self.dexterity
+                        if (abs(player_pos.x - monsterPosition.x) <= self.agility
+                            && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
                             && self.current_energy >= cost + 5) {
                             cost += 10;
-                            int damage = get_random_int(0, self.strength);
+                            int damage = get_random_int(0, self.power);
                             int bonus =
-                                    (self.faith
-                                     + self.intelligence)
+                                    (self.belief
+                                     + self.insight)
                                     / 2;
                             attack_targets.push_back({
-                                                             monsterEntity,
+                                                             {1},
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
@@ -621,7 +619,7 @@ Skill *getFaiIntBoostedAttack() {
 }
 
 
-Skill *getIntBoostedAttack() {
+Skill *getINSBoostedAttack() {
     unsigned long id = 0;
 
     string name = "Special Attack";
@@ -650,21 +648,21 @@ Skill *getIntBoostedAttack() {
                 // Player primary attack
                 if (self.current_energy > cost) {
                     for (const auto &entry: monsters) {
-                        const int player_max_arc = self.dexterity / 10;
+                        const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
                         Entity monsterEntity = entry.first;
                         Position monsterPosition = positions[monsterEntity];
                         Monster &monster = monsters[monsterEntity];
 
-                        if (abs(player_pos.x - monsterPosition.x) <= self.dexterity
-                            && abs(player_pos.y - monsterPosition.y) <= self.dexterity
+                        if (abs(player_pos.x - monsterPosition.x) <= self.agility
+                            && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
                             && self.current_energy >= cost + 5) {
                             cost += 10;
-                            int damage = get_random_int(0, self.strength);
-                            int bonus = self.intelligence;
+                            int damage = get_random_int(0, self.power);
+                            int bonus = self.insight;
                             attack_targets.push_back({
-                                                             monsterEntity,
+                                                             {1},
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
@@ -688,7 +686,7 @@ Skill *getIntBoostedAttack() {
 }
 
 
-Skill *getIntWilBoostedAttack() {
+Skill *getINSFOCBoostedAttack() {
     unsigned long id = 0;
 
     string name = "Special Attack";
@@ -717,24 +715,24 @@ Skill *getIntWilBoostedAttack() {
                 // Player primary attack
                 if (self.current_energy > cost) {
                     for (const auto &entry: monsters) {
-                        const int player_max_arc = self.dexterity / 10;
+                        const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
                         Entity monsterEntity = entry.first;
                         Position monsterPosition = positions[monsterEntity];
                         Monster &monster = monsters[monsterEntity];
 
-                        if (abs(player_pos.x - monsterPosition.x) <= self.dexterity
-                            && abs(player_pos.y - monsterPosition.y) <= self.dexterity
+                        if (abs(player_pos.x - monsterPosition.x) <= self.agility
+                            && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
                             && self.current_energy >= cost + 5) {
                             cost += 10;
-                            int damage = get_random_int(0, self.strength);
+                            int damage = get_random_int(0, self.power);
                             int bonus =
-                                    (self.intelligence
-                                     + self.willpower)
+                                    (self.insight
+                                     + self.focus)
                                     /2;
                             attack_targets.push_back({
-                                                             monsterEntity,
+                                                             {1},
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
@@ -758,7 +756,7 @@ Skill *getIntWilBoostedAttack() {
 }
 
 
-Skill *getWilBoostedAttack() {
+Skill *getFOCBoostedAttack() {
     unsigned long id = 0;
 
     string name = "Special Attack";
@@ -787,21 +785,21 @@ Skill *getWilBoostedAttack() {
                 // Player primary attack
                 if (self.current_energy > cost) {
                     for (const auto &entry: monsters) {
-                        const int player_max_arc = self.dexterity / 10;
+                        const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
                         Entity monsterEntity = entry.first;
                         Position monsterPosition = positions[monsterEntity];
                         Monster &monster = monsters[monsterEntity];
 
-                        if (abs(player_pos.x - monsterPosition.x) <= self.dexterity
-                            && abs(player_pos.y - monsterPosition.y) <= self.dexterity
+                        if (abs(player_pos.x - monsterPosition.x) <= self.agility
+                            && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
                             && self.current_energy >= cost + 5) {
                             cost += 10;
-                            int damage = get_random_int(0, self.strength);
-                            int bonus = self.willpower;
+                            int damage = get_random_int(0, self.power);
+                            int bonus = self.focus;
                             attack_targets.push_back({
-                                                             monsterEntity,
+                                                             {1},
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
@@ -825,7 +823,7 @@ Skill *getWilBoostedAttack() {
 }
 
 
-Skill *getWilDexBoostedAttack() {
+Skill *getFOCAGIBoostedAttack() {
     unsigned long id = 0;
 
     string name = "Special Attack";
@@ -854,24 +852,24 @@ Skill *getWilDexBoostedAttack() {
                 // Player primary attack
                 if (self.current_energy > cost) {
                     for (const auto &entry: monsters) {
-                        const int player_max_arc = self.dexterity / 10;
+                        const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
                         Entity monsterEntity = entry.first;
                         Position monsterPosition = positions[monsterEntity];
                         Monster &monster = monsters[monsterEntity];
 
-                        if (abs(player_pos.x - monsterPosition.x) <= self.dexterity
-                            && abs(player_pos.y - monsterPosition.y) <= self.dexterity
+                        if (abs(player_pos.x - monsterPosition.x) <= self.agility
+                            && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
                             && self.current_energy >= cost + 5) {
                             cost += 10;
-                            int damage = get_random_int(0, self.strength);
+                            int damage = get_random_int(0, self.power);
                             int bonus =
-                                    (self.willpower
-                                     + self.dexterity)
+                                    (self.focus
+                                     + self.agility)
                                     / 2;
                             attack_targets.push_back({
-                                                             monsterEntity,
+                                                             {1},
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
@@ -895,7 +893,7 @@ Skill *getWilDexBoostedAttack() {
 }
 
 
-Skill *getDexBoostedAttack() {
+Skill *getAGIBoostedAttack() {
     unsigned long id = 0;
 
     string name = "Special Attack";
@@ -924,21 +922,21 @@ Skill *getDexBoostedAttack() {
                 // Player primary attack
                 if (self.current_energy > cost) {
                     for (const auto &entry: monsters) {
-                        const int player_max_arc = self.dexterity / 10;
+                        const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
                         Entity monsterEntity = entry.first;
                         Position monsterPosition = positions[monsterEntity];
                         Monster &monster = monsters[monsterEntity];
 
-                        if (abs(player_pos.x - monsterPosition.x) <= self.dexterity
-                            && abs(player_pos.y - monsterPosition.y) <= self.dexterity
+                        if (abs(player_pos.x - monsterPosition.x) <= self.agility
+                            && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
                             && self.current_energy >= cost + 5) {
                             cost += 10;
-                            int damage = get_random_int(0, self.strength);
-                            int bonus = self.dexterity;
+                            int damage = get_random_int(0, self.power);
+                            int bonus = self.agility;
                             attack_targets.push_back({
-                                                             monsterEntity,
+                                                             {1},
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
@@ -956,6 +954,60 @@ Skill *getDexBoostedAttack() {
             }
 
 
+    };
+
+    return new Skill(skill);
+}
+
+Skill *getFuriousCharge() {
+    unsigned long id = 0;
+
+    string name = "Furious Charge";
+
+    vector<vector<wstring>> icon = {
+            {L"⚞", L"═", L"═", L"═", L"═", L"═", L"═", L"⚟"},
+            {L"C", L"h", L"a", L"r", L"g", L"e", L"!", L" "},
+            {L"⚞", L"═", L"═", L"═", L"═", L"═", L"═", L"⚟"},
+    };
+
+
+    Skill skill = {
+            id, name, icon,
+            [](Player &self, Position &player_pos, const set<pair<int, int>> player_fov,
+               map<Entity, Monster> monsters, map<Entity, Position> positions)
+                    -> pair<int, vector<Intent>> {
+                int cost = 2;
+                vector<Intent> intents;
+
+                if (self.current_energy > cost) {
+                    for (const auto &entry: monsters) {
+                        Entity monsterEntity = entry.first;
+                        Position monsterPosition = positions[monsterEntity];
+                        Monster &monster = monsters[monsterEntity];
+
+                        if (is_position_in_fov(monsterPosition, player_fov)
+                            && self.current_energy >= cost + 5) {
+                            cost += 10;
+
+                            // Determine direction of the charge
+                            pair<int, int> direction = {monsterPosition.x - player_pos.x, monsterPosition.y - player_pos.y};
+
+                            // Create move intent
+                            Intent moveIntent = {{1}, IntentType::Move, direction};
+                            intents.push_back(moveIntent);
+
+                            // Calculate damage
+                            int damage = self.power + (self.vitality / 2);
+
+                            // Create attack intent
+                            Intent attackIntent = {{1}, IntentType::Attack, {}, monsterEntity, damage};
+                            intents.push_back(attackIntent);
+                        }
+                    }
+                }
+
+                return make_pair(cost, intents);
+            }
     };
 
     return new Skill(skill);

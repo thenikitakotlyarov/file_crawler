@@ -1,6 +1,8 @@
 #pragma once
 
 #include "components/map/GameMap.h"
+#include "templates/item/BaseItems.h"
+#include "templates/enemy/BaseEnemies.h"
 
 using namespace std;
 
@@ -31,6 +33,9 @@ public:
                       int start_y, int start_x,
                       int end_y, int end_x);
 
+    static Frame renderMap3D(Frame frame, const GameMap &current_map,
+                             int start_y, int start_x,
+                             int end_y, int end_x);
 
 private:
     bool Initialize();

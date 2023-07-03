@@ -5,9 +5,7 @@
 #include "components/Entity.h"
 
 
-using namespace std;
-
 struct EntityMap {
-    string meta;
+    Meta meta;
     vector<vector<vector<Entity>>> data;
 };

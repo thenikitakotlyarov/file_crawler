@@ -9,7 +9,7 @@ Player getAdventurerTemplate() {
             10, 10, 10, 10, 10, 10,
 
             getBasicAttack(),
-            getAverageBoostedAttack()
+            getAVGBoostedAttack()
     };
 }
 
@@ -23,7 +23,7 @@ Player getBarbarianTemplate() {
             15, 12, 7, 7, 7, 12,
 
             getBasicAttack(),
-            getConBoostedAttack()
+            getFuriousCharge()
     };
 
 }
@@ -35,10 +35,10 @@ Player getDuelistTemplate() {
             1, 0,
             100, 100, 100,
             100, 100, 100,
-            13,13,10,7,7,10,
+            13, 13, 10, 7, 7, 10,
 
             getBasicAttack(),
-            getStrConBoostedAttack()
+            getPOWVITBoostedAttack()
     };
 }
 
@@ -49,10 +49,10 @@ Player getFighterTemplate() {
             1, 0,
             100, 100, 100,
             100, 100, 100,
-            12,15,12,7,7,7,
+            12, 15, 12, 7, 7, 7,
 
             getBasicAttack(),
-            getStrBoostedAttack()
+            getPOWBoostedAttack()
     };
 }
 
@@ -63,10 +63,10 @@ Player getRogueTemplate() {
             1, 0,
             100, 100, 100,
             100, 100, 100,
-            10,13,13,10,7,7,
+            10, 13, 13, 10, 7, 7,
 
             getBasicAttack(),
-            getDexStrBoostedAttack()
+            getAGIPOWBoostedAttack()
     };
 }
 
@@ -76,10 +76,10 @@ Player getRangerTemplate() {
             1, 0,
             100, 100, 100,
             100, 100, 100,
-            7,12,15,12,7,7,
+            7, 12, 15, 12, 7, 7,
 
             getBasicAttack(),
-            getDexBoostedAttack()
+            getAGIBoostedAttack()
     };
 }
 
@@ -90,10 +90,10 @@ Player getDruidTemplate() {
             1, 0,
             100, 100, 100,
             100, 100, 100,
-            7,10,13,13,10,7,
+            7, 10, 13, 13, 10, 7,
 
             getBasicAttack(),
-            getWilDexBoostedAttack()
+            getFOCAGIBoostedAttack()
     };
 }
 
@@ -104,10 +104,10 @@ Player getSorcererTemplate() {
             1, 0,
             100, 100, 100,
             100, 100, 100,
-            7,7,12,15,12,7,
+            7, 7, 12, 15, 12, 7,
 
             getBasicAttack(),
-            getWilBoostedAttack()
+            getFOCBoostedAttack()
     };
 }
 
@@ -118,10 +118,10 @@ Player getBardTemplate() {
             1, 0,
             100, 100, 100,
             100, 100, 100,
-            7,7,10,13,13,10,
+            7, 7, 10, 13, 13, 10,
 
             getBasicAttack(),
-            getIntWilBoostedAttack()
+            getINSFOCBoostedAttack()
     };
 }
 
@@ -132,10 +132,10 @@ Player getWizardTemplate() {
             1, 0,
             100, 100, 100,
             100, 100, 100,
-            7,7,7,12,15,12,
+            7, 7, 7, 12, 15, 12,
 
             getBasicAttack(),
-            getIntBoostedAttack()
+            getINSBoostedAttack()
     };
 }
 
@@ -145,10 +145,10 @@ Player getMonkTemplate() {
             1, 0,
             100, 100, 100,
             100, 100, 100,
-            10,7,7,10,13,13,
+            10, 7, 7, 10, 13, 13,
 
             getBasicAttack(),
-            getFaiIntBoostedAttack()
+            getBELINSBoostedAttack()
     };
 }
 
@@ -159,10 +159,10 @@ Player getClericTemplate() {
             1, 0,
             100, 100, 100,
             100, 100, 100,
-            12,7,7,7,12,15,
+            12, 7, 7, 7, 12, 15,
 
             getBasicAttack(),
-            getFaiBoostedAttack()
+            getBELBoostedAttack()
     };
 }
 
@@ -173,10 +173,10 @@ Player getPaladinTemplate() {
             1, 0,
             100, 100, 100,
             100, 100, 100,
-            12,10,7,7,10,13,
+            12, 10, 7, 7, 10, 13,
 
             getBasicAttack(),
-            getConFaiBoostedAttack()
+            getVITBELBoostedAttack()
     };
 }
 

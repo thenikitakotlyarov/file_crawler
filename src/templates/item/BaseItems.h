@@ -4,9 +4,8 @@
 #include "components/item/Item.h"
 #include "components/player/Player.h"
 
-
-
-
+struct Item;
+struct Player;
 
 Item getPotionTemplate();
 
@@ -14,14 +13,16 @@ Item getSerumTemplate();
 
 Item getSalveTemplate();
 
-Item getConstitutionOrbTemplate();
+Item getVitalityOrbTemplate();
 
-Item getStrengthOrbTemplate();
+Item getPowerOrbTemplate();
 
-Item getEnduranceOrbTemplate();
+Item getAgiltyOrbTemplate();
 
-Item getDexterityOrbTemplate();
+Item getFocusOrbTemplate();
 
-Item getIntelligenceOrbTemplate();
+Item getInsightOrbTemplate();
 
-Item getWillpowerOrbTemplate();
+Item getFaithOrbTemplate();
+
+Item getSpecialOrbTemplate();

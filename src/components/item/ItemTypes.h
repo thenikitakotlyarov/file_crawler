@@ -8,12 +8,13 @@ enum class ItemType {//TODO:figure out a way to load these automatically
     SmallEnergySerum,
     SmallStaminaSalve,
 
-    ConstitutionOrb,
-    StrengthOrb,
-    EnduranceOrb,
-    DexterityOrb,
-    IntelligenceOrb,
-    WillpowerOrb,
+    VitalityOrb,
+    PowerOrb,
+    AgilityOrb,
+    FocusOrb,
+    InsightOrb,
+    BeliefOrb,
+    SpecialOrb
 
 
 };

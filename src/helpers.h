@@ -32,6 +32,7 @@
 
 using namespace std;
 
+struct GameMap;
 
 wstring int_to_hex_str(int i);
 

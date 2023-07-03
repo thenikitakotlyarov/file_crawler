@@ -13,6 +13,7 @@ using namespace std;
 
 
 struct Player;
+struct GameMap;
 
 struct Monster {
     string name;

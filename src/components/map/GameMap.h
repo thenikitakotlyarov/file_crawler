@@ -3,9 +3,10 @@
 
 #include "constants.h"
 #include "components/Tile.h"
+#include "Meta.h"
 
 
 struct GameMap {
-    string meta;
+    Meta meta;
     vector<vector<Tile>> data;
 };
