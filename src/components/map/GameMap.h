@@ -2,11 +2,11 @@
 
 
 #include "constants.h"
-#include "components/Tile.h"
-#include "Meta.h"
+#include "Tile.h"
+#include "MapMeta.h"
 
 
 struct GameMap {
-    Meta meta;
+    MapMeta meta;
     vector<vector<Tile>> data;
 };

@@ -366,22 +366,22 @@ EntitySystem::renderEntities2D(Frame frame, const GameMap &game_map, const set<p
         for (int j = start_x; j < end_x; j++) {
             Position this_pos = {j,i};
             if (is_position_in_fov(this_pos, current_fov)
-                && check_if_in(GROUND_TILES, frame.data[i - start_y][j - start_x].first)) {
+                && check_if_in(GROUND_TILES, frame.data[i - start_y][j - start_x].ch)) {
                 vector<Entity> &entity_refs = entityMap.data[j][i];
                 for (Entity &entity_ref: entity_refs) {
                     if (items.find(entity_ref) != items.end()) {
-                        frame.data[i - start_y][j - start_x].first = items[entity_ref].character;
-                        frame.data[i - start_y][j - start_x].second.first = COLOR_BLACK;
-                        frame.data[i - start_y][j - start_x].second.second = items[entity_ref].color;
+                        frame.data[i - start_y][j - start_x].ch = items[entity_ref].character;
+                        frame.data[i - start_y][j - start_x].fg_color = NCOLOR_BLACK;
+                        frame.data[i - start_y][j - start_x].bg_color = items[entity_ref].color;
 
 
                     } else if (monsters.find(entity_ref) != monsters.end()) {
-                        frame.data[i - start_y][j - start_x].first = monsters[entity_ref].characterFullHealth;
-                        frame.data[i - start_y][j - start_x].second.first = monsters[entity_ref].color;
+                        frame.data[i - start_y][j - start_x].ch = monsters[entity_ref].characterFullHealth;
+                        frame.data[i - start_y][j - start_x].fg_color = monsters[entity_ref].color;
 
                     } else {//tis the player
-                        frame.data[i - start_y][j - start_x].first = L"@";
-                        frame.data[i - start_y][j - start_x].second.first = currentPlayer.color;
+                        frame.data[i - start_y][j - start_x].ch = L"@";
+                        frame.data[i - start_y][j - start_x].fg_color = currentPlayer.color;
                     }
 
                 }

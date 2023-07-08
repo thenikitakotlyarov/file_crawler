@@ -29,6 +29,10 @@ bool Game::Initialize() {
     if (!SysEntity.running) return false;
 
 
+    SysLight = LightSystem();
+    if (!SysLight.running) return false;
+
+
     return true;
 
 }
@@ -232,6 +236,9 @@ void Game::Update(int player_input) {
                 }
             }
 
+
+            SysLight.Update();
+
         }
 
         CURRENT_PLAYER = SysEntity.getCurrentPlayer();
@@ -244,7 +251,7 @@ void Game::Update(int player_input) {
 
 
 Frame Game::CARD_TITLE(int y, int x) {
-    Frame frame = UISystem::BlankFrame(y, x);
+    Frame frame = UISystem::BlankFrame(y, x,0);
 
     frame = SysUI.getTitleCard(frame);
 
@@ -253,7 +260,7 @@ Frame Game::CARD_TITLE(int y, int x) {
 
 
 Frame Game::MENU_MAIN(int y, int x) {
-    Frame frame = UISystem::BlankFrame(y, x);
+    Frame frame = UISystem::BlankFrame(y, x,0);
 
     frame = SysUI.getMainMenu(frame);
 
@@ -262,7 +269,7 @@ Frame Game::MENU_MAIN(int y, int x) {
 
 
 Frame Game::MENU_NEW_GAME(int y, int x) {
-    Frame frame = UISystem::BlankFrame(y, x);
+    Frame frame = UISystem::BlankFrame(y, x,0);
 
     READY_TO_PLAY = false;
 
@@ -273,7 +280,7 @@ Frame Game::MENU_NEW_GAME(int y, int x) {
 
 
 Frame Game::MENU_LOAD_GAME(int y, int x) {
-    Frame frame = UISystem::BlankFrame(y, x);
+    Frame frame = UISystem::BlankFrame(y, x,0);
 
     frame = SysUI.getLoadCard(frame);
 
@@ -282,7 +289,7 @@ Frame Game::MENU_LOAD_GAME(int y, int x) {
 
 
 Frame Game::MENU_SETTINGS(int y, int x) {
-    Frame frame = UISystem::BlankFrame(y, x);
+    Frame frame = UISystem::BlankFrame(y, x,0);
 
     frame = SysUI.getSettingsMenu(frame);
 
@@ -291,7 +298,7 @@ Frame Game::MENU_SETTINGS(int y, int x) {
 
 
 Frame Game::DEBUG_COLOR(int y, int x) {
-    Frame frame = UISystem::BlankFrame(y, x);
+    Frame frame = UISystem::BlankFrame(y, x,0);
 
     frame = SysUI.getColorDebug(frame);
 
@@ -300,7 +307,7 @@ Frame Game::DEBUG_COLOR(int y, int x) {
 
 
 Frame Game::GAME_OVER(int y, int x) {
-    Frame frame = UISystem::BlankFrame(y, x);
+    Frame frame = UISystem::BlankFrame(y, x,0);
 
     frame = SysUI.getGameOverCard(frame);
 
@@ -313,37 +320,40 @@ Frame Game::PLAY_GAME(int y, int x, const int c_fps) {
     if (CURRENT_PLAYER.current_health <= 0) {
         running = 999;
     }
-    Frame frame = UISystem::BlankFrame(y, x);
-    Position player_position = SysEntity.getPlayerPosition();
+    Frame frame = UISystem::BlankFrame(y, x,0);
+    Position player_pos = SysEntity.getPlayerPosition();
 
-    int start_x = max(0, player_position.x - COLS / 2);
+    int start_x = max(0, player_pos.x - COLS / 2);
     start_x = min(start_x, WIDTH - COLS);
     int end_x = start_x + COLS;
-    int start_y = max(0, player_position.y - (LINES - 3) / 2);
+    int start_y = max(0, player_pos.y - (LINES - 3) / 2);
     start_y = min(start_y, HEIGHT - LINES - 3);
     int end_y = start_y + LINES - 3;
 
 
     set<pair<int, int>> current_player_fov = EntitySystem::calculate_fov(
-            CURRENT_MAP, player_position.x, player_position.y, 15 + CURRENT_PLAYER.agility / 10
+            CURRENT_MAP, player_pos.x, player_pos.y, 15 + CURRENT_PLAYER.focus / 10
     );
 
     CURRENT_MAP = MapSystem::unveilMap(CURRENT_MAP, current_player_fov);
 
     //frame = SysRender.r2D(frame, CURRENT_MAP);
-    frame = MapSystem::renderMap3D(frame, CURRENT_MAP, start_y, start_x, end_y, end_x);
+    frame = MapSystem::renderMap2D(frame, CURRENT_MAP, start_y, start_x, end_y, end_x);
     frame = SysEntity.renderEntities2D(frame, CURRENT_MAP, current_player_fov, start_y, start_x, end_y, end_x);
 
+    frame = SysLight.renderLighting(frame, CURRENT_MAP, player_pos, (PLAYER_FOV_RADIUS+CURRENT_PLAYER.focus/10)*3/2, start_y, start_x, end_y, end_x);
 
     frame = SysUI.getInGameHud(frame, SysEntity.getCurrentPlayer(), c_fps);
     if (paused) {
         for (int i = 0; i < y; i++) {
             for (int j = 0; j < x; j++) {
                 if (i > y / 10 && i < y * 4 / 5 && j > x / 3 && j < x * 2 / 3) {
-                    frame.data[i][j].first = ' ';
-                    frame.data[i][j].second = make_pair(COLOR_BLACK, COLOR_BLACK);
+                    frame.data[i][j].ch = ' ';
+                    frame.data[i][j].fg_color = {0,0,0};
+                    frame.data[i][j].bg_color = {0,0,0};
                 } else {
-                    frame.data[i][j].second = make_pair(COLOR_GREY, COLOR_BLACK);
+                    frame.data[i][j].fg_color = {127,127,127};
+                    frame.data[i][j].bg_color = {0,0,0};
                 }
             }
         }
@@ -354,7 +364,7 @@ Frame Game::PLAY_GAME(int y, int x, const int c_fps) {
 
 
     CURRENT_MAP = MapSystem::veilMap(CURRENT_MAP, current_player_fov);
-    CURRENT_MAP = MapSystem::forgetMap(CURRENT_MAP, make_pair(player_position.x, player_position.y),
+    CURRENT_MAP = MapSystem::forgetMap(CURRENT_MAP, make_pair(player_pos.x, player_pos.y),
                                        CURRENT_PLAYER.insight);
 
 

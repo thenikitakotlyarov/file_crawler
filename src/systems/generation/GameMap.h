@@ -41,5 +41,5 @@ private:
     bool Initialize();
 
 
-    static int get_tile_color(const vector<int>& swatch);
+    static Color get_tile_color(const vector<Color>& swatch);
 };

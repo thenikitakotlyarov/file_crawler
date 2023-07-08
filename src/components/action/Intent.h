@@ -1,6 +1,6 @@
 #pragma once
 
-#include "components/Entity.h"
+#include "components/entity/Entity.h"
 #include <utility>
 
 using namespace std;

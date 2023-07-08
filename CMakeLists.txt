@@ -11,15 +11,12 @@ include_directories(src)
 
 add_compile_options(-Wno-deprecated-declarations) # suppresses warnings
 add_compile_options(-g) # debugging
-
-# Grab all the source files
+# Grab all the source filesasdfasdf
 file(GLOB_RECURSE SOURCES
-
-        "src/*.cpp" "src"
-        )
+        "src/*.cpp")
 
 # add the executable
-add_executable(Game Main.cpp ${SOURCES})
+add_executable(Game Main.cpp Game.cpp ${SOURCES})
 
 # Link against required libraries
 target_link_libraries(Game ncurses noise ssl crypto SDL2 SDL2_mixer)

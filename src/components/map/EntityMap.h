@@ -2,10 +2,10 @@
 
 
 #include "constants.h"
-#include "components/Entity.h"
+#include "components/entity/Entity.h"
 
 
 struct EntityMap {
-    Meta meta;
+    MapMeta meta;
     vector<vector<vector<Entity>>> data;
 };

@@ -1,12 +1,8 @@
 #pragma once
 
+#include "include.h"
 #include "helpers.h"
-#include "components/skill/Skill.h"
-#include "components/player/Player.h"
-#include "components/enemy/Monster.h"
-
-#include "templates/skill/BaseSkills.h"
-
+#include "constants.h"
 
 Player getAdventurerTemplate();
 Player getBarbarianTemplate();

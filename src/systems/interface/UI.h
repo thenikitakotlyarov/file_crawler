@@ -1,9 +1,9 @@
 #pragma once
 
-#include "components/Frame.h"
-#include "components/player/Player.h"
-#include "constants.h"
+#include "components/graphics/Frame.h"
+#include "components/entity/actors/player/Player.h"
 #include "helpers.h"
+#include "constants.h"
 
 using namespace std;
 
@@ -20,20 +20,20 @@ public:
     void Update();
 
 
-    static Frame BlankFrame(int y, int x);
+    static Frame BlankFrame(int y, int x, unsigned long frame_count);
 
 
     static Frame &
     addBar(Frame &frame, int y, int x, int length, float level,
-           const wstring &icon, pair<int, int> color);
+           const wstring &icon, Color fg_color, Color bg_color);
 
     static Frame &
     addButton(Frame &frame, int y, int x, int height, int width,
-              pair<int, int> color);
+              Color fg_color, Color bg_color);
 
     static Frame &
     addText(Frame &frame, int y, int x, wstring text,
-            pair<int, int> color);
+            Color fg_color, Color bg_color);
 
 
     Frame getFpsLabel(Frame &frame, const int c_fps);
@@ -64,20 +64,20 @@ private:
 
     static Frame &
     getUiBg(Frame &frame, int dock_height,
-            const pair<int, int> &ui_bg_color);
+            Color fg_color, Color bg_color);
 
     static Frame &
     getPlayerTag(Frame &frame, int y, int x,
                  int player_level, const string &player_class,
-                 int color);
+                 Color fg_color, Color bg_colorcolor);
 
     static Frame &
     getOrb(Frame &frame, int y, int x, int diameter, int level,
-           pair<int, int> color);
+           Color fg_color, Color bg_color);
 
     static Frame &
     getAttackSlot(Frame &frame, int y, int x, int height,
-                  vector<vector<wstring>> icon, pair<int, int> color);
+                  vector<vector<wstring>> icon, Color fg_color, Color bg_color);
 
     Frame &
     getMenuButton(Frame &frame, int y, int x, int height,
@@ -85,5 +85,5 @@ private:
 
     Frame &
     getPotionBar(Frame &frame, int y, int x, int slot_height, int slot_width,
-                 pair<int, int> color);
+                 Color fg_color, Color bg_color);
 };

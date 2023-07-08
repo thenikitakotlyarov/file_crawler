@@ -23,16 +23,18 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 #include <clocale>
+#include <cstdint>
 
-#include "components/Frame.h"
-#include "components/Position.h"
+#include "components/graphics/Frame.h"
+#include "components/map/Position.h"
 #include "components/map/GameMap.h"
-#include "components/Tile.h"
+#include "components/map/Tile.h"
 #include "constants.h"
 
 using namespace std;
 
 struct GameMap;
+struct Frame;
 
 wstring int_to_hex_str(int i);
 
@@ -53,11 +55,11 @@ int get_color_pair_index(int fg_idx, int bg_idx);
 void init_all_color_pairs();
 
 
-vector<int> get_ground_swatch();
+vector<Color> get_ground_swatch();
 
-vector<int> get_trap_swatch();
+vector<Color> get_trap_swatch();
 
-vector<int> get_wall_swatch();
+vector<Color> get_wall_swatch();
 
 //pathfinding begin
 

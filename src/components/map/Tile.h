@@ -1,11 +1,13 @@
 #pragma once
 #include <string>
+#include "components/graphics/Color.h"
 
 using namespace std;
 
+
 struct Tile {
     wstring ch;
-    short color;
+    Color color;
     bool visited;
     bool visible;
     int z;

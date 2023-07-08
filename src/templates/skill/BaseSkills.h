@@ -1,9 +1,8 @@
 #pragma once
 
+#include "include.h"
 #include "helpers.h"
-#include "components/skill/Skill.h"
-#include "components/player/Player.h"
-#include "components/enemy/Monster.h"
+#include "constants.h"
 
 
 Skill *getBasicAttack();

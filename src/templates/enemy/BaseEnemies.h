@@ -3,7 +3,7 @@
 
 #include "helpers.h"
 #include "constants.h"
-#include "components/enemy/Monster.h"
+#include "components/entity/actors/enemy/Monster.h"
 
 Monster getBasicMonster();
 

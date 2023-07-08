@@ -4,8 +4,8 @@
 #include "constants.h"
 
 
-#include "components/Entity.h"
-#include "components/Intent.h"
+#include "components/entity/Entity.h"
+#include "components/action/Intent.h"
 
 
 

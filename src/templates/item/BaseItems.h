@@ -1,8 +1,8 @@
 #pragma once
 
 #include "helpers.h"
-#include "components/item/Item.h"
-#include "components/player/Player.h"
+#include "components/entity/item/Item.h"
+#include "components/entity/actors/player/Player.h"
 
 struct Item;
 struct Player;

@@ -2,10 +2,10 @@
 
 #include <string>
 #include <vector>
-#include "components/player/Player.h"
-#include "components/Position.h"
+#include "components/entity/actors/player/Player.h"
+#include "components/map/Position.h"
 #include "components/map/GameMap.h"
-#include "components/Intent.h"
+#include "components/action/Intent.h"
 #include "helpers.h"
 
 
@@ -20,7 +20,7 @@ struct Monster {
     wstring characterFullHealth;
     wstring characterMidHealth;
     wstring characterLowHealth;
-    int color;
+    Color color;
 
     int rarity;
 

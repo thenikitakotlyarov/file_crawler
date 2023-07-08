@@ -1,12 +1,15 @@
 #pragma once
 
-#include "systems/interface/UI.h"
-#include "systems/generation/GameMap.h"
-#include "systems/entity/Entity.h"
-#include "components/Frame.h"
-#include "components/Intent.h"
-#include "templates/player/BaseClasses.h"
+
 #include "helpers.h"
+#include "constants.h"
+//
+//#include "systems/entity/Entity.h"
+//#include "systems/interface/UI.h"
+//#include "systems/generation/GameMap.h"
+//#include "systems/lighting/Lighting.h"
+
+#include "include.h"
 
 using namespace std;
 
@@ -54,6 +57,7 @@ private:
 
     MapSystem SysMap;
     EntitySystem SysEntity;
+    LightSystem SysLight;
 
     Player CURRENT_PLAYER;
     GameMap CURRENT_MAP;

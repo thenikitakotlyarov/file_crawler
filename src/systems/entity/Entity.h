@@ -1,19 +1,18 @@
 #pragma once
 
 
-#include "components/Frame.h"
+#include "components/graphics/Frame.h"
 #include "components/map/GameMap.h"
 #include "components/map/EntityMap.h"
-#include "components/Position.h"
-#include "components/player/Player.h"
-#include "components/enemy/Monster.h"
-#include "components/item/Item.h"
-#include "components/Entity.h"
-#include "components/Intent.h"
+#include "components/map/Position.h"
+#include "components/entity/actors/player/Player.h"
+#include "components/entity/actors/enemy/Monster.h"
+#include "components/entity/item/Item.h"
+#include "components/entity/Entity.h"
+#include "components/action/Intent.h"
 
 #include "templates/item/BaseItems.h"
 #include "templates/enemy/BaseEnemies.h"
-
 #include "constants.h"
 #include "helpers.h"
 

@@ -30,7 +30,7 @@ void MapSystem::CleanUp() {
 }
 
 
-int MapSystem::get_tile_color(const vector<int> &swatch) {
+Color MapSystem::get_tile_color(const vector<Color> &swatch) {
     return swatch[get_random_int(0, swatch.size() - 1)];
 }
 
@@ -39,16 +39,16 @@ GameMap MapSystem::genCave(int height, int width) {
     vector<vector<Tile>> data(width, vector<Tile>(height));
 
 
-    vector<int> ground_swatch = get_ground_swatch();
-    vector<int> trap_swatch = get_trap_swatch();
-    vector<int> wall_swatch = get_wall_swatch();
+    vector<Color> ground_swatch = get_ground_swatch();
+    vector<Color> trap_swatch = get_trap_swatch();
+    vector<Color> wall_swatch = get_wall_swatch();
 
 
     // Generate open areas using Perlin noise
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
             wstring ch = get_random_character(VOID_TILES);
-            short color = get_color_pair_index(COLOR_WHITE, COLOR_BLACK);
+            Color color = NCOLOR_BLACK;
             int tile_z;
             Tile void_tile = {ch, color, false, false, 0};
             data[x][y] = void_tile;
@@ -117,7 +117,7 @@ GameMap MapSystem::genCave(int height, int width) {
         for (int x = 0; x < height; ++x) {
             if (!visited[x][y] && check_if_in(GROUND_TILES, data[x][y].ch)) {
                 wstring ch = get_random_character(WALL_TILES);
-                short color = get_tile_color(wall_swatch);
+                Color color = get_tile_color(wall_swatch);
                 int tile_z = get_random_int(0, 5);
                 Tile this_tile = {ch, color, false, false, tile_z};
                 data[x][y] = this_tile;
@@ -128,14 +128,14 @@ GameMap MapSystem::genCave(int height, int width) {
     // Draw a border around the data
     for (int x = 0; x < height; ++x) {
         wstring ch = get_random_character(WALL_TILES);
-        short color = get_tile_color(wall_swatch);
+        Color color = get_tile_color(wall_swatch);
         Tile this_tile = {ch, color, false, false, 0};
         data[x][0] = this_tile;
         data[x][height - 1] = this_tile;
     }
     for (int y = 0; y < height; ++y) {
         wstring ch = get_random_character(WALL_TILES);
-        short color = get_tile_color(wall_swatch);
+        Color color = get_tile_color(wall_swatch);
         Tile this_tile = {ch, color, false, false, 0};
         data[0][y] = this_tile;
         data[height - 1][y] = this_tile;
@@ -170,7 +170,10 @@ GameMap MapSystem::genCave(int height, int width) {
 GameMap &MapSystem::unveilMap(GameMap &game_map, const set<pair<int, int>> &current_fov) {
     for (const auto coords: current_fov) {
         game_map.data[coords.first][coords.second].visible = true;
-        game_map.data[coords.first][coords.second].visited = true;
+        if (check_if_in(WALL_TILES,game_map.data[coords.first][coords.second].ch)){
+            game_map.data[coords.first][coords.second].visited = true;
+
+        }
     }
 
     return game_map;
@@ -237,13 +240,10 @@ Frame MapSystem::renderMap2D(Frame frame, const GameMap &current_map, int start_
         for (int j = 0; j < end_x - start_x; j++) {
             int map_y = max(0, min(max_map_y, i + start_y));
             int map_x = max(0, min(max_map_x, j + start_x));
-            if (current_map.data[map_x][map_y].visible) {
-                frame.data[i][j].first = current_map.data[map_x][map_y].ch;
-                frame.data[i][j].second.first = current_map.data[map_x][map_y].color;
-
-            } else if (current_map.data[map_x][map_y].visited) {
-                frame.data[i][j].first = current_map.data[map_x][map_y].ch;
-                frame.data[i][j].second.first = COLOR_GREY;
+            if (current_map.data[map_x][map_y].visible
+                || current_map.data[map_x][map_y].visited) {
+                frame.data[i][j].ch = current_map.data[map_x][map_y].ch;
+                frame.data[i][j].fg_color = NCOLOR_GREY;
 
             }
 
@@ -269,21 +269,21 @@ Frame MapSystem::renderMap3D(Frame frame, const GameMap &current_map, int start_
             int degrade = 0;
             if (current_map.data[map_x][map_y].visited) {
                 if (current_map.data[map_x][map_y].z) {
-                    if (i < (LINES-3) / 2) {
+                    if (i < (LINES - 3) / 2) {
                         for (int h = 1; h <= current_map.data[map_x][map_y].z; ++h) {
                             if (i - h + degrade / 2 < 0 || i - h + degrade / 2 >= LINES - 3) continue;
                             if (h > 5) {
-                                frame.data[i - h + degrade / 2][j].first = L"░";
-                                frame.data[i - h + degrade / 2][j].second.first = frame.data[i][j].second.first;
+                                frame.data[i - h + degrade / 2][j].ch = L"░";
+                                frame.data[i - h + degrade / 2][j].fg_color = frame.data[i][j].fg_color;
                             } else if (h > 2) {
-                                frame.data[i - h + degrade / 2][j].first = L"▒";
-                                frame.data[i - h + degrade / 2][j].second.first = frame.data[i][j].second.first;
+                                frame.data[i - h + degrade / 2][j].ch = L"▒";
+                                frame.data[i - h + degrade / 2][j].fg_color = frame.data[i][j].fg_color;
                             } else {
-                                frame.data[i - h + degrade / 2][j].first = current_map.data[map_x][map_y].ch;
-                                frame.data[i - h + degrade / 2][j].second.first = frame.data[i][j].second.first;
+                                frame.data[i - h + degrade / 2][j].ch = current_map.data[map_x][map_y].ch;
+                                frame.data[i - h + degrade / 2][j].fg_color = frame.data[i][j].fg_color;
                             }
 
-                            if (i >= (LINES-3) / 2 - 7) {
+                            if (i >= (LINES - 3) / 2 - 7) {
                                 degrade++;
                             }
 

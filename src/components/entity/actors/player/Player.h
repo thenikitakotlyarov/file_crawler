@@ -3,10 +3,10 @@
 #include "helpers.h"
 #include "constants.h"
 
-#include "components/Entity.h"
-#include "components/Intent.h"
-#include "components/enemy/Monster.h"
-#include "components/skill/Skill.h"
+#include "components/entity/Entity.h"
+#include "components/action/Intent.h"
+#include "components/entity/actors/enemy/Monster.h"
+#include "components/action/skill/Skill.h"
 
 
 using namespace std;
@@ -16,7 +16,7 @@ struct Monster;
 struct Player {
     string name;
     string class_name;
-    int color;
+    Color color;
 
     short level;
     long exp;
