@@ -161,8 +161,6 @@ GameMap MapSystem::genCave(int height, int width) {
                             getBasicMonster(),
                             getBasicMonster(),
                             getBasicMonster(),
-                            getBasicMonster(),
-                            getBasicMonster(),
                     }
             },
             data

@@ -27,9 +27,9 @@ const Color NCOLOR_BLACK = {
         0
 };
 const Color NCOLOR_GREY = {
-        85,
-        85,
-        85
+        42,
+        42,
+        42
 };
 const Color NCOLOR_LGREY = {
         170,
@@ -110,8 +110,6 @@ const vector<wstring> GROUND_TILES = {
         L"·", L"·", L"·",
         L",", L",", L",", L",", L",", L",", L",", L",", L",", L",", L",", L",", L",",
         L",", L",", L",",
-        L"٫", L"٫", L"٫", L"٫", L"٫", L"٫", L"٫", L"٫", L"٫", L"٫", L"٫", L"٫", L"٫",
-        L"٫", L"٫", L"٫",
         L";", L";", L";", L";", L";", L";", L";", L";", L";", L";", L";", L";", L";",
         L";", L";", L";",
         L":", L":", L":", L":", L":", L":", L":", L":", L":", L":", L":", L":", L":",

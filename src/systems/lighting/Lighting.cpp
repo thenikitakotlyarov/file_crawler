@@ -95,7 +95,7 @@ Frame LightSystem::addPointLight(Frame frame, GameMap &game_map, Position light_
                 frame.data[coords.second][coords.first].fg_color =
                         game_map.data[coords.first + start_x][coords.second + start_y].color;
 
-                Color bg_color = NCOLOR_WHITE;
+                Color bg_color = {255,227,112};//light color, ig
                 Color this_color = frame.data[coords.second][coords.first].fg_color;
                 pair<Color,Color> new_color;
                 for (int bake = 0; bake <= palette.first; bake++) {
@@ -104,11 +104,12 @@ Frame LightSystem::addPointLight(Frame frame, GameMap &game_map, Position light_
 
                     // Simplified the color calculation code with a helper function
                     if (temperature == 'w') {
+                        new_color = degradeWarm(this_color,bg_color);
                         //this_color = WARM_LIGHT_FALLOFF_MAP[sampledColor];
                     } else if (temperature == 'c') {
                         //this_color = COLD_LIGHT_FALLOFF_MAP[sampledColor];
                     } else {
-                        new_color = degradeGreyscale(bg_color, this_color);
+                        new_color = degradeGreyscale(this_color,bg_color);
                     }
 
                     frame.data[coords.second][coords.first].fg_color = new_color.first;
@@ -135,10 +136,24 @@ pair<Color, Color> LightSystem::degradeGreyscale(Color &this_color, Color &bg_co
     return make_pair(this_color,bg_color);
 }
 
+pair<Color, Color> LightSystem::degradeWarm(Color &this_color, Color &bg_color) const {
+    this_color = {
+            (uint8_t) ((double) this_color.red * 0.75),
+            (uint8_t) ((double) this_color.green * 0.5),
+            (uint8_t) ((double) this_color.blue * 0.25)
+    };
+    bg_color = {
+            (uint8_t) ((double) bg_color.red * 0.9),
+            (uint8_t) ((double) bg_color.green * 0.75),
+            (uint8_t) ((double) bg_color.blue * 0.5)
+    };
+    return make_pair(this_color,bg_color);
+}
+
 
 Frame
 LightSystem::renderLighting(Frame frame, GameMap &game_map, Position player_pos, int player_light_radius, int start_y,
                             int start_x, int end_y, int end_x) {
-    frame = addPointLight(frame, game_map, player_pos, player_light_radius, 'n', start_y, start_x);
+    frame = addPointLight(frame, game_map, player_pos, player_light_radius, 'w', start_y, start_x);
     return frame;
 }

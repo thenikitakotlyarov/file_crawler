@@ -53,5 +53,6 @@ private:
     double light_source_intensity;
 
 
-    pair<Color, Color> degradeGreyscale(Color &this_color, Color &bg_coloro) const;
+    pair<Color, Color> degradeGreyscale(Color &this_color, Color &bg_color) const;
+    pair<Color, Color> degradeWarm(Color &this_color, Color &bg_color) const;
 };
