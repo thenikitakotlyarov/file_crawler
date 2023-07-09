@@ -158,7 +158,11 @@ GameMap MapSystem::genCave(int height, int width) {
                             getSpecialOrbTemplate()
                     },
                     {
-                            getBasicMonster()
+                            getBasicMonster(),
+                            getBasicMonster(),
+                            getBasicMonster(),
+                            getBasicMonster(),
+                            getBasicMonster(),
                     }
             },
             data

@@ -86,6 +86,10 @@ void EntitySystem::spawnPlayer() {
 void EntitySystem::spawnMonsters() {
     int count = round(0.001333 * (currentMap.data.size() * currentMap.data[0].size()));
     vector<Monster> monsterTemplates = {
+            getBasicMonster(),
+            getBasicMonster(),
+            getBasicMonster(),
+            getBasicMonster(),
             getBasicMonster()
     };
 
@@ -377,11 +381,13 @@ EntitySystem::renderEntities2D(Frame frame, const GameMap &game_map, const set<p
 
                     } else if (monsters.find(entity_ref) != monsters.end()) {
                         frame.data[i - start_y][j - start_x].ch = monsters[entity_ref].characterFullHealth;
-                        frame.data[i - start_y][j - start_x].fg_color = monsters[entity_ref].color;
+                        frame.data[i - start_y][j - start_x].fg_color = NCOLOR_BLACK;
+                        frame.data[i - start_y][j - start_x].bg_color = monsters[entity_ref].color;
 
                     } else {//tis the player
                         frame.data[i - start_y][j - start_x].ch = L"@";
-                        frame.data[i - start_y][j - start_x].fg_color = currentPlayer.color;
+                        frame.data[i - start_y][j - start_x].fg_color = NCOLOR_BLACK;
+                        frame.data[i - start_y][j - start_x].bg_color = currentPlayer.color;
                     }
 
                 }

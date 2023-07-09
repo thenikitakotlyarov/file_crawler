@@ -341,7 +341,7 @@ Frame Game::PLAY_GAME(int y, int x, const int c_fps) {
     frame = MapSystem::renderMap2D(frame, CURRENT_MAP, start_y, start_x, end_y, end_x);
     frame = SysEntity.renderEntities2D(frame, CURRENT_MAP, current_player_fov, start_y, start_x, end_y, end_x);
 
-    frame = SysLight.renderLighting(frame, CURRENT_MAP, player_pos, (PLAYER_FOV_RADIUS+CURRENT_PLAYER.focus/10)*3/2, start_y, start_x, end_y, end_x);
+    frame = SysLight.renderLighting(frame, CURRENT_MAP, player_pos, (PLAYER_FOV_RADIUS+CURRENT_PLAYER.focus/10), start_y, start_x, end_y, end_x);
 
     frame = SysUI.getInGameHud(frame, SysEntity.getCurrentPlayer(), c_fps);
     if (paused) {

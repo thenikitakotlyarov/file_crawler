@@ -13,8 +13,7 @@ enum class IntentType {
 struct Intent {
     Entity entity;
     IntentType type;
-    //only used for movement
-    pair<int, int> direction;
+    pair<int, int> direction;//only used for movement
     Entity target; // Only used for attack
     int damage; // Only used for attack
 };

@@ -40,7 +40,6 @@ public:
                          GameMap &game_map, Position player_pos, int player_light_radius,
                          int start_y, int start_x, int end_y, int end_x);
 
-
 private:
     bool Initialize();
     double update_phase = 1;
@@ -54,5 +53,5 @@ private:
     double light_source_intensity;
 
 
-
+    pair<Color, Color> degradeGreyscale(Color &this_color, Color &bg_coloro) const;
 };
