@@ -37,12 +37,12 @@ public:
 
     void destroyEntity(Entity entity_id);
 
-    const EntityMap &getEntities();
+    EntityMap *getEntities();
 
 
     void setPlayer(Player &player);
 
-    void setGameMap(const GameMap &game_map);
+    void setGameMap(GameMap *game_map);
 
 
     const Entity &getPlayer();
@@ -75,13 +75,12 @@ public:
 
     void combatEntities(const Intent &intent);
 
-    static set<pair<int, int>> calculate_fov(
-            const GameMap &game_map,
+    set<pair<int, int>> calculate_fov(
             int center_x, int center_y,
             int radius);
 
-    Frame renderEntities2D(Frame frame, const GameMap &game_map,
-                           const set<pair<int,int>> current_fov,
+    Frame renderEntities2D(Frame frame,
+                           const set<pair<int, int>> current_fov,
                            int start_y, int start_x,
                            int end_y, int end_x);
 
@@ -91,9 +90,9 @@ private:
 
     Player currentPlayer;
     Position currentPlayerPosition;
-    GameMap currentMap;
+    GameMap *currentMap;
 
-    EntityMap entityMap;
+    EntityMap* entityMap;
     map<Entity, Position> positionMap;
     map<Entity, Monster> monsters;
     map<Entity, Item> items;

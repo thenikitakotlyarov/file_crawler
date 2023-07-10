@@ -29,12 +29,12 @@ void EntitySystem::setPlayer(Player &player) {
 };
 
 // Use std::move to avoid copying
-void EntitySystem::setGameMap(const GameMap &game_map) {
+void EntitySystem::setGameMap(GameMap *game_map) {
     currentMap = game_map;
-    entityMap = {
-            currentMap.meta,
-            vector<vector<vector<Entity>>>(currentMap.data.size(),
-                                           vector<vector<Entity>>(currentMap.data[0].size())
+    entityMap = new EntityMap {
+            currentMap->meta,
+            vector<vector<vector<Entity>>>(currentMap->data.size(),
+                                           vector<vector<Entity>>(currentMap->data[0].size())
             )
     };
 
@@ -46,14 +46,14 @@ Entity EntitySystem::createEntity(Position pos, bool transience) {
     Entity entity = {nextEntityId,
                      transience};
     nextEntityId++;
-    entityMap.data[pos.x][pos.y].push_back(entity);
+    entityMap->data[pos.x][pos.y].push_back(entity);
     positionMap[entity] = pos;
     return entity;
 }
 
 void EntitySystem::destroyEntity(Entity entity) {
     Position entityPosition = positionMap[entity];
-    vector<Entity> &entitiesAtPosition = entityMap.data[entityPosition.x][entityPosition.y];
+    vector<Entity> &entitiesAtPosition = entityMap->data[entityPosition.x][entityPosition.y];
     entitiesAtPosition.erase(remove(entitiesAtPosition.begin(), entitiesAtPosition.end(), entity),
                              entitiesAtPosition.end());
 
@@ -69,7 +69,7 @@ void EntitySystem::spawnPlayer() {
 
 
     //TODO: spawn player in sensible location
-    while (!check_if_in(GROUND_TILES, currentMap.data[x][y].ch)) {
+    while (currentMap->data[x][y].z) {
         x = get_random_int(1, WIDTH - 1), y = get_random_int(1, HEIGHT - 1);
 
     }
@@ -84,7 +84,7 @@ void EntitySystem::spawnPlayer() {
 
 
 void EntitySystem::spawnMonsters() {
-    int count = round(0.001333 * (currentMap.data.size() * currentMap.data[0].size()));
+    int count = round(0.001333 * (currentMap->data.size() * currentMap->data[0].size()));
     vector<Monster> monsterTemplates = {
             getBasicMonster(),
             getBasicMonster(),
@@ -93,13 +93,13 @@ void EntitySystem::spawnMonsters() {
             getBasicMonster()
     };
 
-    for (const auto &monster: currentMap.meta.monsterTemplates) {
+    for (const auto &monster: currentMap->meta.monsterTemplates) {
         for (int i = 0; i < monster.rarity * count; ++i) {
             int x, y;
             do {
                 x = get_random_int(0, WIDTH - 1);
                 y = get_random_int(0, HEIGHT - 1);
-            } while (!check_if_in(GROUND_TILES, currentMap.data[x][y].ch));
+            } while (!currentMap->data[x][y].z);
             Entity monsterEntity = createEntity(Position{x, y}, monster.transient);
             monsters[monsterEntity] = monster;
         }
@@ -109,15 +109,15 @@ void EntitySystem::spawnMonsters() {
 
 
 void EntitySystem::spawnItems() {
-    int count = round(0.001333 * (currentMap.data.size() * currentMap.data[0].size()));
+    int count = round(0.001333 * (currentMap->data.size() * currentMap->data[0].size()));
 
-    for (const auto &item: currentMap.meta.itemTemplates) {
+    for (const auto &item: currentMap->meta.itemTemplates) {
         for (int i = 0; i < item.rarity * count; ++i) {
             int x, y;
             do {
                 x = get_random_int(0, WIDTH - 1);
                 y = get_random_int(0, HEIGHT - 1);
-            } while (!check_if_in(GROUND_TILES, currentMap.data[x][y].ch));
+            } while (!check_if_in(GROUND_TILES, currentMap->data[x][y].ch));
             Entity itemEntity = createEntity(Position{x, y}, true);
             items[itemEntity] = item;
         }
@@ -127,14 +127,14 @@ void EntitySystem::spawnItems() {
 void EntitySystem::Update() {
     size_t start_x = max(0, currentPlayerPosition.x - 50);
     size_t start_y = max(0, currentPlayerPosition.y - 50);
-    size_t end_x = min(entityMap.data.size(), start_x + 100);
-    size_t end_y = min(entityMap.data[0].size(), start_y + 100);
+    size_t end_x = min(entityMap->data.size(), start_x + 100);
+    size_t end_y = min(entityMap->data[0].size(), start_y + 100);
 
     vector<Intent> intents;
 
     for (size_t i = start_y; i < end_y; i++) {
         for (size_t j = start_x; j < end_x; j++) {
-            vector<Entity> &entity_refs = entityMap.data[j][i];
+            vector<Entity> &entity_refs = entityMap->data[j][i];
             Entity playerEntity;
             for (Entity &entity_ref: entity_refs) {
                 if (entity_ref.id == 1) {
@@ -149,8 +149,7 @@ void EntitySystem::Update() {
                     Position &entityPosition = positionMap[entity_ref];
                     if (get_random_int(1, 3) == 3) {
                         Intent monster_intent = monster.Update(monster, entity_ref,
-                                                               entityPosition, calculate_fov(currentMap,
-                                                                                             entityPosition.x,
+                                                               entityPosition, calculate_fov(entityPosition.x,
                                                                                              entityPosition.y,
                                                                                              monster.attackRadius),
                                                                currentPlayer, playerEntity, currentPlayerPosition,
@@ -175,12 +174,13 @@ void EntitySystem::Update() {
 
 
 // Use const reference to avoid copying
-const EntityMap &EntitySystem::getEntities() {
+EntityMap *EntitySystem::getEntities() {
     return entityMap;
 }
 
 const Entity &EntitySystem::getPlayer() {
-    const vector<Entity> &entitiesAtPlayerPosition = entityMap.data[currentPlayerPosition.x][currentPlayerPosition.y];
+
+    const vector<Entity> &entitiesAtPlayerPosition = entityMap->data[currentPlayerPosition.x][currentPlayerPosition.y];
     for (const Entity &entity: entitiesAtPlayerPosition) {
         if (entity.id == 1) {
             return entity;
@@ -238,14 +238,14 @@ void EntitySystem::moveEntity(const Intent &intent) {
         int dx = delta.first + intent.direction.first;
         int dy = delta.second + intent.direction.second;
 
-        if (pos.x + dx < 0 || pos.x + dx >= currentMap.data.size() ||
-            pos.y + dy < 0 || pos.y + dy >= currentMap.data[0].size()) {
+        if (pos.x + dx < 0 || pos.x + dx >= currentMap->data.size() ||
+            pos.y + dy < 0 || pos.y + dy >= currentMap->data[0].size()) {
             continue;
         }
 
-        vector<Entity> &entitiesAtNewPosition = entityMap.data[pos.x + dx][pos.y + dy];
+        vector<Entity> &entitiesAtNewPosition = entityMap->data[pos.x + dx][pos.y + dy];
 
-        if (check_if_in(GROUND_TILES, currentMap.data[pos.x + dx][pos.y + dy].ch) ||
+        if (!currentMap->data[pos.x + dx][pos.y + dy].z ||
             intent.entity.transient) {
             bool can_place = true;
 
@@ -255,7 +255,7 @@ void EntitySystem::moveEntity(const Intent &intent) {
             }
             if (can_place) delta = {dx, dy};
 
-        } else if (check_if_in(TRAP_TILES, currentMap.data[pos.x + dx][pos.y + dy].ch)) {
+        } else if (check_if_in(TRAP_TILES, currentMap->data[pos.x + dx][pos.y + dy].ch)) {
 
             if (intent.entity.id == 1) {
                 damageEntity(intent.entity, get_random_int(1, 5));
@@ -276,8 +276,8 @@ void EntitySystem::moveEntity(const Intent &intent) {
     if (abs(delta.first) + abs(delta.second) > 0) {
         Position new_pos = {pos.x + delta.first, pos.y + delta.second};
 
-        vector<Entity> &entitiesAtCurrentPosition = entityMap.data[pos.x][pos.y];
-        vector<Entity> &entitiesAtNewPosition = entityMap.data[new_pos.x][new_pos.y];
+        vector<Entity> &entitiesAtCurrentPosition = entityMap->data[pos.x][pos.y];
+        vector<Entity> &entitiesAtNewPosition = entityMap->data[new_pos.x][new_pos.y];
 
         entitiesAtCurrentPosition.erase(
                 remove(entitiesAtCurrentPosition.begin(), entitiesAtCurrentPosition.end(), intent.entity),
@@ -329,7 +329,6 @@ void EntitySystem::combatEntities(const Intent &intent) {
 
 
 set<pair<int, int>> EntitySystem::calculate_fov(
-        const GameMap &game_map,
         int center_x, int center_y,
         int radius) {
 
@@ -351,27 +350,27 @@ set<pair<int, int>> EntitySystem::calculate_fov(
                 fov.insert({ix, iy});
             }
 
-            if (check_if_in(WALL_TILES, game_map.data[ix][iy].ch))
-                break;
+            if (currentMap->data[ix][iy].z) break;
 
             x += dx;
             y += dy;
         }
     }
-    fov.insert({center_x,center_y});
+    fov.insert({center_x, center_y});
 
     return fov;
 }
 
 
 Frame
-EntitySystem::renderEntities2D(Frame frame, const GameMap &game_map, const set<pair<int,int>> current_fov, int start_y, int start_x, int end_y, int end_x) {
+EntitySystem::renderEntities2D(Frame frame, const set<pair<int, int>> current_fov, int start_y,
+                               int start_x, int end_y, int end_x) {
     for (int i = start_y; i < end_y; i++) {
         for (int j = start_x; j < end_x; j++) {
-            Position this_pos = {j,i};
+            Position this_pos = {j, i};
             if (is_position_in_fov(this_pos, current_fov)
-                && check_if_in(GROUND_TILES, frame.data[i - start_y][j - start_x].ch)) {
-                vector<Entity> &entity_refs = entityMap.data[j][i];
+                && !currentMap->data[j][i].z) {
+                vector<Entity> &entity_refs = entityMap->data[j][i];
                 for (Entity &entity_ref: entity_refs) {
                     if (items.find(entity_ref) != items.end()) {
                         frame.data[i - start_y][j - start_x].ch = items[entity_ref].character;

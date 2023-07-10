@@ -60,7 +60,7 @@ private:
     LightSystem SysLight;
 
     Player CURRENT_PLAYER;
-    GameMap CURRENT_MAP;
+    GameMap* CURRENT_MAP;
 
 
 };

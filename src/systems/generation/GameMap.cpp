@@ -35,7 +35,7 @@ Color MapSystem::get_tile_color(const vector<Color> &swatch) {
 }
 
 
-GameMap MapSystem::genCave(int height, int width) {
+GameMap* MapSystem::genCave(int height, int width) {
     vector<vector<Tile>> data(width, vector<Tile>(height));
 
 
@@ -195,31 +195,29 @@ GameMap MapSystem::genCave(int height, int width) {
             data
     };
 
-    return game_map;
+    return new GameMap(game_map);
 }
 
-GameMap &MapSystem::unveilMap(GameMap &game_map, const set<pair<int, int>> &current_fov) {
+void MapSystem::unveilMap(GameMap *game_map, const set<pair<int, int>> &current_fov) {
     for (const auto coords: current_fov) {
-        game_map.data[coords.first][coords.second].visible = true;
-        if (check_if_in(WALL_TILES, game_map.data[coords.first][coords.second].ch)) {
-            game_map.data[coords.first][coords.second].visited = true;
+        game_map->data[coords.first][coords.second].visible = true;
+        if (check_if_in(WALL_TILES, game_map->data[coords.first][coords.second].ch)) {
+            game_map->data[coords.first][coords.second].visited = true;
 
         }
     }
 
-    return game_map;
 }
 
-GameMap &MapSystem::veilMap(GameMap &game_map, const set<pair<int, int>> &current_fov) {
+void MapSystem::veilMap(GameMap *game_map, const set<pair<int, int>> &current_fov) {
     for (const auto coords: current_fov) {
-        game_map.data[coords.first][coords.second].visible = false;
+        game_map->data[coords.first][coords.second].visible = false;
     }
 
 
-    return game_map;
 }
 
-GameMap &MapSystem::forgetMap(GameMap &game_map, pair<int, int> player_pos, int mem_mult) {
+void MapSystem::forgetMap(GameMap *game_map, pair<int, int> player_pos, int mem_mult) {
 
 
     // Forget distant visited tiles
@@ -236,44 +234,43 @@ GameMap &MapSystem::forgetMap(GameMap &game_map, pair<int, int> player_pos, int 
         x += 3 * mem_mult * dx;
         y += 3 * mem_mult * dy;
         ix = round(x), iy = round(y);
-        if (ix < 0 || ix >= game_map.data.size() || iy < 0 || iy >= game_map.data[0].size()) continue;
+        if (ix < 0 || ix >= game_map->data.size() || iy < 0 || iy >= game_map->data[0].size()) continue;
         if (get_random_int(0, 32)) continue;
-        else game_map.data[ix][iy].visited = false;
+        else game_map->data[ix][iy].visited = false;
 
         //pass 2
         x += (mem_mult * 7 / 2) * dx;
         y += (mem_mult * 7 / 2) * dy;
         iy = round(y);
         ix = round(x);
-        if (ix < 0 || ix >= game_map.data.size() || iy < 0 || iy >= game_map.data[0].size()) continue;
+        if (ix < 0 || ix >= game_map->data.size() || iy < 0 || iy >= game_map->data[0].size()) continue;
         if (get_random_int(0, 16)) continue;
-        else game_map.data[ix][iy].visited = false;
+        else game_map->data[ix][iy].visited = false;
 
         //pass 3
         x += (mem_mult * 13 / 3) * dx;
         y += (mem_mult * 13 / 3) * dy;
         ix = round(x), iy = round(y);
-        if (ix < 0 || ix >= game_map.data.size() || iy < 0 || iy >= game_map.data[0].size()) continue;
+        if (ix < 0 || ix >= game_map->data.size() || iy < 0 || iy >= game_map->data[0].size()) continue;
         if (get_random_int(0, 8)) continue;
-        else game_map.data[ix][iy].visited = false;
+        else game_map->data[ix][iy].visited = false;
 
     }
 
-    return game_map;
 }
 
 
-Frame MapSystem::renderMap2D(Frame frame, const GameMap &current_map, int start_y, int start_x, int end_y, int end_x) {
-    int max_map_y = current_map.data.size();
-    int max_map_x = current_map.data[0].size();
+Frame MapSystem::renderMap2D(Frame frame, GameMap *current_map, int start_y, int start_x, int end_y, int end_x) {
+    int max_map_y = current_map->data.size();
+    int max_map_x = current_map->data[0].size();
 
     for (int i = 0; i < end_y - start_y; i++) {
         for (int j = 0; j < end_x - start_x; j++) {
             int map_y = max(0, min(max_map_y, i + start_y));
             int map_x = max(0, min(max_map_x, j + start_x));
-            if (current_map.data[map_x][map_y].visible
-                || current_map.data[map_x][map_y].visited) {
-                frame.data[i][j].ch = current_map.data[map_x][map_y].ch;
+            if (current_map->data[map_x][map_y].visible
+                || current_map->data[map_x][map_y].visited) {
+                frame.data[i][j].ch = current_map->data[map_x][map_y].ch;
                 frame.data[i][j].fg_color = NCOLOR_GREY;
 
             }
@@ -285,9 +282,9 @@ Frame MapSystem::renderMap2D(Frame frame, const GameMap &current_map, int start_
     return frame;
 }
 
-Frame MapSystem::renderMap3D(Frame frame, const GameMap &current_map, int start_y, int start_x, int end_y, int end_x) {
-    int max_map_y = current_map.data.size();
-    int max_map_x = current_map.data[0].size();
+Frame MapSystem::renderMap3D(Frame frame, GameMap *current_map, int start_y, int start_x, int end_y, int end_x) {
+    int max_map_y = current_map->data.size();
+    int max_map_x = current_map->data[0].size();
 
     frame = renderMap2D(frame, current_map, start_y, start_x, end_y, end_x);
 
@@ -298,10 +295,10 @@ Frame MapSystem::renderMap3D(Frame frame, const GameMap &current_map, int start_
 
 
             int degrade = 0;
-            if (current_map.data[map_x][map_y].visited) {
-                if (current_map.data[map_x][map_y].z) {
+            if (current_map->data[map_x][map_y].visited) {
+                if (current_map->data[map_x][map_y].z) {
                     if (i < (LINES - 3) / 2) {
-                        for (int h = 1; h <= current_map.data[map_x][map_y].z; ++h) {
+                        for (int h = 1; h <= current_map->data[map_x][map_y].z; ++h) {
                             if (i - h + degrade / 2 < 0 || i - h + degrade / 2 >= LINES - 3) continue;
                             if (h > 5) {
                                 frame.data[i - h + degrade / 2][j].ch = L"░";
@@ -310,7 +307,7 @@ Frame MapSystem::renderMap3D(Frame frame, const GameMap &current_map, int start_
                                 frame.data[i - h + degrade / 2][j].ch = L"▒";
                                 frame.data[i - h + degrade / 2][j].fg_color = frame.data[i][j].fg_color;
                             } else {
-                                frame.data[i - h + degrade / 2][j].ch = current_map.data[map_x][map_y].ch;
+                                frame.data[i - h + degrade / 2][j].ch = current_map->data[map_x][map_y].ch;
                                 frame.data[i - h + degrade / 2][j].fg_color = frame.data[i][j].fg_color;
                             }
 

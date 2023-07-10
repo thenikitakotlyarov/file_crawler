@@ -105,17 +105,17 @@ bool isAdjacent(const Position &pos1, const Position &pos2) {
 }
 
 
-double heuristic(const GameMap &game_map, int x1, int y1, int x2, int y2) {
+double heuristic(GameMap *game_map, int x1, int y1, int x2, int y2) {
     // Modify the heuristic function implementation according to your needs
     return abs(x1 - x2) + abs(y1 - y2);
 }
 
-double cost(const GameMap &game_map, int x2, int y2) {
+double cost(GameMap *game_map, int x2, int y2) {
     // Modify the cost function implementation according to your needs
     return 1.0;
 }
 
-vector<Node> aStar(const Position &start, const Position &goal, const GameMap &game_map) {
+vector<Node> aStar(const Position &start, const Position &goal, GameMap *game_map) {
 
     vector<vector<bool>> closedSet(WIDTH, vector<bool>(HEIGHT, false));
     vector<vector<Node *>> openSet(WIDTH, vector<Node *>(HEIGHT, nullptr));
@@ -218,15 +218,17 @@ void render(const Frame &frame) {
                         fg_r, fg_g, fg_b,
                         bg_r, bg_g, bg_b,
                         wc);
-                fflush(stdout);
+                //fflush(stdout);
             }
 
         }
     }
 
 
-    wnoutrefresh(stdscr);
-    doupdate();
+
+    //wnoutrefresh(stdscr);
+    //doupdate();
+    fflush(stdout);
 }
 
 

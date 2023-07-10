@@ -21,34 +21,32 @@ bool LightSystem::Initialize() {
 }
 
 
-void LightSystem::setMaps(const GameMap &game_map, const EntityMap &entity_map, unsigned long x, unsigned long y) {
+void LightSystem::setMaps(GameMap *game_map, EntityMap *entity_map, unsigned long x, unsigned long y) {
     currentGameMap = game_map;
     currentEntityMap = entity_map;
 
 
     staticMap = {
-            currentGameMap.meta,
+            currentGameMap->meta,
             vector<vector<Light>>(x, vector<Light>(y, noLight))
     };
     dynamicMap = {
-            currentEntityMap.meta,
+            currentEntityMap->meta,
             vector<vector<Light>>(x, vector<Light>(y, noLight))
     };
 }
 
 
 void LightSystem::populateMaps() {
-    staticMap.meta = {currentGameMap.meta};
-    dynamicMap.meta = {currentEntityMap.meta};
 
-    for (int i = 0; i < currentGameMap.data.size(); ++i) {
-        for (int j = 0; j < currentGameMap.data[0].size(); ++j) {
-            if (!currentGameMap.data[i][j].subterranean) {
+    for (int i = 0; i < currentGameMap->data.size(); ++i) {
+        for (int j = 0; j < currentGameMap->data[0].size(); ++j) {
+            if (!currentGameMap->data[i][j].subterranean) {
                 staticMap.data[i][j] = overworldLight;
             } else {
                 staticMap.data[i][j] = underworldLight;
             }
-            if (currentGameMap.data[i][j].emissive) {
+            if (currentGameMap->data[i][j].emissive) {
                 dynamicMap.data[i][j] = emissiveLight;
 
             }
@@ -62,7 +60,7 @@ void LightSystem::CleanUp() {
     // Clean up systems
 }
 
-void LightSystem::Update(const EntityMap &entity_map) {
+void LightSystem::Update(EntityMap *entity_map) {
     currentEntityMap = entity_map;
 
 }
@@ -96,10 +94,11 @@ pair<Color, Color> LightSystem::degradeWarm(Color &this_color, Color &bg_color) 
     return make_pair(this_color, bg_color);
 }
 
-set<pair<int, int>> LightSystem::castLight(
+unordered_set<Position, PositionHash> LightSystem::castLight(
         Position pos,
-        int radius) {
-    set<pair<int, int>> fov;
+        int radius,
+        int start_x, int start_y, int end_x, int end_y) {
+    unordered_set<Position, PositionHash> fov;
     vector<pair<double, double>> offsets = {{0.5,  0.5},
                                             {-0.5, 0.5},
                                             {0.5,  -0.5},
@@ -111,16 +110,20 @@ set<pair<int, int>> LightSystem::castLight(
             double x = pos.x + offset.first, y = pos.y + offset.second;
             for (int j = 0; j <= radius; ++j) {
                 int ix = round(x), iy = round(y);
-                if (max(0, (int) currentEntityMap.data[ix][iy].size() - 1) &&
-                    currentEntityMap.data[ix][iy][0].id != 1)
+                if (ix < start_x || ix >= end_x || iy < start_y || iy >= end_y) continue;
+                if (iy < 0 || iy >= currentEntityMap->data.size()
+                    || ix < 0 || ix >= currentEntityMap->data[0].size())
+                    continue;
+                if (max(0, (int) currentEntityMap->data[ix][iy].size() - 1) &&
+                    currentEntityMap->data[ix][iy][0].id != 1)
                     break;
-                fov.insert(make_pair(ix, iy));
-                if (currentGameMap.data[ix][iy].z) break;
+                fov.insert({ix, iy});
+                if (currentGameMap->data[ix][iy].z) break;
                 x += dx, y += dy;
             }
         }
     }
-    fov.insert(make_pair(pos.x, pos.y));
+    fov.insert({pos.x, pos.y});
     return fov;
 }
 
@@ -129,33 +132,34 @@ Frame LightSystem::addPointLight(Frame frame, Position light_pos, int radius, ch
                                  int start_y, int start_x) {
     pair<int, int> frame_size = {frame.data.size(), frame.data[0].size()};
 
-    vector<set<pair<int, int>>> cast_groups(10);
+    vector<unordered_set<Position, PositionHash>> cast_groups(10);
     for (int i = 0; i < 10; ++i) {
-        cast_groups[i] = castLight(light_pos, max(i + 1, radius / 3 + i * radius / 10));
+        cast_groups[i] = castLight(light_pos, max(i + 1, radius / 3 + i * radius / 10)
+                                   ,start_x,start_y,start_x+frame_size.second,start_y+frame_size.first);
     }
 
     for (int i = 9; i > 0; --i) {
-        for (const pair<int, int> cast: cast_groups[i - 1]) {
+        for (const Position cast: cast_groups[i - 1]) {
             if (cast_groups[i].find(cast) != cast_groups[i].end()) {
                 cast_groups[i].erase(cast);
             }
         }
     }
 
-    vector<pair<short, set<pair<int, int>>>> falloff_palette(10);
+    vector<pair<short, unordered_set<Position, PositionHash>>> falloff_palette(10);
     for (int i = 0; i < 10; ++i) {
-        falloff_palette[i] = make_pair(i, cast_groups[i]);
+        falloff_palette[i] = {i, cast_groups[i]};
     }
 
     for (const auto &palette: falloff_palette) {
-        for (pair<int, int> coords: palette.second) {
-            Position frame_coords = {coords.first - start_x, coords.second - start_y};
+        for (Position coords: palette.second) {
+            Position frame_coords = {coords.x - start_x, coords.y - start_y};
             if (!(frame_coords.y < 0 || frame_coords.y >= frame_size.first || frame_coords.x < 0 ||
                   frame_coords.x >= frame_size.second)
                 && frame.data[frame_coords.y][frame_coords.x].bg_color == NCOLOR_BLACK) {
 
                 frame.data[frame_coords.y][frame_coords.x].fg_color =
-                        currentGameMap.data[frame_coords.x + start_x][frame_coords.y + start_y].color;
+                        currentGameMap->data[frame_coords.x + start_x][frame_coords.y + start_y].color;
 
                 Color bg_color = {255, 227, 112};//light color, ig
                 Color this_color = frame.data[frame_coords.y][frame_coords.x].fg_color;
@@ -187,19 +191,22 @@ Frame LightSystem::addPointLight(Frame frame, Position light_pos, int radius, ch
 
 Frame
 LightSystem::addWashLight(Frame frame, Position light_pos, Color color, int start_y, int start_x) {
-    int cast_size = (int) frame.data[0].size() / 2;
+    pair<int, int> frame_size = {frame.data.size(), frame.data[0].size()};
 
-    for (auto &light_pos: castLight(light_pos, cast_size)) {
-        if (currentGameMap.data[light_pos.first][light_pos.second].z == 0) {
-            Position frame_position = {light_pos.first - start_x, light_pos.second - start_y};
+    int cast_size = (int) frame_size.second / 2;
+
+    for (auto &light_pos: castLight(light_pos, cast_size,
+                                    start_x,start_y,start_x+frame_size.second,start_y+frame_size.first)) {
+        if (currentGameMap->data[light_pos.x][light_pos.y].z == 0) {
+            Position frame_position = {light_pos.x - start_x, light_pos.y - start_y};
             if (frame_position.y < 0 || frame_position.y >= frame.data.size()) continue;
             if (frame_position.x < 0 || frame_position.x >= frame.data[0].size()) continue;
-            Color old_color = frame.data[light_pos.second - start_y][light_pos.first - start_x].bg_color;
+            Color old_color = frame.data[light_pos.y - start_y][light_pos.x - start_x].bg_color;
             uint8_t new_r = min(255, old_color.red + color.red);
             uint8_t new_g = min(255, old_color.green + color.green);
             uint8_t new_b = min(255, old_color.blue + color.blue);
             Color new_color = {new_r, new_g, new_b};
-            frame.data[light_pos.second - start_y][light_pos.first - start_x].bg_color = new_color;
+            frame.data[light_pos.y - start_y][light_pos.x - start_x].bg_color = new_color;
         }
 
     }

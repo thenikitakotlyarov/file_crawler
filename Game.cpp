@@ -158,8 +158,7 @@ void Game::Update(int player_input) {
 
                             pair<int, vector<Intent>> strike = CURRENT_PLAYER.primarySkill->Use(
                                     CURRENT_PLAYER, playerPosition,
-                                    SysEntity.calculate_fov(CURRENT_MAP,
-                                                            playerPosition.x,
+                                    SysEntity.calculate_fov(playerPosition.x,
                                                             playerPosition.y,
                                                             CURRENT_PLAYER.agility),
                                     SysEntity.getMonsters(),
@@ -178,8 +177,7 @@ void Game::Update(int player_input) {
 
                             pair<int, vector<Intent>> strike = CURRENT_PLAYER.secondarySkill->Use(
                                     CURRENT_PLAYER, playerPosition,
-                                    SysEntity.calculate_fov(CURRENT_MAP,
-                                                            playerPosition.x,
+                                    SysEntity.calculate_fov(playerPosition.x,
                                                             playerPosition.y,
                                                             CURRENT_PLAYER.agility),
                                     SysEntity.getMonsters(),
@@ -214,8 +212,8 @@ void Game::Update(int player_input) {
                 } else if (player_input == 'e') {
                     Position player_pos = SysEntity.getPlayerPosition();
                     const map<Entity, Item> &items = SysEntity.getItems();
-                    const EntityMap &entityMap = SysEntity.getEntities();
-                    for (const auto &entity: entityMap.data[player_pos.x][player_pos.y]) {
+                    EntityMap *entityMap = SysEntity.getEntities();
+                    for (const auto &entity: entityMap->data[player_pos.x][player_pos.y]) {
                         if (items.find(entity) != items.end()) {
                             items.find(entity)->second.effect(SysEntity.getCurrentPlayer());
                             SysEntity.destroyEntity(entity);
@@ -331,17 +329,16 @@ Frame Game::PLAY_GAME(int y, int x, const int c_fps) {
     int end_y = start_y + LINES - 3;
 
 
-    set<pair<int, int>> current_player_fov = EntitySystem::calculate_fov(
-            CURRENT_MAP, player_pos.x, player_pos.y, 15 + CURRENT_PLAYER.focus / 10
+    set<pair<int, int>> current_player_fov = SysEntity.calculate_fov(
+            player_pos.x, player_pos.y, 15 + CURRENT_PLAYER.focus / 10
     );
 
-    CURRENT_MAP = MapSystem::unveilMap(CURRENT_MAP, current_player_fov);
+    SysMap.unveilMap(CURRENT_MAP,current_player_fov);
 
-    //frame = SysRender.r2D(frame, CURRENT_MAP);
     frame = MapSystem::renderMap2D(frame, CURRENT_MAP,
                                    start_y, start_x, end_y, end_x);
 
-    frame = SysEntity.renderEntities2D(frame, CURRENT_MAP, current_player_fov,
+    frame = SysEntity.renderEntities2D(frame, current_player_fov,
                                        start_y, start_x, end_y, end_x);
 
     frame = SysLight.renderLighting(frame, player_pos, (PLAYER_FOV_RADIUS + CURRENT_PLAYER.focus / 10),
@@ -367,9 +364,9 @@ Frame Game::PLAY_GAME(int y, int x, const int c_fps) {
     }
 
 
-    CURRENT_MAP = MapSystem::veilMap(CURRENT_MAP, current_player_fov);
-    CURRENT_MAP = MapSystem::forgetMap(CURRENT_MAP, make_pair(player_pos.x, player_pos.y),
-                                       CURRENT_PLAYER.insight);
+    SysMap.veilMap(CURRENT_MAP, current_player_fov);
+    SysMap.forgetMap(CURRENT_MAP, make_pair(player_pos.x, player_pos.y),
+                     CURRENT_PLAYER.insight);
 
 
     //frame = SysRender.bloom(frame);

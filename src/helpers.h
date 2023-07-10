@@ -24,6 +24,7 @@
 #include <SDL2/SDL_mixer.h>
 #include <clocale>
 #include <cstdint>
+#include <unordered_set>
 
 #include "components/graphics/Frame.h"
 #include "components/map/Position.h"
@@ -89,7 +90,7 @@ public:
 
 
 vector<Node> aStar(const Position &start, const Position &goal,
-                   const GameMap &game_map);
+                   GameMap *game_map);
 
 //pathfinding end
 

@@ -38,7 +38,7 @@ struct Monster {
 
     function<Intent(Monster &, Entity &, Position &, const set<pair<int, int>>,
                     Player &, Entity &, Position &,
-                    GameMap &)> Update;
+                    GameMap *)> Update;
 
 
 };

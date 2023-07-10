@@ -23,16 +23,17 @@ public:
 
     void CleanUp();
 
-    void Update(const EntityMap& entity_map);
+    void Update(EntityMap* entity_map);
 
 
-    void setMaps(const GameMap &game_map, const EntityMap &entity_map, unsigned long x, unsigned long y);
+    void setMaps(GameMap *game_map, EntityMap *entity_map, unsigned long x, unsigned long y);
 
     void populateMaps();
 
-    set<pair<int, int>> castLight(
+    unordered_set<Position,PositionHash> castLight(
             Position pos,
-            int radius);
+            int radius,
+            int start_x, int start_y, int end_x, int end_y);
 
 
     pair<Color, Color> degradeGreyscale(Color &this_color, Color &bg_color) const;
@@ -60,8 +61,8 @@ private:
     double update_phase = 1;
 
 
-    GameMap currentGameMap;
-    EntityMap currentEntityMap;
+    GameMap* currentGameMap;
+    EntityMap* currentEntityMap;
 
 
     LightMap staticMap;

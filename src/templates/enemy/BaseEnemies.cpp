@@ -26,7 +26,7 @@ Monster getBasicMonster() {
             monster_health, monster_health,
             [](Monster &self, Entity &self_id, Position &monster_pos, const set<pair<int, int>> monster_fov,
                Player &player_stats, Entity &player_entity, Position &player_pos,
-               const GameMap &game_map) -> Intent {
+               GameMap *game_map) -> Intent {
                 self.cooldown = max(0, self.cooldown - 1);
                 int dx = monster_pos.x - player_pos.x;
                 int dy = monster_pos.y - player_pos.y;
