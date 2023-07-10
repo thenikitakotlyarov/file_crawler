@@ -117,7 +117,7 @@ void EntitySystem::spawnItems() {
             do {
                 x = get_random_int(0, WIDTH - 1);
                 y = get_random_int(0, HEIGHT - 1);
-            } while (!check_if_in(GROUND_TILES, currentMap->data[x][y].ch));
+            } while (currentMap->data[x][y].z);
             Entity itemEntity = createEntity(Position{x, y}, true);
             items[itemEntity] = item;
         }
@@ -255,7 +255,7 @@ void EntitySystem::moveEntity(const Intent &intent) {
             }
             if (can_place) delta = {dx, dy};
 
-        } else if (check_if_in(TRAP_TILES, currentMap->data[pos.x + dx][pos.y + dy].ch)) {
+        } else if (currentMap->data[pos.x + dx][pos.y + dy].harmful) {
 
             if (intent.entity.id == 1) {
                 damageEntity(intent.entity, get_random_int(1, 5));

@@ -16,6 +16,8 @@ struct Tile {
     
     bool subterranean;
     bool emissive;
+
+    bool harmful;
     
     
     
