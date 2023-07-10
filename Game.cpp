@@ -131,12 +131,14 @@ void Game::Update(int player_input) {
 
     } else if (running <= 10) {// in game
         if (!READY_TO_PLAY) {
-            CURRENT_MAP = SysMap.genCave(1024, 1024);
+            CURRENT_MAP = SysMap.genCave(HEIGHT, WIDTH);
             SysEntity.setGameMap(CURRENT_MAP);
             SysEntity.setPlayer(CURRENT_PLAYER);
             SysEntity.spawnPlayer();
             SysEntity.spawnItems();
             SysEntity.spawnMonsters();
+            SysLight.setMaps(CURRENT_MAP, SysEntity.getEntities(), WIDTH, HEIGHT);
+            SysLight.populateMaps();
             READY_TO_PLAY = true;
 
         } else {
@@ -211,9 +213,9 @@ void Game::Update(int player_input) {
                     SysEntity.moveEntity(playerIntent);
                 } else if (player_input == 'e') {
                     Position player_pos = SysEntity.getPlayerPosition();
-                    const map<Entity,Item>& items = SysEntity.getItems();
-                    const EntityMap& entityMap = SysEntity.getEntities();
-                    for (const auto& entity: entityMap.data[player_pos.x][player_pos.y]) {
+                    const map<Entity, Item> &items = SysEntity.getItems();
+                    const EntityMap &entityMap = SysEntity.getEntities();
+                    for (const auto &entity: entityMap.data[player_pos.x][player_pos.y]) {
                         if (items.find(entity) != items.end()) {
                             items.find(entity)->second.effect(SysEntity.getCurrentPlayer());
                             SysEntity.destroyEntity(entity);
@@ -237,7 +239,7 @@ void Game::Update(int player_input) {
             }
 
 
-            SysLight.Update();
+            SysLight.Update(SysEntity.getEntities());
 
         }
 
@@ -248,10 +250,8 @@ void Game::Update(int player_input) {
 }
 
 
-
-
 Frame Game::CARD_TITLE(int y, int x) {
-    Frame frame = UISystem::BlankFrame(y, x,0);
+    Frame frame = UISystem::BlankFrame(y, x, 0);
 
     frame = SysUI.getTitleCard(frame);
 
@@ -260,7 +260,7 @@ Frame Game::CARD_TITLE(int y, int x) {
 
 
 Frame Game::MENU_MAIN(int y, int x) {
-    Frame frame = UISystem::BlankFrame(y, x,0);
+    Frame frame = UISystem::BlankFrame(y, x, 0);
 
     frame = SysUI.getMainMenu(frame);
 
@@ -269,7 +269,7 @@ Frame Game::MENU_MAIN(int y, int x) {
 
 
 Frame Game::MENU_NEW_GAME(int y, int x) {
-    Frame frame = UISystem::BlankFrame(y, x,0);
+    Frame frame = UISystem::BlankFrame(y, x, 0);
 
     READY_TO_PLAY = false;
 
@@ -280,7 +280,7 @@ Frame Game::MENU_NEW_GAME(int y, int x) {
 
 
 Frame Game::MENU_LOAD_GAME(int y, int x) {
-    Frame frame = UISystem::BlankFrame(y, x,0);
+    Frame frame = UISystem::BlankFrame(y, x, 0);
 
     frame = SysUI.getLoadCard(frame);
 
@@ -289,7 +289,7 @@ Frame Game::MENU_LOAD_GAME(int y, int x) {
 
 
 Frame Game::MENU_SETTINGS(int y, int x) {
-    Frame frame = UISystem::BlankFrame(y, x,0);
+    Frame frame = UISystem::BlankFrame(y, x, 0);
 
     frame = SysUI.getSettingsMenu(frame);
 
@@ -298,7 +298,7 @@ Frame Game::MENU_SETTINGS(int y, int x) {
 
 
 Frame Game::DEBUG_COLOR(int y, int x) {
-    Frame frame = UISystem::BlankFrame(y, x,0);
+    Frame frame = UISystem::BlankFrame(y, x, 0);
 
     frame = SysUI.getColorDebug(frame);
 
@@ -307,7 +307,7 @@ Frame Game::DEBUG_COLOR(int y, int x) {
 
 
 Frame Game::GAME_OVER(int y, int x) {
-    Frame frame = UISystem::BlankFrame(y, x,0);
+    Frame frame = UISystem::BlankFrame(y, x, 0);
 
     frame = SysUI.getGameOverCard(frame);
 
@@ -320,7 +320,7 @@ Frame Game::PLAY_GAME(int y, int x, const int c_fps) {
     if (CURRENT_PLAYER.current_health <= 0) {
         running = 999;
     }
-    Frame frame = UISystem::BlankFrame(y, x,0);
+    Frame frame = UISystem::BlankFrame(y, x, 0);
     Position player_pos = SysEntity.getPlayerPosition();
 
     int start_x = max(0, player_pos.x - COLS / 2);
@@ -338,10 +338,14 @@ Frame Game::PLAY_GAME(int y, int x, const int c_fps) {
     CURRENT_MAP = MapSystem::unveilMap(CURRENT_MAP, current_player_fov);
 
     //frame = SysRender.r2D(frame, CURRENT_MAP);
-    frame = MapSystem::renderMap2D(frame, CURRENT_MAP, start_y, start_x, end_y, end_x);
-    frame = SysEntity.renderEntities2D(frame, CURRENT_MAP, current_player_fov, start_y, start_x, end_y, end_x);
+    frame = MapSystem::renderMap2D(frame, CURRENT_MAP,
+                                   start_y, start_x, end_y, end_x);
 
-    frame = SysLight.renderLighting(frame, CURRENT_MAP, player_pos, (PLAYER_FOV_RADIUS+CURRENT_PLAYER.focus/10), start_y, start_x, end_y, end_x);
+    frame = SysEntity.renderEntities2D(frame, CURRENT_MAP, current_player_fov,
+                                       start_y, start_x, end_y, end_x);
+
+    frame = SysLight.renderLighting(frame, player_pos, (PLAYER_FOV_RADIUS + CURRENT_PLAYER.focus / 10),
+                                    start_y, start_x, end_y, end_x);
 
     frame = SysUI.getInGameHud(frame, SysEntity.getCurrentPlayer(), c_fps);
     if (paused) {
@@ -349,11 +353,11 @@ Frame Game::PLAY_GAME(int y, int x, const int c_fps) {
             for (int j = 0; j < x; j++) {
                 if (i > y / 10 && i < y * 4 / 5 && j > x / 3 && j < x * 2 / 3) {
                     frame.data[i][j].ch = ' ';
-                    frame.data[i][j].fg_color = {0,0,0};
-                    frame.data[i][j].bg_color = {0,0,0};
+                    frame.data[i][j].fg_color = {0, 0, 0};
+                    frame.data[i][j].bg_color = {0, 0, 0};
                 } else {
-                    frame.data[i][j].fg_color = {127,127,127};
-                    frame.data[i][j].bg_color = {0,0,0};
+                    frame.data[i][j].fg_color = {127, 127, 127};
+                    frame.data[i][j].bg_color = {0, 0, 0};
                 }
             }
         }

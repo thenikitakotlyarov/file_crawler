@@ -198,8 +198,8 @@ void render(const Frame &frame) {
 
     //clear();
 
-    for (int i = 0; i < LINES; ++i) {
-        for (int j = 0; j < COLS; ++j) {
+    for (int i = 0; i < frame.data.size(); ++i) {
+        for (int j = 0; j < frame.data[0].size(); ++j) {
             const wstring &pixel_char = frame.data[i][j].ch;
             const uint8_t &fg_r = frame.data[i][j].fg_color.red;
             const uint8_t &fg_g = frame.data[i][j].fg_color.green;
@@ -214,7 +214,7 @@ void render(const Frame &frame) {
 
             for (const wchar_t& wc : pixel_char) {
                 wprintf(L"\033[%d;%dH\033[38;2;%d;%d;%d;48;2;%d;%d;%dm%lc",
-                        i, j,
+                        i+1, j+1,
                         fg_r, fg_g, fg_b,
                         bg_r, bg_g, bg_b,
                         wc);
@@ -230,5 +230,7 @@ void render(const Frame &frame) {
 }
 
 
-
+int break_point() {
+    return 1;
+};
 

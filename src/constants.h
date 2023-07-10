@@ -42,19 +42,19 @@ const Color NCOLOR_WHITE = {
         255
 };
 const Color NCOLOR_RED = {
-        255,
+        170,
         0,
         0
 };
 const Color NCOLOR_ORANGE = {
-        255,
-        128,
-        0
+        229,
+        126,
+        23
 };
 const Color NCOLOR_YELLOW = {
         255,
         255,
-        0
+        85
 };
 const Color NCOLOR_LGREEN = {
         128,
@@ -87,19 +87,19 @@ const Color NCOLOR_BLUE = {
         255
 };
 const Color NCOLOR_PURPLE = {
-        128,
-        0,
-        255
+        126,
+        23,
+        229
 };
 const Color NCOLOR_PINK = {
         255,
-        128,
+        85,
         255
 };
 const Color NCOLOR_MAGENTA = {
-        255,
-        0,
-        255
+        229,
+        23,
+        126
 };
 
 
