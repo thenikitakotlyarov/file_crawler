@@ -82,13 +82,13 @@ pair<Color, Color> LightSystem::degradeGreyscale(Color &this_color, Color &bg_co
 
 pair<Color, Color> LightSystem::degradeWarm(Color &this_color, Color &bg_color) const {
     this_color = {
-            (uint8_t) ((double) this_color.red * 0.75),
-            (uint8_t) ((double) this_color.green * 0.5),
-            (uint8_t) ((double) this_color.blue * 0.25)
+            (uint8_t) ((double) this_color.red * 0.85),
+            (uint8_t) ((double) this_color.green * 0.75),
+            (uint8_t) ((double) this_color.blue * 0.65)
     };
     bg_color = {
-            (uint8_t) ((double) bg_color.red * 0.9),
-            (uint8_t) ((double) bg_color.green * 0.75),
+            (uint8_t) ((double) bg_color.red * 0.75),
+            (uint8_t) ((double) bg_color.green * 0.65),
             (uint8_t) ((double) bg_color.blue * 0.5)
     };
     return make_pair(this_color, bg_color);
@@ -99,29 +99,39 @@ unordered_set<Position, PositionHash> LightSystem::castLight(
         int radius,
         int start_x, int start_y, int end_x, int end_y) {
     unordered_set<Position, PositionHash> fov;
-    vector<pair<double, double>> offsets = {{0.5,  0.5},
-                                            {-0.5, 0.5},
-                                            {0.5,  -0.5},
-                                            {-0.5, -0.5}};
+//    vector<pair<double, double>> offsets = {{0.5,  0.5},
+//                                            {-0.5, 0.5},
+//                                            {0.5,  -0.5},
+//                                            {-0.5, -0.5}};
     for (int i = 0; i < 360; ++i) {
         double rad = i * (M_PI / 180.0);
-        for (auto &offset: offsets) {
-            double dx = cos(rad), dy = sin(rad) / 2;
-            double x = pos.x + offset.first, y = pos.y + offset.second;
-            for (int j = 0; j <= radius; ++j) {
-                int ix = round(x), iy = round(y);
-                if (ix < start_x || ix >= end_x || iy < start_y || iy >= end_y) continue;
-                if (iy < 0 || iy >= currentEntityMap->data.size()
-                    || ix < 0 || ix >= currentEntityMap->data[0].size())
-                    continue;
-                if (max(0, (int) currentEntityMap->data[ix][iy].size() - 1) &&
-                    currentEntityMap->data[ix][iy][0].id != 1)
+        //for (auto &offset: offsets) {
+        double dx = cos(rad), dy = sin(rad) / 2;
+        double x = pos.x, y = pos.y;
+        //double x = pos.x + offset.first, y = pos.y + offset.second;
+        for (int j = 0; j <= radius; ++j) {
+            int ix = round(x), iy = round(y);
+            if (ix < start_x || ix >= end_x || iy < start_y || iy >= end_y) continue;
+            if (iy < 0 || iy >= currentEntityMap->data.size()
+                || ix < 0 || ix >= currentEntityMap->data[0].size())
+                continue;
+            bool cull = false;
+            if (!currentEntityMap->data[ix][iy].empty()
+                && currentEntityMap->data[ix][iy][0].id != 1) {
+                for (const auto &e: currentEntityMap->data[ix][iy]) {
+                    if (!e.transient) cull = true;
                     break;
-                fov.insert({ix, iy});
-                if (currentGameMap->data[ix][iy].z) break;
-                x += dx, y += dy;
+                }
             }
+            fov.insert({ix, iy});
+            if (currentGameMap->data[ix][iy].z) break;
+            if (cull) {
+                //int I_AM_A_DEBUG = break_point();
+                break;
+            }
+            x += dx, y += dy;
         }
+        //}
     }
     fov.insert({pos.x, pos.y});
     return fov;
@@ -134,8 +144,8 @@ Frame LightSystem::addPointLight(Frame frame, Position light_pos, int radius, ch
 
     vector<unordered_set<Position, PositionHash>> cast_groups(10);
     for (int i = 0; i < 10; ++i) {
-        cast_groups[i] = castLight(light_pos, max(i + 1, radius / 3 + i * radius / 10)
-                                   ,start_x,start_y,start_x+frame_size.second,start_y+frame_size.first);
+        cast_groups[i] = castLight(light_pos, max(i + 1, radius / 3 + i * radius / 10), start_x, start_y,
+                                   start_x + frame_size.second, start_y + frame_size.first);
     }
 
     for (int i = 9; i > 0; --i) {
@@ -161,7 +171,7 @@ Frame LightSystem::addPointLight(Frame frame, Position light_pos, int radius, ch
                 frame.data[frame_coords.y][frame_coords.x].fg_color =
                         currentGameMap->data[frame_coords.x + start_x][frame_coords.y + start_y].color;
 
-                Color bg_color = {255, 227, 112};//light color, ig
+                Color bg_color = {255, 255, 255};//light color, ig
                 Color this_color = frame.data[frame_coords.y][frame_coords.x].fg_color;
                 pair<Color, Color> new_color;
                 for (int bake = 0; bake <= palette.first; bake++) {
@@ -177,6 +187,7 @@ Frame LightSystem::addPointLight(Frame frame, Position light_pos, int radius, ch
                     } else {
                         new_color = degradeGreyscale(this_color, bg_color);
                     }
+
 
                     frame.data[frame_coords.y][frame_coords.x].fg_color = new_color.first;
                     frame.data[frame_coords.y][frame_coords.x].bg_color = new_color.second;
@@ -196,7 +207,7 @@ LightSystem::addWashLight(Frame frame, Position light_pos, Color color, int star
     int cast_size = (int) frame_size.second / 2;
 
     for (auto &light_pos: castLight(light_pos, cast_size,
-                                    start_x,start_y,start_x+frame_size.second,start_y+frame_size.first)) {
+                                    start_x, start_y, start_x + frame_size.second, start_y + frame_size.first)) {
         if (currentGameMap->data[light_pos.x][light_pos.y].z == 0) {
             Position frame_position = {light_pos.x - start_x, light_pos.y - start_y};
             if (frame_position.y < 0 || frame_position.y >= frame.data.size()) continue;

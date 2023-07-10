@@ -31,7 +31,7 @@ void EntitySystem::setPlayer(Player &player) {
 // Use std::move to avoid copying
 void EntitySystem::setGameMap(GameMap *game_map) {
     currentMap = game_map;
-    entityMap = new EntityMap {
+    entityMap = new EntityMap{
             currentMap->meta,
             vector<vector<vector<Entity>>>(currentMap->data.size(),
                                            vector<vector<Entity>>(currentMap->data[0].size())
@@ -253,21 +253,17 @@ void EntitySystem::moveEntity(const Intent &intent) {
                 if (!entity.transient) can_place = false;
                 break;
             }
-            if (can_place) delta = {dx, dy};
 
-        } else if (currentMap->data[pos.x + dx][pos.y + dy].harmful) {
+            if (currentMap->data[pos.x + dx][pos.y + dy].harmful) {
 
-            if (intent.entity.id == 1) {
                 damageEntity(intent.entity, get_random_int(1, 5));
-            }
-            bool can_place = true;
-
-            for (auto &entity: entitiesAtNewPosition) {
-                if (!entity.transient) can_place = false;
+                if (can_place) delta = {dx, dy};
                 break;
             }
+
+
             if (can_place) delta = {dx, dy};
-            break;
+
         } else {
             break;
         }
