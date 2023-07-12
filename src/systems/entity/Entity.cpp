@@ -53,9 +53,11 @@ Entity EntitySystem::createEntity(Position pos, bool transience) {
 
 void EntitySystem::destroyEntity(Entity entity) {
     Position entityPosition = positionMap[entity];
-    vector<Entity> &entitiesAtPosition = entityMap->data[entityPosition.x][entityPosition.y];
-    entitiesAtPosition.erase(remove(entitiesAtPosition.begin(), entitiesAtPosition.end(), entity),
-                             entitiesAtPosition.end());
+    //vector<Entity> &entitiesAtPosition = entityMap->data[entityPosition.x][entityPosition.y];
+    entityMap->data[entityPosition.x][entityPosition.y].erase(
+            remove(entityMap->data[entityPosition.x][entityPosition.y].begin(),
+                   entityMap->data[entityPosition.x][entityPosition.y].end(), entity),
+            entityMap->data[entityPosition.x][entityPosition.y].end());
 
     positionMap.erase(entity);
 
@@ -368,7 +370,11 @@ EntitySystem::renderEntities2D(Frame frame, const set<pair<int, int>> current_fo
                 && !currentMap->data[j][i].z) {
                 vector<Entity> &entity_refs = entityMap->data[j][i];
                 for (Entity &entity_ref: entity_refs) {
-                    if (items.find(entity_ref) != items.end()) {
+                    if (entity_ref.id == 1) {//tis the player
+                        frame.data[i - start_y][j - start_x].ch = L"@";
+                        frame.data[i - start_y][j - start_x].fg_color = NCOLOR_BLACK;
+                        frame.data[i - start_y][j - start_x].bg_color = currentPlayer.color;
+                    } else if (items.find(entity_ref) != items.end()) {
                         frame.data[i - start_y][j - start_x].ch = items[entity_ref].character;
                         frame.data[i - start_y][j - start_x].fg_color = NCOLOR_BLACK;
                         frame.data[i - start_y][j - start_x].bg_color = items[entity_ref].color;
@@ -379,10 +385,10 @@ EntitySystem::renderEntities2D(Frame frame, const set<pair<int, int>> current_fo
                         frame.data[i - start_y][j - start_x].fg_color = NCOLOR_BLACK;
                         frame.data[i - start_y][j - start_x].bg_color = monsters[entity_ref].color;
 
-                    } else {//tis the player
-                        frame.data[i - start_y][j - start_x].ch = L"@";
-                        frame.data[i - start_y][j - start_x].fg_color = NCOLOR_BLACK;
-                        frame.data[i - start_y][j - start_x].bg_color = currentPlayer.color;
+                    } else {
+                        //literally who the fuck?
+                        int I_AM_A_DEBUG = break_point();
+                        //debug shows dead monsters are still being searched for
                     }
 
                 }
