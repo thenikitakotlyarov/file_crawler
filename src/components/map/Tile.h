@@ -7,7 +7,8 @@ using namespace std;
 
 struct Tile {
     wstring ch;
-    Color color;
+    Color fg_color;
+    Color bg_color;
     
     bool visited;
     bool visible;

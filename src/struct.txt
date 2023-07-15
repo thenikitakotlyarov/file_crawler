@@ -18,7 +18,9 @@
 ./systems/entity/Entity.h
 ./systems/generation/GameMap.h
 ./systems/interface/UI.h
-./systems/lighting/Lighting.h
+./systems/graphics/Lighting.h
+./systems/graphics/Render.h
+./systems/story/Quest.h
 ./templates/player/BaseClasses.h
 ./templates/item/BaseItems.h
 ./templates/enemy/BaseEnemies.h
@@ -27,3 +29,4 @@
 ./include.h
 ./constants.h
 ./helpers.h
+./story/Quest.h

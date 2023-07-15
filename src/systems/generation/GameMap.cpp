@@ -50,7 +50,7 @@ GameMap *MapSystem::genCave(int height, int width) {
             wstring ch = get_random_character(VOID_TILES);
             Color color = NCOLOR_BLACK;
             int tile_z;
-            Tile void_tile = {ch, color, false, false, 0, true, false, false};
+            Tile void_tile = {ch, color,color, false, false, 0, true, false, false};
             data[x][y] = void_tile;
             double value = perlin.GetValue(x / 10.0, y / 10.0, 0.0);
 
@@ -72,7 +72,7 @@ GameMap *MapSystem::genCave(int height, int width) {
                 tile_z = get_random_int(3, 7);
             }
 
-            Tile this_tile = {ch, color, false, false, tile_z, true, false, harmful};
+            Tile this_tile = {ch, color, color,false, false, tile_z, true, false, harmful};
             data[x][y] = this_tile;
         }
     }
@@ -122,7 +122,7 @@ GameMap *MapSystem::genCave(int height, int width) {
                 wstring ch = get_random_character(WALL_TILES);
                 Color color = get_tile_color(wall_swatch);
                 int tile_z = get_random_int(0, 5);
-                Tile this_tile = {ch, color, false, false, tile_z, true, false, false};
+                Tile this_tile = {ch, color, color,false, false, tile_z, true, false, false};
                 data[x][y] = this_tile;
             }
         }
@@ -132,20 +132,20 @@ GameMap *MapSystem::genCave(int height, int width) {
     for (int x = 0; x < height; ++x) {
         wstring ch = get_random_character(WALL_TILES);
         Color color = get_tile_color(wall_swatch);
-        Tile this_tile = {ch, color, false, false, 0, true, false, false};
+        Tile this_tile = {ch, color, color, false, false, 0, true, false, false};
         data[x][0] = this_tile;
         data[x][height - 1] = this_tile;
     }
     for (int y = 0; y < height; ++y) {
         wstring ch = get_random_character(WALL_TILES);
         Color color = get_tile_color(wall_swatch);
-        Tile this_tile = {ch, color, false, false, 0, true, false, false};
+        Tile this_tile = {ch, color, color, false, false, 0, true, false, false};
         data[0][y] = this_tile;
         data[height - 1][y] = this_tile;
     }
 
     //add structures to map
-    int structure_count = get_random_int(30, 90);
+    int structure_count = get_random_int(300, 900);
     for (int i = 0; i < structure_count; ++i) {
         int x_bounds = get_random_int(7, 21);
         int y_bounds = get_random_int(7, 21);
@@ -163,11 +163,14 @@ GameMap *MapSystem::genCave(int height, int width) {
                     && (y != y_bounds / 2)) {
                     data[start_pos.x + x][start_pos.y + y].ch = L"#";
                     data[start_pos.x + x][start_pos.y + y].z = 3;
+                    data[start_pos.x + x][start_pos.y + y].fg_color = NCOLOR_LGREY;
+                    data[start_pos.x + x][start_pos.y + y].bg_color = NCOLOR_GREY;
                 } else {
                     data[start_pos.x + x][start_pos.y + y].ch = L".";
                     data[start_pos.x + x][start_pos.y + y].z = 0;
+                    data[start_pos.x + x][start_pos.y + y].fg_color = NCOLOR_GREY;
+                    data[start_pos.x + x][start_pos.y + y].bg_color = NCOLOR_LGREY;
                 }
-                data[start_pos.x + x][start_pos.y + y].color = NCOLOR_LGREY;
                 int wait = break_point();
             }
         }

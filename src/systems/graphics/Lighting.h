@@ -23,26 +23,27 @@ public:
 
     void CleanUp();
 
-    void Update(EntityMap* entity_map);
+    void Update(EntityMap *entity_map);
 
 
     void setMaps(GameMap *game_map, EntityMap *entity_map, unsigned long x, unsigned long y);
 
     void populateMaps();
 
-    unordered_set<Position,PositionHash> castLight(
+    unordered_set<Position, PositionHash> castLight(
             Position pos,
             int radius,
             int start_x, int start_y, int end_x, int end_y);
 
 
-    pair<Color, Color> degradeGreyscale(Color &this_color, Color &bg_color) const;
+    pair<Color, Color> degradeGreyscale(pair<Color, Color> &this_color) const;
 
-    pair<Color, Color> degradeWarm(Color &this_color, Color &bg_color) const;
+    pair<Color, Color> degradeWarm(pair<Color, Color> &this_color) const;
+
+    pair<Color, Color> degradeCold(pair<Color, Color> &this_color) const;
 
     Frame addPointLight(Frame frame, Position light_pos,
-                        int radius,
-                        char temperature,//temperature can be 'w' for warm, 'c' for cold, or defaults to neutral
+                        Light light,
                         int start_y, int start_x);
 
     Frame addWashLight(Frame frame, Position light_pos,
@@ -61,8 +62,8 @@ private:
     double update_phase = 1;
 
 
-    GameMap* currentGameMap;
-    EntityMap* currentEntityMap;
+    GameMap *currentGameMap;
+    EntityMap *currentEntityMap;
 
 
     LightMap staticMap;
@@ -71,21 +72,25 @@ private:
 
     Light noLight = {
             {0, 0, 0},
-            0.0, 0.0, 0.0
+            'n', 0,
+            0.0, 1.0, 1.0
     };
 
     Light overworldLight = {
             {248, 248, 248},
-            1.0, 0.0, 0.7
+            'n', 1,
+            1.0, 1.0, 0.7
     };
 
     Light underworldLight = {
             {32, 0, 0},
+            'n', 0,
             0.3, 0.0, 0.3
     };
 
     Light emissiveLight = {
             {32, 64, 128},
+            'n', 3,
             0.5, 0.3, 0.2
     };
 

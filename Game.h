@@ -7,7 +7,7 @@
 //#include "systems/entity/Entity.h"
 //#include "systems/interface/UI.h"
 //#include "systems/generation/GameMap.h"
-//#include "systems/lighting/Lighting.h"
+//#include "systems/graphics/Lighting.h"
 
 #include "include.h"
 
@@ -58,9 +58,10 @@ private:
     MapSystem SysMap;
     EntitySystem SysEntity;
     LightSystem SysLight;
+    QuestSystem SysQuest;
 
     Player CURRENT_PLAYER;
-    GameMap* CURRENT_MAP;
+    GameMap *CURRENT_MAP;
 
 
 };

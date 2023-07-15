@@ -98,8 +98,5 @@ vector<Node> aStar(const Position &start, const Position &goal,
 
 int get_input();
 
-void render(const Frame &frame);
-
-
 int break_point();
 

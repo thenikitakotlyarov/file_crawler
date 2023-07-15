@@ -32,6 +32,8 @@ bool Game::Initialize() {
     SysLight = LightSystem();
     if (!SysLight.running) return false;
 
+    SysQuest = QuestSystem();
+    if (!SysQuest.running) return false;
 
     return true;
 
@@ -329,19 +331,25 @@ Frame Game::PLAY_GAME(int y, int x, const int c_fps) {
     int end_y = start_y + LINES - 3;
 
 
-    set<pair<int, int>> current_player_fov = SysEntity.calculate_fov(
-            player_pos.x, player_pos.y, 15 + CURRENT_PLAYER.focus / 10
+    int player_fov_radius = PLAYER_FOV_RADIUS + PLAYER_FOV_RADIUS * CURRENT_PLAYER.focus / 100;
+
+    set<pair<int, int>> veil_fov = SysEntity.calculate_fov(
+            player_pos.x, player_pos.y, 2 * player_fov_radius
     );
 
-    SysMap.unveilMap(CURRENT_MAP,current_player_fov);
+    set<pair<int, int>> view_fov = SysEntity.calculate_fov(
+            player_pos.x, player_pos.y, player_fov_radius
+    );
+
+    SysMap.unveilMap(CURRENT_MAP, veil_fov);
 
     frame = MapSystem::renderMap2D(frame, CURRENT_MAP,
                                    start_y, start_x, end_y, end_x);
 
-    frame = SysEntity.renderEntities2D(frame, current_player_fov,
+    frame = SysEntity.renderEntities2D(frame, view_fov,
                                        start_y, start_x, end_y, end_x);
 
-    frame = SysLight.renderLighting(frame, player_pos, (PLAYER_FOV_RADIUS + CURRENT_PLAYER.focus / 10),
+    frame = SysLight.renderLighting(frame, player_pos, player_fov_radius,
                                     start_y, start_x, end_y, end_x);
 
     frame = SysUI.getInGameHud(frame, SysEntity.getCurrentPlayer(), c_fps);
@@ -364,7 +372,7 @@ Frame Game::PLAY_GAME(int y, int x, const int c_fps) {
     }
 
 
-    SysMap.veilMap(CURRENT_MAP, current_player_fov);
+    SysMap.veilMap(CURRENT_MAP, veil_fov);
     SysMap.forgetMap(CURRENT_MAP, make_pair(player_pos.x, player_pos.y),
                      CURRENT_PLAYER.insight);
 

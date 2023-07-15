@@ -30,6 +30,8 @@ int main() {
     pair<bool, unique_ptr<Game>> INIT = init();
     if (!INIT.first) exit(1);
 
+    RenderSystem SysRender = RenderSystem();
+
     unique_ptr<Game> &GAME = INIT.second; // Get the reference to the unique_ptr to Game
     int fps = 0;
     int frame_count = 0;
@@ -41,15 +43,15 @@ int main() {
 
         // Update all GAME to GAME-> in the following code
         if (GAME->running == 1) {
-            render(GAME->CARD_TITLE(LINES, COLS));
+            SysRender.render(GAME->CARD_TITLE(LINES, COLS));
         } else if (GAME->running == 2) {
-            render(GAME->MENU_MAIN(LINES, COLS));
+            SysRender.render(GAME->MENU_MAIN(LINES, COLS));
         } else if (GAME->running == 3) {
-            render(GAME->MENU_NEW_GAME(LINES, COLS));
+            SysRender.render(GAME->MENU_NEW_GAME(LINES, COLS));
         } else if (GAME->running == 4) {
-            render(GAME->MENU_LOAD_GAME(LINES, COLS));
+            SysRender.render(GAME->MENU_LOAD_GAME(LINES, COLS));
         } else if (GAME->running == 8) {
-            render(GAME->DEBUG_COLOR(LINES, COLS));
+            SysRender.render(GAME->DEBUG_COLOR(LINES, COLS));
             int key = getch();
             while (key != '0') {
                 key = getch();
@@ -57,12 +59,12 @@ int main() {
             }
             GAME->running = 2;
         } else if (GAME->running == 9) {
-            render(GAME->MENU_SETTINGS(LINES, COLS));
+            SysRender.render(GAME->MENU_SETTINGS(LINES, COLS));
         } else if (GAME->running == 999) {
-            render(GAME->GAME_OVER(LINES,COLS));
+            SysRender.render(GAME->GAME_OVER(LINES, COLS));
         } else if (GAME->running >= 10) {
-            if (!GAME->READY_TO_PLAY) render(GAME->MENU_LOAD_GAME(LINES, COLS));
-            else render(GAME->PLAY_GAME(LINES, COLS, fps));
+            if (!GAME->READY_TO_PLAY) SysRender.render(GAME->MENU_LOAD_GAME(LINES, COLS));
+            else SysRender.render(GAME->PLAY_GAME(LINES, COLS, fps));
         }
 
         GAME->Update(get_input());
@@ -71,7 +73,7 @@ int main() {
         auto frameDuration = chrono::duration_cast<chrono::milliseconds>(frameEnd - frameStart);
 
         if (frameDuration.count() > 0) {  // To avoid division by zero
-            fps = min(FPS,(int)(1000 / frameDuration.count()));  // Calculate FPS
+            fps = min(FPS, (int) (1000 / frameDuration.count()));  // Calculate FPS
         } else fps = 0;
 
 

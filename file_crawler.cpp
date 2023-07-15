@@ -91,7 +91,7 @@ const vector<wstring> MONSTER_HIGH_HP_TILES = {L"آ", L"أ", L"إ", L"ء", L"ؤ"
  | |__/ _ \/ _` / _` | | " \/ _` |
  |____\___/\__, \__, |_|_||_\__, |
            |___/|___/       |___/
- section:logging */
+ section:log */
 
 vector<string> combat_log;
 
