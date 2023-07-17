@@ -45,8 +45,8 @@ public:
 
     Frame addAmbientLight(Frame frame, Position light_pos, Color color, int start_y, int start_x);
 
-    Frame renderLighting(Frame frame, Position player_pos, int player_light_radius, int start_y, int start_x, int end_y,
-                         int end_x);
+    Frame renderLighting2D(Frame frame, Position player_pos, int player_light_radius, int start_y, int start_x, int end_y,
+                           int end_x);
 //    void castShadows(Frame& frame, Position light_pos, int radius, int start_x, int start_y, int end_x, int end_y);
 //    void updateLightingForTimeOfDay(int hour);
 

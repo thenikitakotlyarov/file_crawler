@@ -118,7 +118,7 @@ Skill *getAVGBoostedAttack() {
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
-                                                             damage+bonus
+                                                             damage + bonus
                                                      });
                             hit_monsters++;
 
@@ -188,7 +188,7 @@ Skill *getAGIPOWBoostedAttack() {
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
-                                                             damage+bonus
+                                                             damage + bonus
                                                      });
                             hit_monsters++;
 
@@ -255,7 +255,7 @@ Skill *getPOWBoostedAttack() {
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
-                                                             damage+bonus
+                                                             damage + bonus
                                                      });
                             hit_monsters++;
 
@@ -325,7 +325,7 @@ Skill *getPOWVITBoostedAttack() {
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
-                                                             damage+bonus
+                                                             damage + bonus
                                                      });
                             hit_monsters++;
 
@@ -392,7 +392,7 @@ Skill *getVITBoostedAttack() {
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
-                                                             damage+bonus
+                                                             damage + bonus
                                                      });
                             hit_monsters++;
 
@@ -462,7 +462,7 @@ Skill *getVITBELBoostedAttack() {
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
-                                                             damage+bonus
+                                                             damage + bonus
                                                      });
                             hit_monsters++;
 
@@ -529,7 +529,7 @@ Skill *getBELBoostedAttack() {
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
-                                                             damage+bonus
+                                                             damage + bonus
                                                      });
                             hit_monsters++;
 
@@ -599,7 +599,7 @@ Skill *getBELINSBoostedAttack() {
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
-                                                             damage+bonus
+                                                             damage + bonus
                                                      });
                             hit_monsters++;
 
@@ -666,7 +666,7 @@ Skill *getINSBoostedAttack() {
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
-                                                             damage+bonus
+                                                             damage + bonus
                                                      });
                             hit_monsters++;
 
@@ -730,13 +730,13 @@ Skill *getINSFOCBoostedAttack() {
                             int bonus =
                                     (self.insight
                                      + self.focus)
-                                    /2;
+                                    / 2;
                             attack_targets.push_back({
                                                              {1},
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
-                                                             damage+bonus
+                                                             damage + bonus
                                                      });
                             hit_monsters++;
 
@@ -803,7 +803,7 @@ Skill *getFOCBoostedAttack() {
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
-                                                             damage+bonus
+                                                             damage + bonus
                                                      });
                             hit_monsters++;
 
@@ -873,7 +873,7 @@ Skill *getFOCAGIBoostedAttack() {
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
-                                                             damage+bonus
+                                                             damage + bonus
                                                      });
                             hit_monsters++;
 
@@ -940,7 +940,7 @@ Skill *getAGIBoostedAttack() {
                                                              IntentType::Attack,
                                                              {},
                                                              monsterEntity,
-                                                             damage+bonus
+                                                             damage + bonus
                                                      });
                             hit_monsters++;
 
@@ -990,7 +990,8 @@ Skill *getFuriousCharge() {
                             cost += 10;
 
                             // Determine direction of the charge
-                            pair<int, int> direction = {monsterPosition.x - player_pos.x, monsterPosition.y - player_pos.y};
+                            pair<int, int> direction = {monsterPosition.x - player_pos.x,
+                                                        monsterPosition.y - player_pos.y};
 
                             // Create move intent
                             Intent moveIntent = {{1}, IntentType::Move, direction};

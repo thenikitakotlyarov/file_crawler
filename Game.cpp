@@ -347,8 +347,8 @@ Frame Game::PLAY_GAME(int y, int x, const int c_fps) {
                                    start_y, start_x, end_y, end_x);
 
 
-    frame = SysLight.renderLighting(frame, player_pos, player_fov_radius,
-                                    start_y, start_x, end_y, end_x);
+    frame = SysLight.renderLighting2D(frame, player_pos, player_fov_radius,
+                                      start_y, start_x, end_y, end_x);
 
     frame = SysEntity.renderEntities2D(frame, view_fov,
                                        start_y, start_x, end_y, end_x);
