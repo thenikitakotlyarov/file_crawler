@@ -50,7 +50,7 @@ GameMap *MapSystem::genCave(int height, int width) {
             wstring ch = get_random_character(VOID_TILES);
             Color color = NCOLOR_BLACK;
             int tile_z;
-            Tile void_tile = {ch, color,color, false, false, 0, true, false, false};
+            Tile void_tile = {ch, color, color, false, false, 0, true, false, false};
             data[x][y] = void_tile;
             double value = perlin.GetValue(x / 10.0, y / 10.0, 0.0);
 
@@ -72,7 +72,7 @@ GameMap *MapSystem::genCave(int height, int width) {
                 tile_z = get_random_int(3, 7);
             }
 
-            Tile this_tile = {ch, color, color,false, false, tile_z, true, false, harmful};
+            Tile this_tile = {ch, color, NCOLOR_BROWN, false, false, tile_z, true, false, harmful};
             data[x][y] = this_tile;
         }
     }
@@ -84,7 +84,7 @@ GameMap *MapSystem::genCave(int height, int width) {
     // Start flood fill from a random point on top edge
     int initial_x = get_random_int(1, width - 1);
     int initial_y = get_random_int(1, height - 1);
-    while (!check_if_in(GROUND_TILES, data[initial_x][initial_y].ch)) {
+    while (data[initial_x][initial_y].z) {
         initial_x += max(1, min(width - 1, get_random_int(-1, 1)));
         initial_y += max(1, min(height - 1, get_random_int(-1, 1)));
     }
@@ -107,8 +107,7 @@ GameMap *MapSystem::genCave(int height, int width) {
             int ny = y + neighbor.second;
 
             // Check if neighbor is within bounds and an open area
-            if (nx >= 0 && nx < width && ny >= 0 && ny < height && check_if_in(GROUND_TILES, data[nx][ny].ch) &&
-                !visited[nx][ny]) {
+            if (nx >= 0 && nx < width && ny >= 0 && ny < height && !data[nx][ny].z && !visited[nx][ny]) {
                 visited[nx][ny] = true;
                 q.emplace(nx, ny);
             }
@@ -118,31 +117,16 @@ GameMap *MapSystem::genCave(int height, int width) {
     // Convert unvisited cells to closed spaces
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < height; ++x) {
-            if (!visited[x][y] && check_if_in(GROUND_TILES, data[x][y].ch)) {
+            if (!visited[x][y] && !data[x][y].z) {
                 wstring ch = get_random_character(WALL_TILES);
                 Color color = get_tile_color(wall_swatch);
                 int tile_z = get_random_int(0, 5);
-                Tile this_tile = {ch, color, color,false, false, tile_z, true, false, false};
+                Tile this_tile = {ch, color, NCOLOR_BROWN, false, false, tile_z, true, false, false};
                 data[x][y] = this_tile;
             }
         }
     }
 
-    // Draw a border around the data
-    for (int x = 0; x < height; ++x) {
-        wstring ch = get_random_character(WALL_TILES);
-        Color color = get_tile_color(wall_swatch);
-        Tile this_tile = {ch, color, color, false, false, 0, true, false, false};
-        data[x][0] = this_tile;
-        data[x][height - 1] = this_tile;
-    }
-    for (int y = 0; y < height; ++y) {
-        wstring ch = get_random_character(WALL_TILES);
-        Color color = get_tile_color(wall_swatch);
-        Tile this_tile = {ch, color, color, false, false, 0, true, false, false};
-        data[0][y] = this_tile;
-        data[height - 1][y] = this_tile;
-    }
 
     //add structures to map
     int structure_count = get_random_int(300, 900);
@@ -177,6 +161,34 @@ GameMap *MapSystem::genCave(int height, int width) {
     }
 
 
+    // Draw a border around the map
+    for (int x = 0; x < height; ++x) {
+        wstring ch = get_random_character(WALL_TILES);
+        Color color = get_tile_color(wall_swatch);
+        Tile this_tile = {ch, color, NCOLOR_BLACK, false, false, 1, true, false, false};
+        data[x][0] = this_tile;
+        data[x][height - 1] = this_tile;
+    }
+    for (int y = 0; y < height; ++y) {
+        wstring ch = get_random_character(WALL_TILES);
+        Color color = get_tile_color(wall_swatch);
+        Tile this_tile = {ch, color, NCOLOR_BLACK, false, false, 1, true, false, false};
+        data[0][y] = this_tile;
+        data[height - 1][y] = this_tile;
+    }
+
+    for (int i = 0; i < 2000; ++i) {//place 2000 random lights
+        int x, y;
+        do {
+            x = get_random_int(0, width);
+            y = get_random_int(0, height);
+
+        } while (data[x][y].z);
+
+        data[x][y].emissive = true;
+
+    }
+
     GameMap game_map = {
             {
                     "Cave",
@@ -207,7 +219,7 @@ GameMap *MapSystem::genCave(int height, int width) {
 void MapSystem::unveilMap(GameMap *game_map, const set<pair<int, int>> &current_fov) {
     for (const auto coords: current_fov) {
         game_map->data[coords.first][coords.second].visible = true;
-        if (check_if_in(WALL_TILES, game_map->data[coords.first][coords.second].ch)) {
+        if (game_map->data[coords.first][coords.second].z) {
             game_map->data[coords.first][coords.second].visited = true;
 
         }

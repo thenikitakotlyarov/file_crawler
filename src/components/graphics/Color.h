@@ -13,6 +13,39 @@ struct Color {
     bool operator==(const Color &other) const {
         return (red == other.red && green == other.green && blue == other.blue);
     }
+
+    bool operator!=(const Color &other) const {
+        return (red != other.red || green != other.green || blue != other.blue);
+    }
+
+    Color& operator+=(const Color& other) {
+        red = (uint8_t)max(0, min(255, (int)red + (int)other.red));
+        green = (uint8_t)max(0, min(255, (int)green + (int)other.green));
+        blue = (uint8_t)max(0, min(255, (int)blue + (int)other.blue));
+        return *this;
+    }
+
+    Color& operator-=(const Color& other) {
+        red = (uint8_t)max(0, min(255, (int)red - (int)other.red));
+        green = (uint8_t)max(0, min(255, (int)green - (int)other.green));
+        blue = (uint8_t)max(0, min(255, (int)blue - (int)other.blue));
+        return *this;
+    }
+
+    Color& operator*=(const Color& other) {
+        red = (uint8_t)max(0, min(255, (int)red * (int)other.red));
+        green = (uint8_t)max(0, min(255, (int)green * (int)other.green));
+        blue = (uint8_t)max(0, min(255, (int)blue * (int)other.blue));
+        return *this;
+    }
+
+    Color& operator/=(const Color& other) {
+        red = (uint8_t)max(0, min(255, (int)red / (int)other.red));
+        green = (uint8_t)max(0, min(255, (int)green / (int)other.green));
+        blue = (uint8_t)max(0, min(255, (int)blue / (int)other.blue));
+        return *this;
+    }
+
 };
 
 

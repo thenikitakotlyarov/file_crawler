@@ -41,6 +41,7 @@ const Color NCOLOR_WHITE = {
         255,
         255
 };
+
 const Color NCOLOR_RED = {
         170,
         0,
@@ -100,6 +101,12 @@ const Color NCOLOR_MAGENTA = {
         229,
         23,
         126
+};
+
+const Color NCOLOR_BROWN = {
+        93,
+        58,
+        29
 };
 
 
