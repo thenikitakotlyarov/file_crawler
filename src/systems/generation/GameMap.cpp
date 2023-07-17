@@ -304,7 +304,6 @@ Frame MapSystem::renderMap3D(Frame frame, GameMap *current_map, int start_y, int
     int max_map_y = current_map->data.size();
     int max_map_x = current_map->data[0].size();
 
-    frame = renderMap2D(frame, current_map, start_y, start_x, end_y, end_x);
 
     for (int i = 0; i < frame.data.size(); i++) {
         for (int j = 0; j < frame.data[0].size(); j++) {
@@ -318,16 +317,22 @@ Frame MapSystem::renderMap3D(Frame frame, GameMap *current_map, int start_y, int
                     if (i < (LINES - 3) / 2) {
                         for (int h = 1; h <= current_map->data[map_x][map_y].z; ++h) {
                             if (i - h + degrade / 2 < 0 || i - h + degrade / 2 >= LINES - 3) continue;
-                            if (h > 5) {
-                                frame.data[i - h + degrade / 2][j].ch = L"░";
-                                frame.data[i - h + degrade / 2][j].fg_color = frame.data[i][j].fg_color;
-                            } else if (h > 2) {
-                                frame.data[i - h + degrade / 2][j].ch = L"▒";
-                                frame.data[i - h + degrade / 2][j].fg_color = frame.data[i][j].fg_color;
+
+                            wstring new_ch;
+                            const Color &this_fg = frame.data[i][j].fg_color;
+                            const Color &this_bg = frame.data[i][j].bg_color;
+
+                            if (h < 3) {
+                                new_ch = current_map->data[map_x][map_y].ch;
+                            } else if (h < 5) {
+                                new_ch = L"▒";
                             } else {
-                                frame.data[i - h + degrade / 2][j].ch = current_map->data[map_x][map_y].ch;
-                                frame.data[i - h + degrade / 2][j].fg_color = frame.data[i][j].fg_color;
+                                new_ch = L"░";
                             }
+
+                            frame.data[i - h + degrade / 2][j].ch = new_ch;
+                            frame.data[i - h + degrade / 2][j].fg_color = this_fg;
+                            frame.data[i - h + degrade / 2][j].bg_color = this_bg;
 
                             if (i >= (LINES - 3) / 2 - 7) {
                                 degrade++;

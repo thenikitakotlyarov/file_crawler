@@ -343,7 +343,7 @@ Frame Game::PLAY_GAME(int y, int x, const int c_fps) {
 
     SysMap.unveilMap(CURRENT_MAP, veil_fov);
 
-    frame = MapSystem::renderMap3D(frame, CURRENT_MAP,
+    frame = MapSystem::renderMap2D(frame, CURRENT_MAP,
                                    start_y, start_x, end_y, end_x);
 
 
@@ -352,6 +352,9 @@ Frame Game::PLAY_GAME(int y, int x, const int c_fps) {
 
     frame = SysEntity.renderEntities2D(frame, view_fov,
                                        start_y, start_x, end_y, end_x);
+
+    frame = MapSystem::renderMap3D(frame, CURRENT_MAP,
+                                   start_y, start_x, end_y, end_x);
 
     frame = SysUI.getInGameHud(frame, SysEntity.getCurrentPlayer(), c_fps);
     if (paused) {
