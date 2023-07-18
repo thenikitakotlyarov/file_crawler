@@ -23,6 +23,42 @@ bool EntitySystem::Initialize() {
 }
 
 
+
+set<pair<int, int>> EntitySystem::calculate_fov(
+        int center_x, int center_y,
+        int radius) {
+
+    set<pair<int, int>> fov;
+
+    for (int i = 0; i < 360; ++i) {
+        double rad = i * (M_PI / 180.0);
+        double dx = cos(rad), dy = sin(rad);
+        double x = center_x, y = center_y;
+
+        for (int j = 0; j <= radius; ++j) {
+            int ix = round(x), iy = round(y);
+
+            if (ix < 0 || iy < 0 || ix >= WIDTH || iy >= HEIGHT)
+                break;
+
+            // check if we should insert this tile into fov
+            if (j == 0 || i % j == 0) {
+                fov.insert({ix, iy});
+            }
+
+            if (currentMap->data[ix][iy].z) break;
+
+            x += dx;
+            y += dy;
+        }
+    }
+    fov.insert({center_x, center_y});
+
+    return fov;
+}
+
+
+
 // Use std::move to avoid copying
 void EntitySystem::setPlayer(Player &player) {
     currentPlayer = player;
@@ -323,40 +359,6 @@ void EntitySystem::combatEntities(const Intent &intent) {
         damageEntity(intent.target, intent.damage);
 
     }
-}
-
-
-set<pair<int, int>> EntitySystem::calculate_fov(
-        int center_x, int center_y,
-        int radius) {
-
-    set<pair<int, int>> fov;
-
-    for (int i = 0; i < 360; ++i) {
-        double rad = i * (M_PI / 180.0);
-        double dx = cos(rad), dy = sin(rad) / 2;
-        double x = center_x, y = center_y;
-
-        for (int j = 0; j <= radius; ++j) {
-            int ix = round(x), iy = round(y);
-
-            if (ix < 0 || iy < 0 || ix >= WIDTH || iy >= HEIGHT)
-                break;
-
-            // check if we should insert this tile into fov
-            if (j == 0 || i % j == 0) {
-                fov.insert({ix, iy});
-            }
-
-            if (currentMap->data[ix][iy].z) break;
-
-            x += dx;
-            y += dy;
-        }
-    }
-    fov.insert({center_x, center_y});
-
-    return fov;
 }
 
 

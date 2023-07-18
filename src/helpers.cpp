@@ -70,27 +70,39 @@ void init_all_color_pairs() {
 
 vector<Color> get_ground_swatch() {
     vector<vector<Color>> options = {
-            {NCOLOR_LGREEN, NCOLOR_GREEN,   NCOLOR_YELLOW},
-            {NCOLOR_RED,    NCOLOR_ORANGE,  NCOLOR_YELLOW},
-            {NCOLOR_CYAN,   NCOLOR_AMARINE, NCOLOR_LGREY}
+            {NCOLOR_LRED, NCOLOR_RED,  NCOLOR_DRED, NCOLOR_LGREEN},
+            {NCOLOR_LRED, NCOLOR_RED,  NCOLOR_DRED, NCOLOR_LBLUE},
+            {NCOLOR_LYELLOW, NCOLOR_YELLOW,  NCOLOR_DYELLOW, NCOLOR_LCYAN},
+            {NCOLOR_LYELLOW, NCOLOR_YELLOW,  NCOLOR_DYELLOW, NCOLOR_LMAGENTA},
+            {NCOLOR_LGREEN, NCOLOR_GREEN,  NCOLOR_DGREEN, NCOLOR_LBLUE},
+            {NCOLOR_LGREEN, NCOLOR_GREEN,  NCOLOR_DGREEN, NCOLOR_LRED},
+            {NCOLOR_LCYAN, NCOLOR_CYAN,  NCOLOR_DCYAN, NCOLOR_LMAGENTA},
+            {NCOLOR_LCYAN, NCOLOR_CYAN,  NCOLOR_DCYAN, NCOLOR_LYELLOW},
+            {NCOLOR_LBLUE, NCOLOR_BLUE,  NCOLOR_DBLUE, NCOLOR_LRED},
+            {NCOLOR_LBLUE, NCOLOR_BLUE,  NCOLOR_DBLUE, NCOLOR_LGREEN},
+            {NCOLOR_LMAGENTA, NCOLOR_MAGENTA,  NCOLOR_DMAGENTA, NCOLOR_LYELLOW},
+            {NCOLOR_LMAGENTA, NCOLOR_MAGENTA,  NCOLOR_DMAGENTA, NCOLOR_LCYAN},
     };
     return options[get_random_int(0, options.size() - 1)];
 }
 
 vector<Color> get_trap_swatch() {
     vector<vector<Color>> options = {
-            {NCOLOR_RED,    NCOLOR_ORANGE},
-            {NCOLOR_ORANGE, NCOLOR_YELLOW},
-            {NCOLOR_RED,    NCOLOR_YELLOW}
+            {NCOLOR_DRED,NCOLOR_DMAGENTA},
+            {NCOLOR_DRED, NCOLOR_DYELLOW},
+            {NCOLOR_DYELLOW,NCOLOR_DMAGENTA}
     };
     return options[get_random_int(0, options.size() - 1)];
 }
 
 vector<Color> get_wall_swatch() {
     vector<vector<Color>> options = {
-            {NCOLOR_LGREY, NCOLOR_GREY,   NCOLOR_WHITE},
-            {NCOLOR_LBLUE, NCOLOR_BLUE,   NCOLOR_CYAN},
-            {NCOLOR_LGREY, NCOLOR_YELLOW, NCOLOR_LGREEN}
+            {NCOLOR_DGREY, NCOLOR_DRED,  NCOLOR_DYELLOW},
+            {NCOLOR_DGREY, NCOLOR_DRED,  NCOLOR_DMAGENTA},
+            {NCOLOR_DGREY, NCOLOR_DGREEN,  NCOLOR_DYELLOW},
+            {NCOLOR_DGREY, NCOLOR_DGREEN,  NCOLOR_DCYAN},
+            {NCOLOR_DGREY, NCOLOR_DBLUE,  NCOLOR_DCYAN},
+            {NCOLOR_DGREY, NCOLOR_DBLUE,  NCOLOR_DMAGENTA},
     };
     return options[get_random_int(0, options.size() - 1)];
 }

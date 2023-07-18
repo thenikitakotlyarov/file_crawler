@@ -26,15 +26,21 @@ const Color NCOLOR_BLACK = {
         0,
         0
 };
-const Color NCOLOR_GREY = {
-        42,
-        42,
-        42
+const Color NCOLOR_DGREY = {
+        63,
+        63,
+        63
+};
+
+const Color NCOLOR_MGREY = {
+        127,
+        127,
+        127
 };
 const Color NCOLOR_LGREY = {
-        170,
-        170,
-        170
+        191,
+        191,
+        191
 };
 const Color NCOLOR_WHITE = {
         255,
@@ -47,38 +53,94 @@ const Color NCOLOR_RED = {
         0,
         0
 };
+
+const Color NCOLOR_DRED = {
+        63,
+        0,
+        0
+};
+const Color NCOLOR_MRED = {
+        127,
+        0,
+        0
+};
+const Color NCOLOR_LRED = {
+        191,
+        0,
+        0
+};
+
 const Color NCOLOR_ORANGE = {
         229,
         126,
         23
 };
+
 const Color NCOLOR_YELLOW = {
         255,
         255,
         85
 };
-const Color NCOLOR_LGREEN = {
-        128,
-        255,
+const Color NCOLOR_DYELLOW = {
+        63,
+        63,
         0
 };
+const Color NCOLOR_MYELLOW = {
+        127,
+        127,
+        0
+};
+const Color NCOLOR_LYELLOW = {
+        191,
+        191,
+        0
+};
+
 const Color NCOLOR_GREEN = {
         0,
         255,
         0
 };
+const Color NCOLOR_DGREEN = {
+        0,
+        63,
+        0
+};
+const Color NCOLOR_MGREEN = {
+        0,
+        127,
+        0
+};
+const Color NCOLOR_LGREEN = {
+        0,
+        191,
+        0
+};
+
 const Color NCOLOR_CYAN = {
         0,
         255,
         255
 };
+const Color NCOLOR_DCYAN = {
+        0,
+        63,
+        63
+};
+const Color NCOLOR_MCYAN = {
+        0,
+        127,
+        127
+};
+const Color NCOLOR_LCYAN = {
+        0,
+        191,
+        191
+};
+
 const Color NCOLOR_AMARINE = {
         0,
-        128,
-        255
-};
-const Color NCOLOR_LBLUE = {
-        128,
         128,
         255
 };
@@ -87,6 +149,22 @@ const Color NCOLOR_BLUE = {
         0,
         255
 };
+const Color NCOLOR_DBLUE = {
+        0,
+        0,
+        63
+};
+const Color NCOLOR_MBLUE = {
+        0,
+        0,
+        127
+};
+const Color NCOLOR_LBLUE = {
+        0,
+        0,
+        191
+};
+
 const Color NCOLOR_PURPLE = {
         126,
         23,
@@ -98,9 +176,24 @@ const Color NCOLOR_PINK = {
         255
 };
 const Color NCOLOR_MAGENTA = {
-        229,
-        23,
-        126
+        255,
+        0,
+        255
+};
+const Color NCOLOR_DMAGENTA = {
+        63,
+        0,
+        63
+};
+const Color NCOLOR_MMAGENTA = {
+        127,
+        0,
+        127
+};
+const Color NCOLOR_LMAGENTA = {
+        191,
+        0,
+        191
 };
 
 const Color NCOLOR_BROWN = {

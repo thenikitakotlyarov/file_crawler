@@ -148,11 +148,11 @@ GameMap *MapSystem::genCave(int height, int width) {
                     data[start_pos.x + x][start_pos.y + y].ch = L"#";
                     data[start_pos.x + x][start_pos.y + y].z = 3;
                     data[start_pos.x + x][start_pos.y + y].fg_color = NCOLOR_LGREY;
-                    data[start_pos.x + x][start_pos.y + y].bg_color = NCOLOR_GREY;
+                    data[start_pos.x + x][start_pos.y + y].bg_color = NCOLOR_DGREY;
                 } else {
                     data[start_pos.x + x][start_pos.y + y].ch = L".";
                     data[start_pos.x + x][start_pos.y + y].z = 0;
-                    data[start_pos.x + x][start_pos.y + y].fg_color = NCOLOR_GREY;
+                    data[start_pos.x + x][start_pos.y + y].fg_color = NCOLOR_DGREY;
                     data[start_pos.x + x][start_pos.y + y].bg_color = NCOLOR_LGREY;
                 }
                 int wait = break_point();
@@ -180,8 +180,8 @@ GameMap *MapSystem::genCave(int height, int width) {
     for (int i = 0; i < 2000; ++i) {//place 2000 random lights
         int x, y;
         do {
-            x = get_random_int(0, width);
-            y = get_random_int(0, height);
+            x = get_random_int(0, width - 1);
+            y = get_random_int(0, height - 1);
 
         } while (data[x][y].z);
 
@@ -229,6 +229,10 @@ void MapSystem::unveilMap(GameMap *game_map, const set<pair<int, int>> &current_
 
 void MapSystem::veilMap(GameMap *game_map, const set<pair<int, int>> &current_fov) {
     for (const auto coords: current_fov) {
+        if (coords.first < 0 || coords.first > game_map->data.size() || coords.second < 0
+            || coords.second > game_map->data[0].size())
+            continue;
+
         game_map->data[coords.first][coords.second].visible = false;
     }
 
@@ -289,7 +293,7 @@ Frame MapSystem::renderMap2D(Frame frame, GameMap *current_map, int start_y, int
             if (current_map->data[map_x][map_y].visible
                 || current_map->data[map_x][map_y].visited) {
                 frame.data[i][j].ch = current_map->data[map_x][map_y].ch;
-                frame.data[i][j].fg_color = NCOLOR_GREY;
+                frame.data[i][j].fg_color = NCOLOR_DGREY;
 
             }
 
@@ -314,9 +318,9 @@ Frame MapSystem::renderMap3D(Frame frame, GameMap *current_map, int start_y, int
             int degrade = 0;
             if (current_map->data[map_x][map_y].visited) {
                 if (current_map->data[map_x][map_y].z) {
-                    if (i < (LINES - 3) / 2) {
+                    if (i < (frame.data.size() - 3) / 2) {
                         for (int h = 1; h <= current_map->data[map_x][map_y].z; ++h) {
-                            if (i - h + degrade / 2 < 0 || i - h + degrade / 2 >= LINES - 3) continue;
+                            if (i - h + degrade / 2 < 0 || i - h + degrade / 2 >= frame.data.size() - 3) continue;
 
                             wstring new_ch;
                             const Color &this_fg = frame.data[i][j].fg_color;
@@ -334,7 +338,7 @@ Frame MapSystem::renderMap3D(Frame frame, GameMap *current_map, int start_y, int
                             frame.data[i - h + degrade / 2][j].fg_color = this_fg;
                             frame.data[i - h + degrade / 2][j].bg_color = this_bg;
 
-                            if (i >= (LINES - 3) / 2 - 7) {
+                            if (i >= (frame.data.size() - 3) / 2 - 7) {
                                 degrade++;
                             }
 

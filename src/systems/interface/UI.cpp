@@ -34,10 +34,10 @@ void UISystem::Update() {
 
 
 Frame &
-UISystem::addBar(Frame &frame, int y, int x, int length, float level,
+UISystem::addBar(Frame &frame, const int y, const int x, const int length, float level,
                  const wstring &icon, Color fg_color, Color bg_color) {
     for (int i = 0; i <= length; i++) {
-        if (x + i >= COLS) break;
+        if (x + i >= frame.data[0].size()) break;
         wstring ch;
         pair<Color, Color> set_color;
         if (i == 1) {
@@ -60,7 +60,7 @@ UISystem::addBar(Frame &frame, int y, int x, int length, float level,
         } else {
             if (level >= ((float) (i - 3) / (length - 3))) {
                 const Color bg = fg_color;
-                set_color = make_pair(NCOLOR_GREY, bg);
+                set_color = make_pair(NCOLOR_DGREY, bg);
             } else {
                 set_color = make_pair(fg_color, bg_color);
             }
@@ -74,12 +74,12 @@ UISystem::addBar(Frame &frame, int y, int x, int length, float level,
 
 
 Frame &
-UISystem::addButton(Frame &frame, int y, int x, int height, int width,
+UISystem::addButton(Frame &frame, const int y, const int x, const int height, const int width,
                     Color fg_color, Color bg_color) {
     for (int i = 0; i < height; i++) {
-        if (y + i >= LINES) break;
+        if (y + i >= frame.data.size()) break;
         for (int j = 0; j < width; j++) {
-            if (x + j >= COLS) break;
+            if (x + j >= frame.data[0].size()) break;
             wstring ch;
             if (i == 0 && j == 0) ch = L"┏";
             else if (i == 0 && j == width - 1) ch = L"┓";
@@ -100,10 +100,10 @@ UISystem::addButton(Frame &frame, int y, int x, int height, int width,
 
 
 Frame &
-UISystem::addText(Frame &frame, int y, int x, wstring text,
+UISystem::addText(Frame &frame, const int y, const int x, wstring text,
                   Color fg_color, Color bg_color) {
     for (int c = 0; c < text.size(); c++) {
-        if (x + c >= COLS) break;
+        if (x + c >= frame.data[0].size()) break;
         frame.data[y][x + c].ch = text[c];
         frame.data[y][x + c].fg_color = fg_color;
         frame.data[y][x + c].bg_color = bg_color;
@@ -114,7 +114,7 @@ UISystem::addText(Frame &frame, int y, int x, wstring text,
 
 
 Frame
-UISystem::BlankFrame(int y, int x, unsigned long frame_count) {
+UISystem::BlankFrame(const int y, const int x, unsigned long frame_count) {
     FrameMeta meta_data = {
             frame_count,
             "Blank Frame",
@@ -143,21 +143,19 @@ UISystem::BlankFrame(int y, int x, unsigned long frame_count) {
     return frame;
 }
 
-Frame UISystem::getFpsLabel(Frame &frame, const int c_fps) {
+Frame UISystem::getFpsLabel(Frame &frame, const int y, const int x,
+                            const int c_fps) {
     wstringstream ss;
     ss << L"FPS: " << c_fps;
 
     wstring fps_text = ss.str();
     int fps_text_length = fps_text.size();
 
-    // Top right position
-    int x_position = COLS - fps_text_length;
-    int y_position = 0;  // Top row
 
     Color fg_color = NCOLOR_WHITE;
     Color bg_color = NCOLOR_BLACK;
 
-    frame = addText(frame, y_position, x_position, fps_text, fg_color, bg_color);
+    frame = addText(frame, y, x, fps_text, fg_color, bg_color);
 
     return frame;
 }
@@ -168,9 +166,10 @@ UISystem::getTitleCard(Frame frame) {
     frame.meta.name = "Title Card";
     for (int i = 0; i < frame.data.size(); i++) {
         for (int j = 0; j < frame.data[i].size(); j++) {
-            frame.data[i][j].ch = L"0";
-
-
+            wstring this_num;
+            if (!j) this_num = to_wstring((i + 1) % 10);
+            else this_num = to_wstring((j + 1) % 10);
+            frame.data[i][j].ch = this_num;
         }
     }
 
@@ -184,8 +183,6 @@ UISystem::getLoadCard(Frame frame) {
     for (int i = 0; i < frame.data.size(); i++) {
         for (int j = 0; j < frame.data[i].size(); j++) {
             frame.data[i][j].ch = L"L";
-
-
         }
     }
 
@@ -309,9 +306,9 @@ UISystem::getColorDebug(Frame frame) {
     frame.meta.name = "Color Debug";
 //
 //    for (int i = 0; i < frame.data.size(); i++) {
-//        if (i >= LINES) break;
+//        if (i >= frame.data.size()) break;
 //        for (int j = 0; j < frame.data[i].size(); j++) {
-//            if (j >= COLS) break;
+//            if (j >= frame.data[0].size()) break;
 //
 //            if (i == 0) {
 //                if (j % 2 == 0) {
@@ -332,38 +329,34 @@ UISystem::getColorDebug(Frame frame) {
 }
 
 
-Frame &UISystem::getPlayerTag(Frame &frame, int y, int x, int player_level, const string &player_class, Color fg_color,
-                              Color bg_color) {
-    wchar_t player_level_tag[256];
-    wchar_t player_class_tag[256];
+Frame &
+UISystem::getPlayerTag(Frame &frame, const int y, const int x,
+                       const string player_name, const string &player_class,
+                       Color fg_color, Color bg_color) {
+    wchar_t class_tag_buffer[256];
+    wstring class_tag;
 
-    swprintf(player_level_tag, 256, L"LVL%d", player_level);
-    wstring ltag = player_level_tag;
-    frame = addText(frame, y, x, ltag, NCOLOR_WHITE, NCOLOR_BLACK);
+    wchar_t name_tag_buffer[256];
+    wstring name_tag;
 
-    frame.data[y][x + ltag.size()].fg_color = NCOLOR_BLACK;
-    frame.data[y][x + ltag.size() + 1].bg_color = NCOLOR_BLACK;
+    swprintf(class_tag_buffer, 256, L"%s", player_class.c_str());
+    class_tag = class_tag_buffer;
+    frame = addText(frame, y, x, class_tag, fg_color, bg_color);
 
-    swprintf(player_class_tag, 256, L"%s", player_class.c_str());
-    wstring ctag = player_class_tag;
-    frame = addText(frame, y, x + ltag.size() + 2, ctag, fg_color, bg_color);
-
-
-    frame.data[y][x + ltag.size() + ctag.size() + 2].fg_color = bg_color;
-    frame.data[y][x + ltag.size() + ctag.size() + 3].bg_color = bg_color;
-
+    swprintf(name_tag_buffer, 256, L"%s", player_name.c_str());
+    name_tag = name_tag_buffer;
+    frame = addText(frame, y, x + class_tag.size() + 1, name_tag, NCOLOR_WHITE, NCOLOR_BLACK);
 
     return frame;
 }
 
-Frame &UISystem::getUiBg(Frame &frame, int dock_height, Color fg_color, Color bg_color) {
-    for (int hy = LINES - dock_height; hy < LINES; ++hy) {
+Frame &UISystem::getUiBg(Frame &frame, const int dock_height, Color fg_color, Color bg_color) {
+    for (int hy = frame.data.size() - dock_height; hy < frame.data.size(); ++hy) {
         if (hy < 0) break;
-        for (int hx = 0; hx < COLS; ++hx) {
-            if (hy == LINES - dock_height) {
-                frame.data[hy][hx].ch = L"‗";
-                frame.data[hy][hx].fg_color = NCOLOR_YELLOW;
-                frame.data[hy][hx].bg_color = NCOLOR_LGREY;
+        for (int hx = 0; hx < frame.data[0].size(); ++hx) {
+            if (hy == frame.data.size() - dock_height) {
+                frame.data[hy][hx].ch = L"_";
+                frame.data[hy][hx].fg_color = NCOLOR_LGREY;
             } else {
                 frame.data[hy][hx].ch = L"░";
                 frame.data[hy][hx].fg_color = fg_color;
@@ -376,21 +369,18 @@ Frame &UISystem::getUiBg(Frame &frame, int dock_height, Color fg_color, Color bg
 
 Frame &
 UISystem::getOrb(Frame &frame,
-                 int y, int x,
-                 int diameter,
-                 int level,
+                 const int y, const int x,
+                 const int diameter,
+                 const int level,
                  Color fg_color, Color bg_color) {
-    int orb_size = (diameter * diameter) / 2;
-    for (int i = 0; i < (diameter / 2) + 2; ++i) {
-        if (y + i >= LINES) break;
-        for (int j = 0; j < diameter + 2; ++j) {
-            if (x + j >= COLS) break;
+    const int orb_size = pow(diameter - 1, 2);
+    for (int i = 0; i <= diameter; ++i) {
+        if (y + i >= frame.data.size()) break;
+        for (int j = 0; j <= diameter; ++j) {
+            if (x + j >= frame.data[0].size()) break;
 
             //draw box in center
-            if ((j != 0 && i != 0)
-                && (j != diameter + 1 && i != 0)
-                && (j != 0 && i != diameter / 2 + 1)
-                && (j != diameter + 1 && i != diameter / 2 + 1)) {
+            if (j > 0 && j < diameter && i > 0 && i < diameter) {
                 pair<Color, Color> color_pair;
                 wstring ch;
                 if (level >= 100 * (orb_size - (((i) * diameter) - j)) / orb_size) {
@@ -399,7 +389,7 @@ UISystem::getOrb(Frame &frame,
                     color_pair.second = bg_color;
                 } else {
                     ch = get_random_character({L" ", L" ", L" ", L" ", L" ", L" ", L" ", L" ", L"."});
-                    color_pair = make_pair(NCOLOR_GREY, NCOLOR_BLACK);
+                    color_pair = make_pair(NCOLOR_DGREY, NCOLOR_BLACK);
                 }
 
                 frame.data[y + i][x + j].ch = ch;
@@ -408,18 +398,18 @@ UISystem::getOrb(Frame &frame,
 
             }
             //draw boundary
-            if ((i == 0 || i == diameter / 2 + 1) && !(j == 0 || j == diameter + 1)
-                || (j == 0 || j == diameter + 1) && !(i == 0 || i == diameter / 2 + 1)
-                || (j == 1 || j == diameter) && (i == 1 || i == diameter / 2)) {
-                pair<Color, Color> orb_boundary_color = make_pair(NCOLOR_BLACK, NCOLOR_GREY);
+            if ((i == 0 || i == diameter) && !(j == 0 || j == diameter)
+                || (j == 0 || j == diameter) && !(i == 0 || i == diameter)
+                || (j == 1 || j == diameter - 1) && (i == 1 || i == diameter - 1)) {
+                pair<Color, Color> orb_boundary_color = make_pair(NCOLOR_BLACK, NCOLOR_DGREY);
                 wstring orb_boundary_ch = L"▓";
-                if ((j == 1 && i == 1) || (j == diameter && i == diameter / 2)) {
+                if ((j == 1 && i == 1) || (j == diameter - 1 && i == diameter - 1)) {
                     orb_boundary_ch = L"▒";
-                } else if ((j == 1 && i == diameter / 2) || (j == diameter && i == 1)) {
+                } else if ((j == 1 && i == diameter - 1) || (j == diameter - 1 && i == 1)) {
                     orb_boundary_ch = L"▒";
-                } else if ((j == 0 || j == diameter + 1) && (i > 1 && i < diameter / 2)) {
+                } else if ((j == 0 || j == diameter) && (i > 1 && i < diameter - 1)) {
                     orb_boundary_ch = L"⹏";
-                } else if ((i == 0 || i == diameter / 2 + 1) && (j > 1 && j < diameter)) {
+                } else if ((i == 0 || i == diameter) && (j > 1 && j < diameter - 1)) {
                     orb_boundary_ch = L"⹏";
                 }
 
@@ -434,14 +424,15 @@ UISystem::getOrb(Frame &frame,
 
 
 Frame &
-UISystem::getAttackSlot(Frame &frame, int y, int x, int height,
-                        vector<vector<wstring>> icon, Color fg_color, Color bg_color) {
-    int width = height * 2;
-    for (int i = 0; i < height; i++) {
-        if (y + i >= LINES) break;
-        for (int j = 0; j < width; j++) {
-            if (x + j >= COLS) break;
+UISystem::getSlot(Frame &frame, const int y, const int x, const int height, const int width,
+                  const wstring hotkey, const wstring label, vector<vector<wstring>> icon,
+                  Color fg_color, Color mg_color, Color bg_color) {
+    for (int i = 0; i <= height - 1; i++) {
+        if (y + i >= frame.data.size()) break;
+        for (int j = 0; j <= width - 1; j++) {
+            if (x + j >= frame.data[0].size()) break;
             wstring ch;
+            Color this_color = mg_color;
             if (i == 0 && j == 0) ch = L"┏";
             else if (i == 0 && j == width - 1) ch = L"┓";
             else if (i == height - 1 && j == 0) ch = L"┗";
@@ -451,33 +442,35 @@ UISystem::getAttackSlot(Frame &frame, int y, int x, int height,
             else if (i > 0 && j > 0
                      && i <= icon.size()
                      && j <= icon[0].size())
-                ch = icon[i - 1][j - 1];
-            else ch = L" ";
+                ch = icon[i - 1][j - 1], this_color = fg_color;
+            else ch = L" ", this_color = bg_color;
 
             frame.data[y + i][x + j].ch = ch;
-            frame.data[y + i][x + j].fg_color = fg_color;
+            frame.data[y + i][x + j].fg_color = this_color;
             frame.data[y + i][x + j].bg_color = bg_color;
         }
     }
+
+    frame = addText(frame, y, x, hotkey, mg_color, bg_color);
+    frame = addText(frame, y + height - 1, x, label, fg_color, bg_color);
 
     return frame;
 }
 
 Frame &
-UISystem::getMenuButton(Frame &frame, int y, int x, int height,
+UISystem::getMenuButton(Frame &frame, const int y, const int x, const int height, const int width,
                         vector<vector<wstring>> icon, bool active) {
-    int width = height * 2 - 1;
     pair<Color, Color> color_pair;
 
 
-    if (!active) color_pair = make_pair(NCOLOR_BLACK, NCOLOR_GREY);
+    if (!active) color_pair = make_pair(NCOLOR_BLACK, NCOLOR_DGREY);
     else color_pair = make_pair(NCOLOR_BLACK, NCOLOR_YELLOW);
 
     frame = addButton(frame, y, x, height, width,
                       color_pair.first, color_pair.second);
 
-    int center_y = height / 2;
-    int center_x = width / 2;
+    const int center_y = height / 2;
+    const int center_x = width / 2;
 
     //add a plus sign
     if (!active) {
@@ -525,14 +518,15 @@ UISystem::getMenuButton(Frame &frame, int y, int x, int height,
 }
 
 Frame &
-UISystem::getPotionBar(Frame &frame, int y, int x, int slot_height, int slot_width, Color fg_color, Color bg_color) {
-    frame = addButton(frame, y, x, slot_height, slot_width, NCOLOR_GREY, NCOLOR_BLACK);
+UISystem::getPotionBar(Frame &frame, const int y, const int x, const int slot_height, const int slot_width,
+                       Color fg_color, Color bg_color) {
+    frame = addButton(frame, y, x, slot_height, slot_width, NCOLOR_DGREY, NCOLOR_BLACK);
     frame = addText(frame, y, x, L"1", fg_color, bg_color);
-    frame = addButton(frame, y, x + slot_width, slot_height, slot_width, NCOLOR_GREY, NCOLOR_BLACK);
+    frame = addButton(frame, y, x + slot_width, slot_height, slot_width, NCOLOR_DGREY, NCOLOR_BLACK);
     frame = addText(frame, y, x + slot_width, L"2", fg_color, bg_color);
-    frame = addButton(frame, y, x + slot_width * 2, slot_height, slot_width, NCOLOR_GREY, NCOLOR_BLACK);
+    frame = addButton(frame, y, x + slot_width * 2, slot_height, slot_width, NCOLOR_DGREY, NCOLOR_BLACK);
     frame = addText(frame, y, x + slot_width * 2, L"3", fg_color, bg_color);
-    frame = addButton(frame, y, x + slot_width * 3, slot_height, slot_width, NCOLOR_GREY, NCOLOR_BLACK);
+    frame = addButton(frame, y, x + slot_width * 3, slot_height, slot_width, NCOLOR_DGREY, NCOLOR_BLACK);
     frame = addText(frame, y, x + slot_width * 3, L"4", fg_color, bg_color);
     return frame;
 }
@@ -540,146 +534,223 @@ UISystem::getPotionBar(Frame &frame, int y, int x, int slot_height, int slot_wid
 
 Frame
 UISystem::getInGameHud(Frame frame, const Player &player, const int c_fps) {
-    //draw level and class name
+
+    const pair<Color, Color> ui_bg_color = make_pair(NCOLOR_DGREY, NCOLOR_BLACK);
+
+    const int dock_size = 4;
+    const int slot_size = 7;
+    const int orb_size = 10;
+
+    const int health_level = static_cast<int>(static_cast<float>(player.current_health) / player.max_health * 100);
+    const int energy_level = static_cast<int>(static_cast<float>(player.current_energy) / player.max_energy * 100);
+    const float stamina_level = static_cast<float>(static_cast<float>(player.current_stamina) / player.max_stamina);
+
     int y, x;
+    //sections are drawn (generally) back->forward, bottom->top, left->right
 
-
-    //draw background for hud
-
-    pair<Color, Color> ui_bg_color = make_pair(NCOLOR_LGREY, NCOLOR_BLACK);
-    int dock_height = 6;
-
-    frame = getUiBg(frame, dock_height, ui_bg_color.first, ui_bg_color.second);
-
-
-    int orb_diameter = (dock_height + 1) * 2;
-    //it's actually half this value on the y, takes 1/6th of the screen, smollest orb size of 3x7
-
+    //draw ui bg
+    y = frame.data.size() - dock_size - 1, x = 0;
+    frame = getUiBg(frame, dock_size, ui_bg_color.first, ui_bg_color.second);
 
     //draw health orb
-    y = max(0, min(LINES - 1, LINES - (orb_diameter / 2) - 2));
-    x = max(0, min(COLS - 1, 1));
-
-    int health_level = static_cast<int>(static_cast<float>(player.current_health) / player.max_health * 100);
-    frame = getOrb(frame, y, x, orb_diameter,
+    y = frame.data.size() - orb_size - 1, x = 1;
+    frame = getOrb(frame, max(0, y), max(0, x), orb_size,
                    health_level, NCOLOR_BLACK, NCOLOR_RED);
 
-
-    //draw left attack slot
-    y = max(0, min(LINES - 1, LINES - dock_height + 1));
-    x = max(0, min(COLS - 1, orb_diameter + 4));
-
-    frame = getAttackSlot(frame, y, x, dock_height - 1,
-                          player.primarySkill->icon, NCOLOR_GREY, NCOLOR_BLACK);
+    //draw energy orb
+    y = frame.data.size() - orb_size - 1, x = frame.data[0].size() - orb_size - 2;
+    frame = getOrb(frame, max(0, y), max(0, x), orb_size,
+                   energy_level, NCOLOR_WHITE, player.color);
 
 
-    //draw player info
-    y = max(0, min(LINES - 1, y + 1));
-    x = max(0, min(COLS - 1, x + (dock_height - 1) * 2 + 1));
-    frame = getPlayerTag(frame, y, x, player.level, player.class_name, player.color, NCOLOR_BLACK);
+    //draw 3 potion slots
+    y = frame.data.size() - slot_size - 1, x = orb_size + 3;
+    frame = getSlot(frame, max(0, y), max(0, x), slot_size, slot_size,
+                    L"1", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
+    x += slot_size;
+    frame = getSlot(frame, max(0, y), max(0, x), slot_size, slot_size,
+                    L"2", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
+    x += slot_size;
+    frame = getSlot(frame, max(0, y), max(0, x), slot_size, slot_size,
+                    L"3", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
 
-    //draw experience bar
-    y = max(0, min(LINES - 1, y + 1));
+
+    //draw 3 skill slots
+    y = max(0, (int) frame.data.size() - slot_size - 1), x = max(0,
+                                                                 (int) frame.data[0].size() - orb_size - slot_size * 3 -
+                                                                 3);
+    frame = getSlot(frame, max(0, y), max(0, x), slot_size, slot_size,
+                    L"M1/F1", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
+    x += slot_size;
+    frame = getSlot(frame, max(0, y), max(0, x), slot_size, slot_size,
+                    L"M2/F2", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
+    x += slot_size;
+    frame = getSlot(frame, max(0, y), max(0, x), slot_size, slot_size,
+                    L"M3/F3", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
+
+
+
+
+
+    //draw player tag
+    y = 1, x = 1;
+    frame = getPlayerTag(frame, y, x,
+                         "Bob", player.class_name, player.color, NCOLOR_BLACK);
+
+    //draw level bar
+    y = 2, x = 1;
     frame = addBar(frame, y, x,
-                   (dock_height - 3) * 2 * 4 - 4, 0.1f, L"☆",
+                   min((int) frame.data.size(), 14) - 2, 0.1f, L"☆",
                    NCOLOR_WHITE, NCOLOR_BLACK);
 
     //draw stamina bar
-    y = max(0, min(LINES - 1, y + 1));
-    int stamina_level = static_cast<int>(static_cast<float>(player.current_stamina) / player.max_stamina);
+    y = 3, x = 1;
     frame = addBar(frame, y, x,
-                   (dock_height - 3) * 2 * 4 - 4, stamina_level, L"ᗢ",
+                   min((int) frame.data.size() - 2, 14), stamina_level, L"ᗢ",
                    NCOLOR_ORANGE, NCOLOR_BLACK);
 
 
-
-    //draw character menu buttons?
-
-
-    //draw left attributes button
-    y = max(0, min(LINES - 1, LINES - dock_height + 2));
-    x = max(0, min(COLS - 1, (COLS / 2) - (dock_height - 3) * 2 * 3 / 2 - 1));
-
-    frame = getMenuButton(frame, y, x, dock_height - 3,
-                          {
-                                  {L"A", L" ", L" "},
-                                  {L" ", L" ", L"♗"}
-                                  //TODO:come up with coolor icons
-                                  //{L"A", L" ", L"▁", L" ", L" "},
-                                  //{L" ", L"▟", L"⍶", L"▙", L" "},
-                                  //{L" ", L"▟", L"║", L"▙", L" "}
-                          },
-                          false);
-
-
-    //draw center inventory button
-    x = max(0, min(COLS - 1, x + (dock_height - 3) * 2));
-
-    frame = getMenuButton(frame, y, x, dock_height - 3,
-                          {
-                                  {L"I", L" ", L" "},
-                                  {L" ", L" ", L"⌹"}
-                                  //{L"I", L"▄", L"▁", L"▄", L" "},
-                                  //{L" ", L"☋", L"█", L"☋", L" "},
-                                  //{L" ", L"▚", L"█", L"▞", L" "}
-                          },
-                          false);
-
-    //draw right skills button
-    x = max(0, min(COLS - 1, x + (dock_height - 3) * 2));
-
-    frame = getMenuButton(frame, y, x,
-                          dock_height - 3,
-                          {
-                                  {L"S", L" ", L" "},
-                                  {L" ", L" ", L"⁂"}
-                                  //{L"S", L" ", L"█", L" ", L" "},
-                                  //{L" ", L"▚", L"☆", L"▞", L" "},
-                                  //{L" ", L"▟", L"▀", L"▙", L" "}
-                          },
-                          false);
+    //draw fps label
+    y = 1, x = frame.data[0].size() - 8;
+    frame = getFpsLabel(frame, y, x,
+                        c_fps);
 
 
 
-    //draw right attack slot
-    y = max(0, min(LINES - 1, LINES - dock_height + 1));
-    x = max(0, min(COLS - 1, COLS - orb_diameter - (dock_height - 1) * 2 - 4));
-
-    frame = getAttackSlot(frame, y, x,
-                          dock_height - 1, player.secondarySkill->icon,
-                          NCOLOR_GREY, NCOLOR_BLACK);
-
-
-    //draw potion slots
-    y = max(0, min(LINES - 1, y + 1));
-    x = max(0, min(COLS - 1, x - (dock_height - 3) * 2 * 4 - 1));
-    frame = getPotionBar(frame, y, x,
-                         dock_height - 3, (dock_height - 3) * 2,
-                         NCOLOR_WHITE, NCOLOR_BLACK);
-
-
-
-
-    //draw energy orb
-    y = max(0, min(LINES - 1, LINES - (orb_diameter / 2) - 2));
-    x = max(0, min(COLS - 1, COLS - orb_diameter - 3));
-    int energy_level = static_cast<int>(static_cast<float>(player.current_energy) / player.max_energy * 100);
-
-    frame = getOrb(frame, y, x,
-                   orb_diameter, energy_level,
-                   NCOLOR_WHITE, player.color);
-
-
-
-    ////draw combat log
-    //int log_size = min(LINES - orb_diameter - 2, static_cast<int>(combat_log.size()));
-    //
-    //
-    //for (int i = 0; i < log_size; i++) {
-    //    mvaddstr(y + i, x, combat_log[combat_log.size() - log_size + i].c_str());
-    //}
-
-    frame = getFpsLabel(frame, c_fps);
+//
+//    //draw background for hud
+//
+//    pair<Color, Color> ui_bg_color = make_pair(NCOLOR_LGREY, NCOLOR_BLACK);
+//    int dock_size = 6;
+//
+//    //frame = getUiBg(frame, dock_size, ui_bg_color.first, ui_bg_color.second);
+//
+//
+//    int orb_diameter = (dock_size + 1) * 2;
+//    //it's actually half this value on the y, takes 1/6th of the screen, smollest orb size of 3x7
+//
+//
+//    //draw health orb
+//    y = max(0, min((int)frame.data.size() - 1, frame.data.size() - (orb_diameter ) - 2));
+//    x = max(0, min((int)frame.data[0].size() - 1, 1));
+//
+//    int health_level = static_cast<int>(static_cast<float>(player.current_health) / player.max_health * 100);
+//    frame = getOrb(frame, y, x, orb_diameter,
+//                   health_level, NCOLOR_BLACK, NCOLOR_RED);
+//
+//
+//    //draw left attack slot
+//    y = max(0, min((int)frame.data.size() - 1, frame.data.size() - dock_size + 1));
+//    x = max(0, min((int)frame.data[0].size() - 1, orb_diameter + 4));
+//
+//    frame = getSlot(frame, max(0,y), max(0,x), dock_size - 1,
+//                          player.primarySkill->icon, NCOLOR_DGREY, NCOLOR_BLACK);
+//
+//
+//    //draw player info
+//    y = max(0, min((int)frame.data.size() - 1, y + 1));
+//    x = max(0, min((int)frame.data[0].size() - 1, x + (dock_size - 1) * 2 + 1));
+//    frame = getPlayerTag(frame, y, x, player.level, player.class_name, player.color, NCOLOR_BLACK);
+//
+//    //draw experience bar
+//    y = max(0, min((int)frame.data.size() - 1, y + 1));
+//    frame = addBar(frame, y, x,
+//                   (dock_size - 3) * 2 * 4 - 4, 0.1f, L"☆",
+//                   NCOLOR_WHITE, NCOLOR_BLACK);
+//
+//    //draw stamina bar
+//    y = max(0, min((int)frame.data.size() - 1, y + 1));
+//    int stamina_level = static_cast<int>(static_cast<float>(player.current_stamina) / player.max_stamina);
+//    frame = addBar(frame, y, x,
+//                   (dock_size - 3) * 2 * 4 - 4, stamina_level, L"ᗢ",
+//                   NCOLOR_ORANGE, NCOLOR_BLACK);
+//
+//
+//
+//    //draw character menu buttons?
+//
+//
+//    //draw left attributes button
+//    y = max(0, min((int)frame.data.size() - 1, frame.data.size() - dock_size + 2));
+//    x = max(0, min((int)frame.data[0].size() - 1, (frame.data[0].size() ) - (dock_size - 3) * 2 * 3 - 1));
+//
+//    frame = getMenuButton(frame, y, x, dock_size - 3,
+//                          {
+//                                  {L"A", L" ", L" "},
+//                                  {L" ", L" ", L"♗"}
+//                                  //TODO:come up with cooler icons
+//                                  //{L"A", L" ", L"▁", L" ", L" "},
+//                                  //{L" ", L"▟", L"⍶", L"▙", L" "},
+//                                  //{L" ", L"▟", L"║", L"▙", L" "}
+//                          },
+//                          false);
+//
+//
+//    //draw center inventory button
+//    x = max(0, min((int)frame.data[0].size() - 1, x + (dock_size - 3) * 2));
+//
+//    frame = getMenuButton(frame, y, x, dock_size - 3,
+//                          {
+//                                  {L"I", L" ", L" "},
+//                                  {L" ", L" ", L"⌹"}
+//                                  //{L"I", L"▄", L"▁", L"▄", L" "},
+//                                  //{L" ", L"☋", L"█", L"☋", L" "},
+//                                  //{L" ", L"▚", L"█", L"▞", L" "}
+//                          },
+//                          false);
+//
+//    //draw right skills button
+//    x = max(0, min((int)frame.data[0].size() - 1, x + (dock_size - 3) * 2));
+//    frame = getMenuButton(frame, y, x,
+//                          dock_size - 3,
+//                          {
+//                                  {L"S", L" ", L" "},
+//                                  {L" ", L" ", L"⁂"}
+//                                  //{L"S", L" ", L"█", L" ", L" "},
+//                                  //{L" ", L"▚", L"☆", L"▞", L" "},
+//                                  //{L" ", L"▟", L"▀", L"▙", L" "}
+//                          },
+//                          false);
+//
+//
+//
+//    //draw right attack slot
+//    y = max(0, min((int)frame.data.size() - 1, frame.data.size() - dock_size + 1));
+//    x = max(0, min((int)frame.data[0].size() - 1, frame.data[0].size() - orb_diameter - (dock_size - 1) * 2 - 4));
+//
+//    frame = getSlot(frame, max(0,y), max(0,x),
+//                          dock_size - 1, player.secondarySkill->icon,
+//                          NCOLOR_DGREY, NCOLOR_BLACK);
+//
+//
+//    //draw potion slots
+//    y = max(0, min((int)frame.data.size() - 1, y + 1));
+//    x = max(0, min((int)frame.data[0].size() - 1, x - (dock_size - 3) * 2 * 4 - 1));
+//    frame = getPotionBar(frame, y, x,
+//                         dock_size - 3, (dock_size - 3) * 2,
+//                         NCOLOR_WHITE, NCOLOR_BLACK);
+//
+//
+//
+//
+//    //draw energy orb
+//    y = max(0, min((int)frame.data.size() - 1, frame.data.size() - (orb_diameter) - 2));
+//    x = max(0, min((int)frame.data[0].size() - 1, frame.data[0].size() - orb_diameter - 3));
+//    int energy_level = static_cast<int>(static_cast<float>(player.current_energy) / player.max_energy * 100);
+//
+//    frame = getOrb(frame, y, x,
+//                   orb_diameter, energy_level,
+//                   NCOLOR_WHITE, player.color);
+//
+//
+//
+//    ////draw combat log
+//    //int log_size = min((int)frame.data.size() - orb_diameter - 2, static_cast<int>(combat_log.size()));
+//    //
+//    //
+//    //for (int i = 0; i < log_size; i++) {
+//    //    mvaddstr(y + i, x, combat_log[combat_log.size() - log_size + i].c_str());
+//    //}
 
 
     return frame;

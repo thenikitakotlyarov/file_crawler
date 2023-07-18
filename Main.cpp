@@ -30,7 +30,6 @@ int main() {
     pair<bool, unique_ptr<Game>> INIT = init();
     if (!INIT.first) exit(1);
 
-    RenderSystem SysRender = RenderSystem();
 
     unique_ptr<Game> &GAME = INIT.second; // Get the reference to the unique_ptr to Game
     int fps = 0;
@@ -43,15 +42,15 @@ int main() {
 
         // Update all GAME to GAME-> in the following code
         if (GAME->running == 1) {
-            SysRender.render(GAME->CARD_TITLE(LINES, COLS));
+            GAME->CARD_TITLE(LINES, COLS);
         } else if (GAME->running == 2) {
-            SysRender.render(GAME->MENU_MAIN(LINES, COLS));
+            GAME->MENU_MAIN(LINES, COLS);
         } else if (GAME->running == 3) {
-            SysRender.render(GAME->MENU_NEW_GAME(LINES, COLS));
+            GAME->MENU_NEW_GAME(LINES, COLS);
         } else if (GAME->running == 4) {
-            SysRender.render(GAME->MENU_LOAD_GAME(LINES, COLS));
+            GAME->MENU_LOAD_GAME(LINES, COLS);
         } else if (GAME->running == 8) {
-            SysRender.render(GAME->DEBUG_COLOR(LINES, COLS));
+            GAME->DEBUG_COLOR(LINES, COLS);
             int key = getch();
             while (key != '0') {
                 key = getch();
@@ -59,12 +58,12 @@ int main() {
             }
             GAME->running = 2;
         } else if (GAME->running == 9) {
-            SysRender.render(GAME->MENU_SETTINGS(LINES, COLS));
+            GAME->MENU_SETTINGS(LINES, COLS);
         } else if (GAME->running == 999) {
-            SysRender.render(GAME->GAME_OVER(LINES, COLS));
+            GAME->GAME_OVER(LINES, COLS);
         } else if (GAME->running >= 10) {
-            if (!GAME->READY_TO_PLAY) SysRender.render(GAME->MENU_LOAD_GAME(LINES, COLS));
-            else SysRender.render(GAME->PLAY_GAME(LINES, COLS, fps));
+            if (!GAME->READY_TO_PLAY) GAME->MENU_LOAD_GAME(LINES, COLS);
+            else GAME->PLAY_GAME(LINES, COLS, fps);
         }
 
         GAME->Update(get_input());

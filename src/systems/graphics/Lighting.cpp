@@ -71,23 +71,24 @@ LightSystem::castLight(Position pos, int radius, int start_x, int start_y, int e
     unordered_set<Position, PositionHash> fov;
     for (int i = 0; i < 360; ++i) {
         double rad = i * (M_PI / 180.0);
-        double dx = cos(rad), dy = sin(rad) / 2;
+        double dx = cos(rad), dy = sin(rad);
         double x = pos.x, y = pos.y;
         for (int j = 0; j <= radius; ++j) {
-            int ix = round(x), iy = round(y);
-            if (ix < start_x || ix >= end_x || iy < start_y || iy >= end_y) continue;
-            if (iy < 0 || iy >= currentEntityMap->data.size() || ix < 0 ||
-                ix >= currentEntityMap->data[0].size())
-                continue;
             bool cull = false;
+
+            int ix = round(x), iy = round(y);
+            if (iy < 0 || iy >= currentEntityMap->data.size() || ix < 0 || ix >= currentEntityMap->data[0].size()
+                || ix < start_x || ix >= end_x || iy < start_y || iy >= end_y)
+                continue;
+
             if (!currentEntityMap->data[ix][iy].empty() && currentEntityMap->data[ix][iy][0].id != 1) {
                 for (const auto &e: currentEntityMap->data[ix][iy]) {
                     if (!e.transient) cull = true;
                     break;
                 }
             }
+            if (currentGameMap->data[ix][iy].z) cull = true;
             fov.insert({ix, iy});
-            if (currentGameMap->data[ix][iy].z) break;
             if (cull) {
                 break;
             }
@@ -192,17 +193,18 @@ Frame LightSystem::addPointLight(Frame frame, Position light_pos, Light light, i
 
 
                 pair<Color, Color> lit_colors = {
-                        {
-                                (uint8_t) min(255,
-                                              unlit_fg_color.red
-                                              + (int) ((float) light.color.red * light.intensity)),
-                                (uint8_t) min(255,
-                                              unlit_fg_color.green
-                                              + (int) ((float) light.color.green * light.intensity)),
-                                (uint8_t) min(255,
-                                              unlit_fg_color.blue
-                                              + (int) ((float) light.color.blue * light.intensity))
-                        },
+                        unlit_fg_color,
+//                        {
+//                                (uint8_t) min(255,
+//                                              unlit_fg_color.red
+//                                              + (int) ((float) light.color.red * light.intensity/3)),
+//                                (uint8_t) min(255,
+//                                              unlit_fg_color.green
+//                                              + (int) ((float) light.color.green * light.intensity/3)),
+//                                (uint8_t) min(255,
+//                                              unlit_fg_color.blue
+//                                              + (int) ((float) light.color.blue * light.intensity/3))
+//                        },
                         {
                                 (uint8_t) min(255,
                                               unlit_bg_color.red
@@ -219,7 +221,9 @@ Frame LightSystem::addPointLight(Frame frame, Position light_pos, Light light, i
 
                 for (int bake = 0; bake <= palette.first; bake++) {
 
-                    lit_colors = degradeColorTemperature(lit_colors, light.temp);
+                    if (bake) {
+                        lit_colors = degradeColorTemperature(lit_colors, light.temp);
+                    }
 
                     if (light.flicker > 0.0 && !get_random_int(0, (double) 32 * (1.0 - light.flicker))) {
                         lit_colors = flickerLight(lit_colors, light.flicker);
@@ -265,12 +269,13 @@ Frame LightSystem::addPointLight(Frame frame, Position light_pos, Light light, i
                 );
 
                 if (!currentGameMap->data[frame_coords.x + start_x][frame_coords.y + start_y].z) {
-                    frame.data[frame_coords.y][frame_coords.x].fg_color += lit_colors.first;
+                    frame.data[frame_coords.y][frame_coords.x].fg_color /= lit_colors.first;
                     frame.data[frame_coords.y][frame_coords.x].bg_color += lit_colors.second;
                 } else {
-                    frame.data[frame_coords.y][frame_coords.x].fg_color += lit_colors.second;
-                    frame.data[frame_coords.y][frame_coords.x].bg_color += lit_colors.first;
+                    frame.data[frame_coords.y][frame_coords.x].fg_color *= lit_colors.second;
+                    frame.data[frame_coords.y][frame_coords.x].bg_color /= lit_colors.first;
                 }
+
             }
         }
     }
@@ -284,15 +289,13 @@ Frame LightSystem::addAmbientLight(Frame frame, Position light_pos, Color color,
     int cast_size = static_cast<int>(frame_size.second) / 2;
     for (const auto &light_pos: castLight(light_pos, cast_size, start_x, start_y, start_x + frame_size.second,
                                           start_y + frame_size.first)) {
-        if (!currentGameMap->data[light_pos.x][light_pos.y].z) {
-            Position frame_position = {light_pos.x - start_x, light_pos.y - start_y};
-            if (frame_position.y < 0 || frame_position.y >= frame.data.size()) continue;
-            if (frame_position.x < 0 || frame_position.x >= frame.data[0].size()) continue;
-            Color old_color = frame.data[light_pos.y - start_y][light_pos.x - start_x].bg_color;
-            Color new_color = color;
-            new_color += old_color;
-            frame.data[light_pos.y - start_y][light_pos.x - start_x].bg_color = new_color;
-        }
+        Position frame_position = {light_pos.x - start_x, light_pos.y - start_y};
+        if (frame_position.y < 0 || frame_position.y >= frame.data.size()) continue;
+        if (frame_position.x < 0 || frame_position.x >= frame.data[0].size()) continue;
+        Color old_color = frame.data[light_pos.y - start_y][light_pos.x - start_x].bg_color;
+        Color new_color = color;
+        new_color += old_color;
+        frame.data[light_pos.y - start_y][light_pos.x - start_x].bg_color = new_color;
     }
     return frame;
 }
@@ -300,7 +303,7 @@ Frame LightSystem::addAmbientLight(Frame frame, Position light_pos, Color color,
 Frame
 LightSystem::renderLighting2D(Frame frame, Position player_pos, int player_light_radius, int start_y, int start_x,
                               int end_y, int end_x) {
-    Light player_light = {{255, 168, 62}, 'w', static_cast<unsigned short>(player_light_radius), 0.88, 0.7, 0.7};
+    Light player_light = {{250, 181, 82}, 'w', static_cast<unsigned short>(player_light_radius), 0.88, 0.7, 0.7};
     Color ambient_color = {24, 16, 20};
 
 
@@ -315,6 +318,7 @@ LightSystem::renderLighting2D(Frame frame, Position player_pos, int player_light
     }
 
     frame = addPointLight(frame, player_pos, player_light, start_y, start_x);
+
 
     return frame;
 }

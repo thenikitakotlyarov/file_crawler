@@ -14,7 +14,6 @@
 using namespace std;
 
 
-struct Frame;
 
 class Game {
 public:
@@ -35,21 +34,21 @@ public:
     void Update(int player_input);
 
 
-    Frame CARD_TITLE(int y, int x);
+    void CARD_TITLE(int y, int x);
 
-    Frame MENU_MAIN(int y, int x);
+    void MENU_MAIN(int y, int x);
 
-    Frame MENU_NEW_GAME(int y, int x);
+    void MENU_NEW_GAME(int y, int x);
 
-    Frame MENU_LOAD_GAME(int y, int x);
+    void MENU_LOAD_GAME(int y, int x);
 
-    Frame MENU_SETTINGS(int y, int x);
+    void MENU_SETTINGS(int y, int x);
 
-    Frame DEBUG_COLOR(int y, int x);
+    void DEBUG_COLOR(int y, int x);
 
-    Frame GAME_OVER(int y, int x);
+    void GAME_OVER(int y, int x);
 
-    Frame PLAY_GAME(int y, int x, const int c_fps);
+    void PLAY_GAME(int y, int x, const int c_fps);
 
 
 private:
@@ -57,8 +56,9 @@ private:
 
     MapSystem SysMap;
     EntitySystem SysEntity;
-    LightSystem SysLight;
     QuestSystem SysQuest;
+    LightSystem SysLight;
+    RenderSystem SysRender;
 
     Player CURRENT_PLAYER;
     GameMap *CURRENT_MAP;

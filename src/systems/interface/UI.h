@@ -20,23 +20,24 @@ public:
     void Update();
 
 
-    static Frame BlankFrame(int y, int x, unsigned long frame_count);
+    static Frame BlankFrame(const int y, const int x, unsigned long frame_count);
 
 
     static Frame &
-    addBar(Frame &frame, int y, int x, int length, float level,
+    addBar(Frame &frame, const int y, const int x, const int length, float level,
            const wstring &icon, Color fg_color, Color bg_color);
 
     static Frame &
-    addButton(Frame &frame, int y, int x, int height, int width,
+    addButton(Frame &frame, const int y, const int x, const int height, const int width,
               Color fg_color, Color bg_color);
 
     static Frame &
-    addText(Frame &frame, int y, int x, wstring text,
+    addText(Frame &frame, const int y, const int x, wstring text,
             Color fg_color, Color bg_color);
 
 
-    Frame getFpsLabel(Frame &frame, const int c_fps);
+    Frame getFpsLabel(Frame &frame, const int y, const int x,
+                      const int c_fps);
 
     Frame getTitleCard(Frame frame);
 
@@ -61,29 +62,31 @@ public:
 private:
     bool Initialize();
 
+    vector<vector<wstring>> EMPTY_ICON = {};
+
 
     static Frame &
-    getUiBg(Frame &frame, int dock_height,
+    getUiBg(Frame &frame, const int dock_height,
             Color fg_color, Color bg_color);
 
     static Frame &
-    getPlayerTag(Frame &frame, int y, int x,
-                 int player_level, const string &player_class,
-                 Color fg_color, Color bg_colorcolor);
+    getPlayerTag(Frame &frame, const int y, const int x,
+                 const string player_name, const string &player_class,
+                 Color fg_color, Color bg_color);
 
     static Frame &
-    getOrb(Frame &frame, int y, int x, int diameter, int level,
-           Color fg_color, Color bg_color);
+    getOrb(Frame &frame, const int y, const int x, const int diameter,
+           const int level, Color fg_color, Color bg_color);
 
     static Frame &
-    getAttackSlot(Frame &frame, int y, int x, int height,
-                  vector<vector<wstring>> icon, Color fg_color, Color bg_color);
+    getSlot(Frame &frame, const int y, const int x, const int height, const int width,
+            const wstring hotkey, const wstring label,vector<vector<wstring>> icon, Color fg_color, Color mg_color, Color bg_color);
 
     Frame &
-    getMenuButton(Frame &frame, int y, int x, int height,
+    getMenuButton(Frame &frame, const int y, const int x, const int height, const int width,
                   vector<vector<wstring>> icon, bool active);
 
     Frame &
-    getPotionBar(Frame &frame, int y, int x, int slot_height, int slot_width,
+    getPotionBar(Frame &frame, const int y, const int x, const int slot_height, const int slot_width,
                  Color fg_color, Color bg_color);
 };
