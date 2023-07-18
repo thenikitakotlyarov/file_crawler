@@ -2,8 +2,17 @@
 
 
 #include <cstdint>
+#include <cmath>
 
 using namespace std;
+
+#ifndef COLOR_H
+struct Color {
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+};
+#endif
 
 struct RawColor {
     double red;
@@ -47,32 +56,51 @@ struct RawColor {
         return *this;
     }
 
+
     RawColor &operator-=(const RawColor &other) {
-        red = (double) max(0, min(255, (int) red - (int) other.red));
-        green = (double) max(0, min(255, (int) green - (int) other.green));
-        blue = (double) max(0, min(255, (int) blue - (int) other.blue));
+        red -= other.red;
+        green -= other.green;
+        blue -= other.blue;
         return *this;
     }
 
     RawColor &operator*=(const RawColor &other) {
-        red = (double) max(0, min(255, (int) ((double) red * (double) other.red / 256)));
-        green = (double) max(0, min(255, (int) ((double) green * (double) other.green / 256)));
-        blue = (double) max(0, min(255, (int) ((double) blue * (double) other.blue / 256)));
+        red *=  other.red;
+        green *= other.green;
+        blue *= other.blue;
         return *this;
     }
 
     RawColor &operator/=(const RawColor &other) {
-        red = (double) max(0, min(255, (int) ((double) red / (double) other.red / 256)));
-        green = (double) max(0, min(255, (int) ((double) green / (double) other.green / 256)));
-        blue = (double) max(0, min(255, (int) ((double) blue / (double) other.blue / 256)));
+        red /=  other.red;
+        green /= other.green;
+        blue /= other.blue;
         return *this;
     }
 
     RawColor &operator&=(const RawColor &other) {
-        red = (double) max(0, min(255, (int) (((double) red + (double) other.red) / 2)));
-        green = (double) max(0, min(255, (int) (((double) green + (double) other.green) / 2)));
-        blue = (double) max(0, min(255, (int) (((double) blue + (double) other.blue) / 2)));
+        red = (red + other.red) / 2;
+        green = (green + other.green) / 2;
+        blue = (blue + other.blue) / 2;
         return *this;
+    }
+
+    Color toColor() {
+        Color color = {
+                (uint8_t) max(0, min(255, (int) (255 * pow(red, 0.5)))),
+                (uint8_t) max(0, min(255, (int) (255 * pow(green, 0.5)))),
+                (uint8_t) max(0, min(255, (int) (255 * pow(blue, 0.5)))),
+        };
+        return color;
+    }
+
+    RawColor fromColor(const Color &color) {
+        RawColor rawColor = {
+                pow(((double) color.red) / 255.0, 2.0),
+                pow(((double) color.green) / 255.0, 2.0),
+                pow(((double) color.blue) / 255.0, 2.0)
+        };
+        return rawColor;
     }
 
 };
