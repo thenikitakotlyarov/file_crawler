@@ -68,6 +68,13 @@ struct Color {
         return *this;
     }
 
+    Color &operator&=(const Color &other) {
+        red = (uint8_t) max(0, min(255, (int) (((float) red + (float) other.red) / 2)));
+        green = (uint8_t) max(0, min(255, (int) (((float) green + (float) other.green) / 2)));
+        blue = (uint8_t) max(0, min(255, (int) (((float) blue + (float) other.blue) / 2)));
+        return *this;
+    }
+
 };
 
 

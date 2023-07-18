@@ -81,7 +81,8 @@ LightSystem::castLight(Position pos, int radius, int start_x, int start_y, int e
                 || ix < start_x || ix >= end_x || iy < start_y || iy >= end_y)
                 continue;
 
-            if (!currentEntityMap->data[ix][iy].empty() && currentEntityMap->data[ix][iy][0].id != 1) {
+            if (!currentEntityMap->data[ix][iy].empty() && pos.x != ix && pos.y != iy) {
+                // && currentEntityMap->data[ix][iy][0].id != 1) {
                 for (const auto &e: currentEntityMap->data[ix][iy]) {
                     if (!e.transient) cull = true;
                     break;
@@ -269,10 +270,10 @@ Frame LightSystem::addPointLight(Frame frame, Position light_pos, Light light, i
                 );
 
                 if (!currentGameMap->data[frame_coords.x + start_x][frame_coords.y + start_y].z) {
-                    frame.data[frame_coords.y][frame_coords.x].fg_color /= lit_colors.first;
+                    frame.data[frame_coords.y][frame_coords.x].fg_color = lit_colors.first;
                     frame.data[frame_coords.y][frame_coords.x].bg_color += lit_colors.second;
                 } else {
-                    frame.data[frame_coords.y][frame_coords.x].fg_color *= lit_colors.second;
+                    frame.data[frame_coords.y][frame_coords.x].fg_color = lit_colors.second;
                     frame.data[frame_coords.y][frame_coords.x].bg_color /= lit_colors.first;
                 }
 

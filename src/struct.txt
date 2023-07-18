@@ -8,6 +8,7 @@
 ./components/graphics/Frame.h
 ./components/graphics/Color.h
 ./components/graphics/Light.h
+./components/graphics/RawColor.h
 ./components/entity/actors/enemy/Monster.h
 ./components/entity/actors/player/Player.h
 ./components/entity/item/Item.h

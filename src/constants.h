@@ -6,6 +6,7 @@ using namespace std;
 #include <string>
 #include <unordered_map>
 #include "components/graphics/Color.h"
+#include "components/graphics/RawColor.h"
 
 #define FPS 60
 #define DEV_LOG_FILE "dev_log.txt"
@@ -202,50 +203,55 @@ const Color NCOLOR_BROWN = {
         29
 };
 
+//
+//const vector<wstring> GROUND_TILES = {
+//        L".", L".", L".", L".", L".", L".", L".", L".", L".", L".", L".", L".", L".",
+//        L".", L".", L".",
+//        L"·", L"·", L"·", L"·", L"·", L"·", L"·", L"·", L"·", L"·", L"·", L"·", L"·",
+//        L"·", L"·", L"·",
+//        L",", L",", L",", L",", L",", L",", L",", L",", L",", L",", L",", L",", L",",
+//        L",", L",", L",",
+//        L";", L";", L";", L";", L";", L";", L";", L";", L";", L";", L";", L";", L";",
+//        L";", L";", L";",
+//        L":", L":", L":", L":", L":", L":", L":", L":", L":", L":", L":", L":", L":",
+//        L":", L":", L":",
+//        L"⁏", L"⁏", L"⁏", L"⁏", L"⁏", L"⁏", L"⁏", L"⁏", L"⁏", L"⁏", L"⁏", L"⁏", L"⁏",
+//        L"⁏", L"⁏", L"⁏",
+//        L"ʻ", L"ʻ", L"ʻ", L"ʻ", L"ʻ", L"ʻ", L"ʻ", L"ʻ", L"ʻ", L"ʻ", L"ʻ", L"ʻ", L"ʻ",
+//        L"ʻ", L"ʻ", L"ʻ",
+//        L"ʼ", L"ʼ", L"ʼ", L"ʼ", L"ʼ", L"ʼ", L"ʼ", L"ʼ", L"ʼ", L"ʼ", L"ʼ", L"ʼ", L"ʼ",
+//        L"ʼ", L"ʼ", L"ʼ",
+//        L"'", L"'", L"'", L"'", L"'", L"'", L"'", L"'", L"'", L"'", L"'", L"'", L"'",
+//        L"'", L"'", L"'",
+//        L"‘", L"‘", L"‘", L"‘", L"‘", L"‘", L"‘", L"‘", L"‘", L"‘", L"‘", L"‘", L"‘",
+//        L"‘", L"‘", L"‘",
+//        L"’", L"’", L"’", L"’", L"’", L"’", L"’", L"’", L"’", L"’", L"’", L"’", L"’",
+//        L"’", L"’", L"’",
+//        L"“", L"“", L"“", L"“", L"“", L"“", L"“", L"“", L"“", L"“", L"“", L"“", L"“",
+//        L"“", L"“", L"“",
+//        L"”", L"”", L"”", L"”", L"”", L"”", L"”", L"”", L"”", L"”", L"”", L"”", L"”",
+//        L"”", L"”", L"”",
+//        L"¤", L"✿", L"❀", L"❁", L"✾", L"•", L"⁎", L"*", L"°"};//plaaaaaants
+//const vector<wstring> TRAP_TILES = {
+//        L"¶", L"§", L"‡", L"†", L"‽", L"∮", L"∯", L"∱", L"∲", L"∳"};
+//const vector<wstring> MONSTER_LOW_HP_TILES = {
+//        L"а", L"б", L"в", L"г", L"д", L"е", L"ж", L"з", L"и", L"к", L"л", L"м",
+//        L"н", L"о", L"п", L"р", L"с", L"т", L"у", L"ф", L"х", L"ц", L"ч", L"ш",
+//        L"щ", L"ъ", L"ы", L"ь", L"э", L"ю", L"я", L"і", L"ї", L"є"};
+//const vector<wstring> MONSTER_MID_HP_TILES = {
+//        L"α", L"β", L"γ", L"δ", L"ε", L"ζ", L"η", L"θ", L"ι", L"κ", L"λ", L"μ",
+//        L"ν", L"ξ", L"ο", L"π", L"ρ", L"ς", L"σ", L"τ", L"υ", L"φ", L"χ", L"ψ",
+//        L"ω", L"ά", L"έ", L"ή", L"ί", L"ό", L"ύ", L"ώ", L"ϑ", L"ϒ", L"ϓ", L"ϔ"};
+//const vector<wstring> MONSTER_HIGH_HP_TILES = {
+//        L"آ", L"أ", L"إ", L"ء", L"ؤ", L"ئ", L"ب", L"ت", L"ث", L"ج", L"ح", L"خ",
+//        L"د", L"ذ", L"ر", L"ز", L"س", L"ش", L"ص", L"ض", L"ط", L"ظ", L"ع", L"غ",
+//        L"ـ", L"ف", L"ق", L"ك", L"ل", L"م", L"ن"};
 
-const vector<wstring> GROUND_TILES = {
-        L".", L".", L".", L".", L".", L".", L".", L".", L".", L".", L".", L".", L".",
-        L".", L".", L".",
-        L"·", L"·", L"·", L"·", L"·", L"·", L"·", L"·", L"·", L"·", L"·", L"·", L"·",
-        L"·", L"·", L"·",
-        L",", L",", L",", L",", L",", L",", L",", L",", L",", L",", L",", L",", L",",
-        L",", L",", L",",
-        L";", L";", L";", L";", L";", L";", L";", L";", L";", L";", L";", L";", L";",
-        L";", L";", L";",
-        L":", L":", L":", L":", L":", L":", L":", L":", L":", L":", L":", L":", L":",
-        L":", L":", L":",
-        L"⁏", L"⁏", L"⁏", L"⁏", L"⁏", L"⁏", L"⁏", L"⁏", L"⁏", L"⁏", L"⁏", L"⁏", L"⁏",
-        L"⁏", L"⁏", L"⁏",
-        L"ʻ", L"ʻ", L"ʻ", L"ʻ", L"ʻ", L"ʻ", L"ʻ", L"ʻ", L"ʻ", L"ʻ", L"ʻ", L"ʻ", L"ʻ",
-        L"ʻ", L"ʻ", L"ʻ",
-        L"ʼ", L"ʼ", L"ʼ", L"ʼ", L"ʼ", L"ʼ", L"ʼ", L"ʼ", L"ʼ", L"ʼ", L"ʼ", L"ʼ", L"ʼ",
-        L"ʼ", L"ʼ", L"ʼ",
-        L"'", L"'", L"'", L"'", L"'", L"'", L"'", L"'", L"'", L"'", L"'", L"'", L"'",
-        L"'", L"'", L"'",
-        L"‘", L"‘", L"‘", L"‘", L"‘", L"‘", L"‘", L"‘", L"‘", L"‘", L"‘", L"‘", L"‘",
-        L"‘", L"‘", L"‘",
-        L"’", L"’", L"’", L"’", L"’", L"’", L"’", L"’", L"’", L"’", L"’", L"’", L"’",
-        L"’", L"’", L"’",
-        L"“", L"“", L"“", L"“", L"“", L"“", L"“", L"“", L"“", L"“", L"“", L"“", L"“",
-        L"“", L"“", L"“",
-        L"”", L"”", L"”", L"”", L"”", L"”", L"”", L"”", L"”", L"”", L"”", L"”", L"”",
-        L"”", L"”", L"”",
-        L"¤", L"✿", L"❀", L"❁", L"✾", L"•", L"⁎", L"*", L"°"};//plaaaaaants
-const vector<wstring> WALL_TILES = {L"▓"};
-const vector<wstring> TRAP_TILES = {
-        L"¶", L"§", L"‡", L"†", L"‽", L"∮", L"∯", L"∱", L"∲", L"∳"};
+
 const vector<wstring> VOID_TILES = {L" "};
-const vector<wstring> MONSTER_LOW_HP_TILES = {
-        L"а", L"б", L"в", L"г", L"д", L"е", L"ж", L"з", L"и", L"к", L"л", L"м",
-        L"н", L"о", L"п", L"р", L"с", L"т", L"у", L"ф", L"х", L"ц", L"ч", L"ш",
-        L"щ", L"ъ", L"ы", L"ь", L"э", L"ю", L"я", L"і", L"ї", L"є"};
-const vector<wstring> MONSTER_MID_HP_TILES = {
-        L"α", L"β", L"γ", L"δ", L"ε", L"ζ", L"η", L"θ", L"ι", L"κ", L"λ", L"μ",
-        L"ν", L"ξ", L"ο", L"π", L"ρ", L"ς", L"σ", L"τ", L"υ", L"φ", L"χ", L"ψ",
-        L"ω", L"ά", L"έ", L"ή", L"ί", L"ό", L"ύ", L"ώ", L"ϑ", L"ϒ", L"ϓ", L"ϔ"};
-const vector<wstring> MONSTER_HIGH_HP_TILES = {
-        L"آ", L"أ", L"إ", L"ء", L"ؤ", L"ئ", L"ب", L"ت", L"ث", L"ج", L"ح", L"خ",
-        L"د", L"ذ", L"ر", L"ز", L"س", L"ش", L"ص", L"ض", L"ط", L"ظ", L"ع", L"غ",
-        L"ـ", L"ف", L"ق", L"ك", L"ل", L"م", L"ن"};
-
-
+const vector<wstring> GROUND_TILES = {L","};
+const vector<wstring> WALL_TILES = {L"▓"};
+const vector<wstring> TRAP_TILES = {L"‽"};
+const vector<wstring> MONSTER_LOW_HP_TILES = {L"M"};
+const vector<wstring> MONSTER_MID_HP_TILES = {L"m"};
+const vector<wstring> MONSTER_HIGH_HP_TILES = {L"n"};

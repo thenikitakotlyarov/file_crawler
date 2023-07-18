@@ -29,8 +29,8 @@ void RenderSystem::Update() {
     // Update systems
 }
 
-//ups the resolution of a frame to a pixel resolution of input:output::1:n
-Frame RenderSystem::upRes(const Frame &frame, const unsigned short n) {
+Frame RenderSystem::ppUpscale(const Frame &frame, const unsigned short scale) {
+    //ups the resolution of a frame to a pixel resolution of input:output::1:scale
     Position frame_size = {
             (int) frame.data[0].size(),
             (int) frame.data.size()
@@ -38,8 +38,8 @@ Frame RenderSystem::upRes(const Frame &frame, const unsigned short n) {
 
     Frame new_frame = {
             frame.meta,
-            vector<vector<Pixel>>(frame_size.y * n,
-                                  vector<Pixel>(frame_size.x * n,
+            vector<vector<Pixel>>(frame_size.y * scale,
+                                  vector<Pixel>(frame_size.x * scale,
                                                 Pixel{L"?", NCOLOR_RED, NCOLOR_BLACK}
                                   )
             )
@@ -55,9 +55,10 @@ Frame RenderSystem::upRes(const Frame &frame, const unsigned short n) {
                 this_sprite = upres_map[L"?"];
             }
 
-            for (int _i = 0; _i < n; ++_i) {
-                for (int _j = 0; _j < n; ++_j) {
-                    Position this_pos = {j * n + _j, i * n + _i};
+            for (int _i = 0; _i < scale; ++_i) {
+                for (int _j = 0; _j < scale; ++_j) {
+                    Position this_pos = {j * scale + _j,
+                                         i * scale + _i};
                     new_frame.data[this_pos.y][this_pos.x] = frame.data[i][j];
                     new_frame.data[this_pos.y][this_pos.x].ch = this_sprite[_i][_j];
                     Color old_subpixel_color = frame.data[i][j].bg_color;
@@ -67,30 +68,33 @@ Frame RenderSystem::upRes(const Frame &frame, const unsigned short n) {
                         bool stop = false;
                         int depth = 0;
                         do {
-                            if (_i < n / 3) {
+                            if (_i < scale / 3) {
                                 offset.y -= 1;
-                            } else if (_i > n * 2 / 3) {
+                            } else if (_i > scale * 2 / 3) {
                                 offset.y += 1;
                             }
-
-                            if (_j < n / 3) {
+                            if (_j < scale / 3) {
                                 offset.x -= 1;
-                            } else if (_j > n * 2 / 3) {
+                            } else if (_j > scale * 2 / 3) {
                                 offset.x += 1;
                             }
 
-                            if (i + offset.y < 0 || i + offset.y >= frame.data.size()
-                                || j + offset.x < 0 || j + offset.x >= frame.data[0].size()) {
-                                stop = true;
-                            } else {
-                                new_subpixel_color = frame.data[i + offset.y][j + offset.x].bg_color;
+                            Position new_pos = {
+                                    max(0, min(frame_size.x-1, j + offset.x)),
+                                    max(0, min(frame_size.y-1, i + offset.y))
+                            };
 
-                            }
+                            new_subpixel_color = frame.data[new_pos.y][new_pos.x].bg_color;
+
+
                             if (new_subpixel_color != old_subpixel_color) stop = true;
                             depth++;
-                        } while (!stop && !depth);
+                        } while (!stop && depth < 1);
 
-                        new_frame.data[this_pos.y][this_pos.x].bg_color = new_subpixel_color;
+
+                        if (new_subpixel_color > new_frame.data[this_pos.y][this_pos.x].bg_color) {
+                            new_frame.data[this_pos.y][this_pos.x].bg_color &= new_subpixel_color;
+                        }
 
                     }
 
@@ -103,6 +107,56 @@ Frame RenderSystem::upRes(const Frame &frame, const unsigned short n) {
     }
 
     return new_frame;
+}
+
+
+Frame RenderSystem::ppBlurLight(const Frame &frame, const unsigned short scale, const float amount) {
+
+    const unsigned short kernel_scale = 1 + 2 * scale;
+
+    Position frame_size = {(int) frame.data[0].size(), (int) frame.data.size()};
+
+    Frame new_frame = frame;
+
+    for (int i = 0; i < frame_size.y; ++i) {
+        for (int j = 0; j < frame_size.x; ++j) {
+            Color this_fg_color = {0, 0, 0};
+            Color this_bg_color = {0, 0, 0};
+            Color sample_color;
+            for (int _i = 0; _i < kernel_scale; ++_i) {
+                for (int _j = 0; _j < kernel_scale; ++_j) {
+                    Position offset = {_j - scale, _i - scale};
+                    Position frame_position = {
+                            max(0, min(frame_size.x - 1, j + offset.x)),
+                            max(0, min(frame_size.y - 1, i + offset.y)),
+                    };
+                    sample_color = frame.data[frame_position.y][frame_position.x].bg_color;
+                    float weight = 1 / pow(2, (abs(offset.x) + abs(offset.y) + 2)) / pow(1.5 - pow(2, -scale), 2);
+
+                    this_fg_color = {
+                            (uint8_t) ((float) this_fg_color.red + (float) sample_color.red * weight / 2 * amount),
+                            (uint8_t) ((float) this_fg_color.green + (float) sample_color.green * weight / 2 * amount),
+                            (uint8_t) ((float) this_fg_color.blue + (float) sample_color.blue * weight / 2 * amount),
+                    };
+
+                    this_bg_color = {
+                            (uint8_t) ((float) this_fg_color.red + (float) sample_color.red * weight * amount),
+                            (uint8_t) ((float) this_fg_color.green + (float) sample_color.green * weight * amount),
+                            (uint8_t) ((float) this_fg_color.blue + (float) sample_color.blue * weight * amount),
+                    };
+
+
+                };
+            }
+            //new_frame.data[i][j].fg_color &= this_fg_color;
+            new_frame.data[i][j].fg_color &= this_fg_color;
+            new_frame.data[i][j].bg_color += this_bg_color;
+        }
+    }
+
+
+    return
+            new_frame;
 }
 
 // Render frame on screen

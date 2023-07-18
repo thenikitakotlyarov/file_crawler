@@ -415,9 +415,11 @@ void Game::PLAY_GAME(int y, int x, const int c_fps) {
                      CURRENT_PLAYER.insight);
 
 
-    frame = SysRender.upRes(frame, resolution);
-
+    frame = SysRender.ppUpscale(frame, resolution);
     frame = SysUI.getInGameHud(frame, SysEntity.getCurrentPlayer(), c_fps);
+
+    frame = SysRender.ppBlurLight(frame, 3,1.5);
+
     if (paused) {
         for (int i = 0; i < y; i++) {
             for (int j = 0; j < x; j++) {
