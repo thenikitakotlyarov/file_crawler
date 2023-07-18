@@ -5,6 +5,7 @@
 
 using namespace std;
 
+#define COLOR_H
 struct Color {
     uint8_t red;
     uint8_t green;

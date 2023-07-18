@@ -89,7 +89,7 @@ Frame RenderSystem::ppUpscale(const Frame &frame, const unsigned short scale) {
 
                             if (new_subpixel_color != old_subpixel_color) stop = true;
                             depth++;
-                        } while (!stop && depth < 1);
+                        } while (!stop && !depth);
 
 
                         if (new_subpixel_color > new_frame.data[this_pos.y][this_pos.x].bg_color) {
@@ -131,7 +131,10 @@ Frame RenderSystem::ppBlurLight(const Frame &frame, const unsigned short scale, 
                             max(0, min(frame_size.y - 1, i + offset.y)),
                     };
                     sample_color = frame.data[frame_position.y][frame_position.x].bg_color;
-                    float weight = 1 / pow(2, (abs(offset.x) + abs(offset.y) + 2)) / pow(1.5 - pow(2, -scale), 2);
+                    //float weight = 1/16;
+                    //float weight = 1 / pow(2, (abs(offset.x) + abs(offset.y) + 2)) / pow(1.5 - pow(2, -scale), 2);
+                    float temp = pow(2, scale);
+                    float weight = 1 / (4 * pow(2, abs(offset.x)) * pow(2, abs(offset.y)) * temp * temp);
 
                     this_fg_color = {
                             (uint8_t) ((float) this_fg_color.red + (float) sample_color.red * weight / 2 * amount),
