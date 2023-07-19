@@ -270,11 +270,14 @@ Frame LightSystem::addPointLight(Frame frame, Position light_pos, Light light, i
                 );
 
                 if (!currentGameMap->data[frame_coords.x + start_x][frame_coords.y + start_y].z) {
-                    frame.data[frame_coords.y][frame_coords.x].fg_color = lit_colors.first;
-                    frame.data[frame_coords.y][frame_coords.x].bg_color += lit_colors.second;
-                } else {
                     frame.data[frame_coords.y][frame_coords.x].fg_color = lit_colors.second;
-                    frame.data[frame_coords.y][frame_coords.x].bg_color /= lit_colors.first;
+                    lit_colors.first &= frame.data[frame_coords.y][frame_coords.x].bg_color;
+                    lit_colors.first &= frame.data[frame_coords.y][frame_coords.x].bg_color;
+                    lit_colors.first &= frame.data[frame_coords.y][frame_coords.x].bg_color;
+                    frame.data[frame_coords.y][frame_coords.x].bg_color &= lit_colors.first;
+                } else {
+                    frame.data[frame_coords.y][frame_coords.x].fg_color *= lit_colors.first;
+                    frame.data[frame_coords.y][frame_coords.x].bg_color &= lit_colors.second;
                 }
 
             }
@@ -305,7 +308,7 @@ Frame
 LightSystem::renderLighting2D(Frame frame, Position player_pos, int player_light_radius, int start_y, int start_x,
                               int end_y, int end_x) {
     Light player_light = {{250, 181, 82}, 'w', static_cast<unsigned short>(player_light_radius), 0.88, 0.7, 0.7};
-    Color ambient_color = {24, 16, 20};
+    Color ambient_color = {1, 1, 1};
 
 
     frame = addAmbientLight(frame, player_pos, ambient_color, start_y, start_x);

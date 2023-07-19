@@ -18,10 +18,30 @@ Monster getBasicMonster() {
 
     return {
             "Monster",
-            get_random_character(MONSTER_HIGH_HP_TILES),
-            get_random_character(MONSTER_MID_HP_TILES),
-            get_random_character(MONSTER_LOW_HP_TILES),
-            NCOLOR_RED, 1, false,
+            get_random_character(MONSTER_TILES),
+            NCOLOR_RED,
+            {{
+                     {L" ", L"{", L"C", L" ", L" "},
+                     {L"/", L"O", L"o", L"=", L"="},
+                     {L"\\", L"=", L"=", L"=", L" "},
+                     {L"/", L"P", L"Q", L"\\", L" "},
+                     {L"/", L"/", L" ", L"/", L"/"}},
+             {
+                     {NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK},
+                     {NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK},
+                     {NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK},
+                     {NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK},
+                     {NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK}
+             },
+             {
+                     {NCOLOR_BLACK, NCOLOR_RED, NCOLOR_RED, NCOLOR_BLACK, NCOLOR_BLACK},
+                     {NCOLOR_RED, NCOLOR_RED, NCOLOR_RED, NCOLOR_RED, NCOLOR_RED},
+                     {NCOLOR_RED, NCOLOR_RED, NCOLOR_RED, NCOLOR_RED, NCOLOR_BLACK},
+                     {NCOLOR_RED, NCOLOR_RED, NCOLOR_RED, NCOLOR_RED, NCOLOR_BLACK},
+                     {NCOLOR_RED, NCOLOR_RED, NCOLOR_RED, NCOLOR_RED, NCOLOR_RED}
+             }
+            },
+            1, false,
             monster_attack_power, monster_attack_range, monster_chase_range, monster_attack_cooldown,
             monster_health, monster_health,
             [](Monster &self, Entity &self_id, Position &monster_pos, const set<pair<int, int>> monster_fov,
@@ -45,7 +65,7 @@ Monster getBasicMonster() {
                             player_entity,
                             max(0, get_random_int(1, self.attackPower))
                     };
-                    self.cooldown = get_random_int(3,5);//attacks one of every 3 -> 5 turns
+                    self.cooldown = get_random_int(3, 5);//attacks one of every 3 -> 5 turns
 
                 } else if (distance <= self.chaseRadius) {
 
@@ -117,7 +137,3 @@ Monster getBasicMonster() {
     };
 }
 
-
-Monster getSkeleton() {
-
-}

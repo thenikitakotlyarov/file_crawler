@@ -242,7 +242,7 @@ const Color NCOLOR_BROWN = {
 //        L"α", L"β", L"γ", L"δ", L"ε", L"ζ", L"η", L"θ", L"ι", L"κ", L"λ", L"μ",
 //        L"ν", L"ξ", L"ο", L"π", L"ρ", L"ς", L"σ", L"τ", L"υ", L"φ", L"χ", L"ψ",
 //        L"ω", L"ά", L"έ", L"ή", L"ί", L"ό", L"ύ", L"ώ", L"ϑ", L"ϒ", L"ϓ", L"ϔ"};
-//const vector<wstring> MONSTER_HIGH_HP_TILES = {
+//const vector<wstring> MONSTER_TILES = {
 //        L"آ", L"أ", L"إ", L"ء", L"ؤ", L"ئ", L"ب", L"ت", L"ث", L"ج", L"ح", L"خ",
 //        L"د", L"ذ", L"ر", L"ز", L"س", L"ش", L"ص", L"ض", L"ط", L"ظ", L"ع", L"غ",
 //        L"ـ", L"ف", L"ق", L"ك", L"ل", L"م", L"ن"};
@@ -252,6 +252,5 @@ const vector<wstring> VOID_TILES = {L" "};
 const vector<wstring> GROUND_TILES = {L","};
 const vector<wstring> WALL_TILES = {L"▓"};
 const vector<wstring> TRAP_TILES = {L"‽"};
-const vector<wstring> MONSTER_LOW_HP_TILES = {L"M"};
-const vector<wstring> MONSTER_MID_HP_TILES = {L"m"};
-const vector<wstring> MONSTER_HIGH_HP_TILES = {L"n"};
+const vector<wstring> MONSTER_TILES = {L"M"};
+const vector<wstring> ITEM_TILES = {L"o",L"⍟"};

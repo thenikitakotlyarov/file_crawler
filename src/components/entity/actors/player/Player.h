@@ -18,6 +18,9 @@ struct Player {
     string class_name;
     Color color;
 
+    Sprite sprite;
+
+
     short level;
     long exp;
 

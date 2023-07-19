@@ -29,7 +29,8 @@ void RenderSystem::Update() {
     // Update systems
 }
 
-Frame RenderSystem::ppUpscale(const Frame &frame, const unsigned short scale) {
+Frame RenderSystem::ppUpscale(const Frame &frame, EntitySystem &entitySystem,
+                              const int start_x, const int start_y, const unsigned short scale) {
     //ups the resolution of a frame to a pixel resolution of input:output::1:scale
     Position frame_size = {
             (int) frame.data[0].size(),
@@ -45,24 +46,48 @@ Frame RenderSystem::ppUpscale(const Frame &frame, const unsigned short scale) {
             )
     };
 
+    const auto &entityMap = entitySystem.getEntities();
+    auto &monsters = entitySystem.getMonsters();
+    const auto&player = entitySystem.getCurrentPlayer();
 
     for (int i = 0; i < frame_size.y; ++i) {
         for (int j = 0; j < frame_size.x; ++j) {
             wstring this_char = frame.data[i][j].ch;
-            vector<vector<wstring>> this_sprite = upres_map[this_char];
-
-            if (this_sprite.empty()) {
-                this_sprite = upres_map[L"?"];
+            Sprite this_sprite;
+            if (this_char == L"@") {
+                this_sprite = player.sprite;
+            } else if (check_if_in(MONSTER_TILES, this_char)) {
+                for (const auto &entity_ref: entityMap->data[j + start_x][i + start_y]) {
+                    if (!entity_ref.transient) {
+                        this_sprite = monsters[entity_ref].sprite;
+                        break;
+                    }
+                }
+            } else {
+                vector<vector<wstring>> upscaled_texture = upres_map[this_char];
+                if (upscaled_texture.empty()) {
+                    upscaled_texture = upres_map[L"?"];
+                }
+                this_sprite = {
+                        upscaled_texture,
+                        vector<vector<Color>>(5, vector<Color>(5, frame.data[i][j].fg_color)),
+                        vector<vector<Color>>(5, vector<Color>(5, frame.data[i][j].bg_color))
+                };
             }
+
 
             for (int _i = 0; _i < scale; ++_i) {
                 for (int _j = 0; _j < scale; ++_j) {
                     Position this_pos = {j * scale + _j,
                                          i * scale + _i};
                     new_frame.data[this_pos.y][this_pos.x] = frame.data[i][j];
-                    new_frame.data[this_pos.y][this_pos.x].ch = this_sprite[_i][_j];
-                    Color old_subpixel_color = frame.data[i][j].bg_color;
-                    if (this_sprite[_i][_j] == L" ") {
+                    new_frame.data[this_pos.y][this_pos.x].ch = this_sprite.texture[_i][_j];
+                    new_frame.data[this_pos.y][this_pos.x].fg_color = this_sprite.fg_colors[_i][_j];
+                    new_frame.data[this_pos.y][this_pos.x].bg_color = this_sprite.bg_colors[_i][_j];
+
+
+                    Color old_subpixel_color = new_frame.data[i][j].bg_color;
+                    if (this_sprite.texture[_i][_j] == L" ") {
                         Color new_subpixel_color;
                         Position offset = {0, 0};
                         bool stop = false;
@@ -80,8 +105,8 @@ Frame RenderSystem::ppUpscale(const Frame &frame, const unsigned short scale) {
                             }
 
                             Position new_pos = {
-                                    max(0, min(frame_size.x-1, j + offset.x)),
-                                    max(0, min(frame_size.y-1, i + offset.y))
+                                    max(0, min(frame_size.x - 1, j + offset.x)),
+                                    max(0, min(frame_size.y - 1, i + offset.y))
                             };
 
                             new_subpixel_color = frame.data[new_pos.y][new_pos.x].bg_color;
@@ -92,8 +117,8 @@ Frame RenderSystem::ppUpscale(const Frame &frame, const unsigned short scale) {
                         } while (!stop && !depth);
 
 
-                        if (new_subpixel_color > new_frame.data[this_pos.y][this_pos.x].bg_color) {
-                            new_frame.data[this_pos.y][this_pos.x].bg_color &= new_subpixel_color;
+                        if (new_subpixel_color < new_frame.data[this_pos.y][this_pos.x].bg_color) {
+                            new_frame.data[this_pos.y][this_pos.x].bg_color = new_subpixel_color;
                         }
 
                     }
@@ -132,9 +157,7 @@ Frame RenderSystem::ppBlurLight(const Frame &frame, const unsigned short scale, 
                     };
                     sample_color = frame.data[frame_position.y][frame_position.x].bg_color;
                     //float weight = 1/16;
-                    //float weight = 1 / pow(2, (abs(offset.x) + abs(offset.y) + 2)) / pow(1.5 - pow(2, -scale), 2);
-                    float temp = pow(2, scale);
-                    float weight = 1 / (4 * pow(2, abs(offset.x)) * pow(2, abs(offset.y)) * temp * temp);
+                    float weight = 1 / pow(2, (abs(offset.x) + abs(offset.y) + 2)) / pow(1.5 - pow(2, -scale), 2);
 
                     this_fg_color = {
                             (uint8_t) ((float) this_fg_color.red + (float) sample_color.red * weight / 2 * amount),

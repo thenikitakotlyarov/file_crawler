@@ -6,6 +6,7 @@
 #include "components/map/Position.h"
 #include "components/map/GameMap.h"
 #include "components/action/Intent.h"
+#include "components/graphics/Sprite.h"
 #include "helpers.h"
 
 
@@ -17,10 +18,10 @@ struct GameMap;
 
 struct Monster {
     string name;
-    wstring characterFullHealth;
-    wstring characterMidHealth;
-    wstring characterLowHealth;
+    wstring character;
     Color color;
+
+    Sprite sprite;
 
     int rarity;
 

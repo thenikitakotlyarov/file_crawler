@@ -383,7 +383,7 @@ EntitySystem::renderEntities2D(Frame frame, const set<pair<int, int>> current_fo
 
 
                     } else if (monsters.find(entity_ref) != monsters.end()) {
-                        frame.data[i - start_y][j - start_x].ch = monsters[entity_ref].characterFullHealth;
+                        frame.data[i - start_y][j - start_x].ch = monsters[entity_ref].character;
                         frame.data[i - start_y][j - start_x].fg_color = NCOLOR_BLACK;
                         frame.data[i - start_y][j - start_x].bg_color = monsters[entity_ref].color;
 

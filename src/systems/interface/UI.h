@@ -2,6 +2,7 @@
 
 #include "components/graphics/Frame.h"
 #include "components/entity/actors/player/Player.h"
+#include "systems/entity/Entity.h"
 #include "helpers.h"
 #include "constants.h"
 
@@ -35,6 +36,8 @@ public:
     addText(Frame &frame, const int y, const int x, wstring text,
             Color fg_color, Color bg_color);
 
+    Frame addTag(Frame frame, const int x, const int y, const unsigned short raster_scale, const string &tag) const;
+
 
     Frame getFpsLabel(Frame &frame, const int y, const int x,
                       const int c_fps);
@@ -56,7 +59,10 @@ public:
     static Frame getColorDebug(Frame frame);
 
 
-    Frame getInGameHud(Frame frame, const Player &player, const int c_fps);
+    Frame getHud(Frame frame, const Player &player, const int c_fps);
+
+    Frame getTags(Frame frame, EntitySystem &entity_system,
+                  const int start_x, const int start_y, const unsigned short raster_scale);
 
 
 private:
@@ -71,7 +77,7 @@ private:
 
     static Frame &
     getPlayerTag(Frame &frame, const int y, const int x,
-                 const string player_name, const string &player_class,
+                 const string& player_name, const string &player_class,
                  Color fg_color, Color bg_color);
 
     static Frame &
@@ -80,7 +86,8 @@ private:
 
     static Frame &
     getSlot(Frame &frame, const int y, const int x, const int height, const int width,
-            const wstring hotkey, const wstring label,vector<vector<wstring>> icon, Color fg_color, Color mg_color, Color bg_color);
+            const wstring hotkey, const wstring label, vector<vector<wstring>> icon, Color fg_color, Color mg_color,
+            Color bg_color);
 
     Frame &
     getMenuButton(Frame &frame, const int y, const int x, const int height, const int width,

@@ -33,6 +33,37 @@ void UISystem::Update() {
 }
 
 
+Frame
+UISystem::BlankFrame(const int y, const int x, unsigned long frame_count) {
+    FrameMeta meta_data = {
+            frame_count,
+            "Blank Frame",
+            ""
+    };
+
+
+    vector<vector<Pixel>> frame_data(
+            y,
+            vector<Pixel>(
+                    x, {
+                            L" ",
+                            NCOLOR_RED,
+                            NCOLOR_BLACK
+                    }
+            )
+    );
+
+
+    Frame frame = {
+            meta_data,
+            frame_data
+    };
+
+
+    return frame;
+}
+
+
 Frame &
 UISystem::addBar(Frame &frame, const int y, const int x, const int length, float level,
                  const wstring &icon, Color fg_color, Color bg_color) {
@@ -114,32 +145,22 @@ UISystem::addText(Frame &frame, const int y, const int x, wstring text,
 
 
 Frame
-UISystem::BlankFrame(const int y, const int x, unsigned long frame_count) {
-    FrameMeta meta_data = {
-            frame_count,
-            "Blank Frame",
-            ""
-    };
+UISystem::addTag(Frame frame, const int x, const int y, const unsigned short raster_scale, const string &tag) const {
+    wchar_t name_tag_buffer[256];
+    swprintf(name_tag_buffer, 256, L"%s", tag.c_str());
+    const wstring name_tag = name_tag_buffer;
 
+    const Position name_tag_pos = {
+            max(0, min((int) frame.data[0].size() - (int) name_tag.size() - 1,
+                       x * raster_scale - (int) name_tag.size() / 2 + raster_scale / 2)
+            ),
 
-    vector<vector<Pixel>> frame_data(
-            y,
-            vector<Pixel>(
-                    x, {
-                            L" ",
-                            NCOLOR_RED,
-                            NCOLOR_BLACK
-                    }
+            max(0, min((int) frame.data.size() - 1,
+                       y * raster_scale + raster_scale / 2)
             )
-    );
-
-
-    Frame frame = {
-            meta_data,
-            frame_data
     };
 
-
+    frame = addText(frame, name_tag_pos.y, name_tag_pos.x, name_tag, NCOLOR_WHITE, NCOLOR_BLACK);
     return frame;
 }
 
@@ -329,9 +350,27 @@ UISystem::getColorDebug(Frame frame) {
 }
 
 
+Frame &UISystem::getUiBg(Frame &frame, const int dock_height, Color fg_color, Color bg_color) {
+    for (int hy = frame.data.size() - dock_height; hy < frame.data.size(); ++hy) {
+        if (hy < 0) break;
+        for (int hx = 0; hx < frame.data[0].size(); ++hx) {
+            if (hy == frame.data.size() - dock_height) {
+                frame.data[hy][hx].ch = L"_";
+                frame.data[hy][hx].fg_color = NCOLOR_LGREY;
+            } else {
+                frame.data[hy][hx].ch = L"░";
+                frame.data[hy][hx].fg_color = fg_color;
+                frame.data[hy][hx].bg_color = bg_color;
+            }
+        }
+    }
+    return frame;
+}
+
+
 Frame &
 UISystem::getPlayerTag(Frame &frame, const int y, const int x,
-                       const string player_name, const string &player_class,
+                       const string &player_name, const string &player_class,
                        Color fg_color, Color bg_color) {
     wchar_t class_tag_buffer[256];
     wstring class_tag;
@@ -347,23 +386,6 @@ UISystem::getPlayerTag(Frame &frame, const int y, const int x,
     name_tag = name_tag_buffer;
     frame = addText(frame, y, x + class_tag.size() + 1, name_tag, NCOLOR_WHITE, NCOLOR_BLACK);
 
-    return frame;
-}
-
-Frame &UISystem::getUiBg(Frame &frame, const int dock_height, Color fg_color, Color bg_color) {
-    for (int hy = frame.data.size() - dock_height; hy < frame.data.size(); ++hy) {
-        if (hy < 0) break;
-        for (int hx = 0; hx < frame.data[0].size(); ++hx) {
-            if (hy == frame.data.size() - dock_height) {
-                frame.data[hy][hx].ch = L"_";
-                frame.data[hy][hx].fg_color = NCOLOR_LGREY;
-            } else {
-                frame.data[hy][hx].ch = L"░";
-                frame.data[hy][hx].fg_color = fg_color;
-                frame.data[hy][hx].bg_color = bg_color;
-            }
-        }
-    }
     return frame;
 }
 
@@ -533,7 +555,7 @@ UISystem::getPotionBar(Frame &frame, const int y, const int x, const int slot_he
 
 
 Frame
-UISystem::getInGameHud(Frame frame, const Player &player, const int c_fps) {
+UISystem::getHud(Frame frame, const Player &player, const int c_fps) {
 
     const pair<Color, Color> ui_bg_color = make_pair(NCOLOR_DGREY, NCOLOR_BLACK);
 
@@ -566,13 +588,13 @@ UISystem::getInGameHud(Frame frame, const Player &player, const int c_fps) {
     //draw 3 potion slots
     y = frame.data.size() - slot_size - 1, x = orb_size + 3;
     frame = getSlot(frame, max(0, y), max(0, x), slot_size, slot_size,
-                    L"1", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
+                    L"1", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_MGREY, NCOLOR_BLACK);
     x += slot_size;
     frame = getSlot(frame, max(0, y), max(0, x), slot_size, slot_size,
-                    L"2", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
+                    L"2", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_MGREY, NCOLOR_BLACK);
     x += slot_size;
     frame = getSlot(frame, max(0, y), max(0, x), slot_size, slot_size,
-                    L"3", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
+                    L"3", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_MGREY, NCOLOR_BLACK);
 
 
     //draw 3 skill slots
@@ -595,7 +617,7 @@ UISystem::getInGameHud(Frame frame, const Player &player, const int c_fps) {
     //draw player tag
     y = 1, x = 1;
     frame = getPlayerTag(frame, y, x,
-                         "Bob", player.class_name, player.color, NCOLOR_BLACK);
+                         player.name, player.class_name, player.color, NCOLOR_BLACK);
 
     //draw level bar
     y = 2, x = 1;
@@ -616,141 +638,35 @@ UISystem::getInGameHud(Frame frame, const Player &player, const int c_fps) {
                         c_fps);
 
 
+    return frame;
+}
 
-//
-//    //draw background for hud
-//
-//    pair<Color, Color> ui_bg_color = make_pair(NCOLOR_LGREY, NCOLOR_BLACK);
-//    int dock_size = 6;
-//
-//    //frame = getUiBg(frame, dock_size, ui_bg_color.first, ui_bg_color.second);
-//
-//
-//    int orb_diameter = (dock_size + 1) * 2;
-//    //it's actually half this value on the y, takes 1/6th of the screen, smollest orb size of 3x7
-//
-//
-//    //draw health orb
-//    y = max(0, min((int)frame.data.size() - 1, frame.data.size() - (orb_diameter ) - 2));
-//    x = max(0, min((int)frame.data[0].size() - 1, 1));
-//
-//    int health_level = static_cast<int>(static_cast<float>(player.current_health) / player.max_health * 100);
-//    frame = getOrb(frame, y, x, orb_diameter,
-//                   health_level, NCOLOR_BLACK, NCOLOR_RED);
-//
-//
-//    //draw left attack slot
-//    y = max(0, min((int)frame.data.size() - 1, frame.data.size() - dock_size + 1));
-//    x = max(0, min((int)frame.data[0].size() - 1, orb_diameter + 4));
-//
-//    frame = getSlot(frame, max(0,y), max(0,x), dock_size - 1,
-//                          player.primarySkill->icon, NCOLOR_DGREY, NCOLOR_BLACK);
-//
-//
-//    //draw player info
-//    y = max(0, min((int)frame.data.size() - 1, y + 1));
-//    x = max(0, min((int)frame.data[0].size() - 1, x + (dock_size - 1) * 2 + 1));
-//    frame = getPlayerTag(frame, y, x, player.level, player.class_name, player.color, NCOLOR_BLACK);
-//
-//    //draw experience bar
-//    y = max(0, min((int)frame.data.size() - 1, y + 1));
-//    frame = addBar(frame, y, x,
-//                   (dock_size - 3) * 2 * 4 - 4, 0.1f, L"☆",
-//                   NCOLOR_WHITE, NCOLOR_BLACK);
-//
-//    //draw stamina bar
-//    y = max(0, min((int)frame.data.size() - 1, y + 1));
-//    int stamina_level = static_cast<int>(static_cast<float>(player.current_stamina) / player.max_stamina);
-//    frame = addBar(frame, y, x,
-//                   (dock_size - 3) * 2 * 4 - 4, stamina_level, L"ᗢ",
-//                   NCOLOR_ORANGE, NCOLOR_BLACK);
-//
-//
-//
-//    //draw character menu buttons?
-//
-//
-//    //draw left attributes button
-//    y = max(0, min((int)frame.data.size() - 1, frame.data.size() - dock_size + 2));
-//    x = max(0, min((int)frame.data[0].size() - 1, (frame.data[0].size() ) - (dock_size - 3) * 2 * 3 - 1));
-//
-//    frame = getMenuButton(frame, y, x, dock_size - 3,
-//                          {
-//                                  {L"A", L" ", L" "},
-//                                  {L" ", L" ", L"♗"}
-//                                  //TODO:come up with cooler icons
-//                                  //{L"A", L" ", L"▁", L" ", L" "},
-//                                  //{L" ", L"▟", L"⍶", L"▙", L" "},
-//                                  //{L" ", L"▟", L"║", L"▙", L" "}
-//                          },
-//                          false);
-//
-//
-//    //draw center inventory button
-//    x = max(0, min((int)frame.data[0].size() - 1, x + (dock_size - 3) * 2));
-//
-//    frame = getMenuButton(frame, y, x, dock_size - 3,
-//                          {
-//                                  {L"I", L" ", L" "},
-//                                  {L" ", L" ", L"⌹"}
-//                                  //{L"I", L"▄", L"▁", L"▄", L" "},
-//                                  //{L" ", L"☋", L"█", L"☋", L" "},
-//                                  //{L" ", L"▚", L"█", L"▞", L" "}
-//                          },
-//                          false);
-//
-//    //draw right skills button
-//    x = max(0, min((int)frame.data[0].size() - 1, x + (dock_size - 3) * 2));
-//    frame = getMenuButton(frame, y, x,
-//                          dock_size - 3,
-//                          {
-//                                  {L"S", L" ", L" "},
-//                                  {L" ", L" ", L"⁂"}
-//                                  //{L"S", L" ", L"█", L" ", L" "},
-//                                  //{L" ", L"▚", L"☆", L"▞", L" "},
-//                                  //{L" ", L"▟", L"▀", L"▙", L" "}
-//                          },
-//                          false);
-//
-//
-//
-//    //draw right attack slot
-//    y = max(0, min((int)frame.data.size() - 1, frame.data.size() - dock_size + 1));
-//    x = max(0, min((int)frame.data[0].size() - 1, frame.data[0].size() - orb_diameter - (dock_size - 1) * 2 - 4));
-//
-//    frame = getSlot(frame, max(0,y), max(0,x),
-//                          dock_size - 1, player.secondarySkill->icon,
-//                          NCOLOR_DGREY, NCOLOR_BLACK);
-//
-//
-//    //draw potion slots
-//    y = max(0, min((int)frame.data.size() - 1, y + 1));
-//    x = max(0, min((int)frame.data[0].size() - 1, x - (dock_size - 3) * 2 * 4 - 1));
-//    frame = getPotionBar(frame, y, x,
-//                         dock_size - 3, (dock_size - 3) * 2,
-//                         NCOLOR_WHITE, NCOLOR_BLACK);
-//
-//
-//
-//
-//    //draw energy orb
-//    y = max(0, min((int)frame.data.size() - 1, frame.data.size() - (orb_diameter) - 2));
-//    x = max(0, min((int)frame.data[0].size() - 1, frame.data[0].size() - orb_diameter - 3));
-//    int energy_level = static_cast<int>(static_cast<float>(player.current_energy) / player.max_energy * 100);
-//
-//    frame = getOrb(frame, y, x,
-//                   orb_diameter, energy_level,
-//                   NCOLOR_WHITE, player.color);
-//
-//
-//
-//    ////draw combat log
-//    //int log_size = min((int)frame.data.size() - orb_diameter - 2, static_cast<int>(combat_log.size()));
-//    //
-//    //
-//    //for (int i = 0; i < log_size; i++) {
-//    //    mvaddstr(y + i, x, combat_log[combat_log.size() - log_size + i].c_str());
-//    //}
+Frame UISystem::getTags(Frame frame, EntitySystem &entity_system,
+                        const int start_x, const int start_y, const unsigned short raster_scale) {
+    EntityMap *entity_map = entity_system.getEntities();
+    const auto &monsters = entity_system.getMonsters();
+    const auto &items = entity_system.getItems();
+    const Position &player_pos = entity_system.getPlayerPosition();
+    const Player &player = entity_system.getCurrentPlayer();
+    Position frame_size = {(int) frame.data[0].size(), (int) frame.data.size()};
+
+    for (int i = start_y; i < frame_size.y / raster_scale + start_y; ++i) {
+        for (int j = start_x; j < frame_size.x / raster_scale + start_x; ++j) {
+            for (const auto &entity_ref: entity_map->data[j][i]) {
+                if (entity_ref.id == 1) {//pass the player
+                } else if (items.find(entity_ref) != items.end()) {
+                    const string &this_item = items.at(entity_ref).name;
+                    frame = addTag(frame, j - start_x, i - start_y - 1, raster_scale, this_item);
+                } else if (monsters.find(entity_ref) != monsters.end()) {
+                    const string &this_monster = monsters.at(entity_ref).name;
+                    frame = addTag(frame, j - start_x, i - start_y - 1, raster_scale, this_monster);
+                }
+
+            }
+        }
+    }
+
+    frame = addTag(frame, player_pos.x - start_x, player_pos.y - start_y - 1, raster_scale, player.name);
 
 
     return frame;
