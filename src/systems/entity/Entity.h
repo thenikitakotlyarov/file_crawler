@@ -33,7 +33,7 @@ public:
 
     void Update();
 
-    Entity createEntity(Position pos, bool transience);
+    Entity createEntity(const Position pos,const bool transience,const bool emissiveness,const Color color);
 
     void destroyEntity(Entity entity_id);
 
@@ -63,7 +63,7 @@ public:
 
     map<Entity, Monster> &getMonsters();
 
-    map<Entity, Item> getItems();
+    map<Entity, Item> &getItems();
 
 
     void handleIntent(const Intent &intent);

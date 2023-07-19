@@ -5,8 +5,8 @@
 
 enum class ItemType {//TODO:figure out a way to load these automatically
     SmallHealthPotion,
-    SmallEnergySerum,
-    SmallStaminaSalve,
+    SmallEnergyPotion,
+    SmallStaminaPotion,
 
     VitalityOrb,
     PowerOrb,

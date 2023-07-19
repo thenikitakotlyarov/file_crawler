@@ -629,7 +629,7 @@ UISystem::getHud(Frame frame, const Player &player, const int c_fps) {
     y = 3, x = 1;
     frame = addBar(frame, y, x,
                    min((int) frame.data.size() - 2, 14), stamina_level, L"ᗢ",
-                   NCOLOR_ORANGE, NCOLOR_BLACK);
+                   NCOLOR_GREEN, NCOLOR_BLACK);
 
 
     //draw fps label

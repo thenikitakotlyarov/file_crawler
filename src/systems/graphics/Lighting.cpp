@@ -157,6 +157,49 @@ pair<Color, Color> LightSystem::flickerLight(pair<Color, Color> &this_color, con
     return make_pair(fg_color, bg_color);
 }
 
+Frame LightSystem::flipZtileColors (Frame frame,const int start_y, const int start_x) {
+
+    for (int i = 0; i < frame.data.size(); ++i) {
+        for (int j = 0; j < frame.data[0].size(); ++j) {
+            if (currentGameMap->data[j + start_x][i + start_y].z
+            && currentGameMap->data[j + start_x][i + start_y].visible
+            && frame.data[i][j].ch != L" ") {
+
+                const Color buffer_color = frame.data[i][j].fg_color;
+                frame.data[i][j].fg_color =
+                        frame.data[i][j].bg_color;
+                frame.data[i][j].bg_color = buffer_color;
+            }
+        }
+
+    }
+
+    return frame;
+}
+
+
+Frame LightSystem::flipNonZtileColors (Frame frame,const int start_y, const int start_x) {
+
+    for (int i = 0; i < frame.data.size(); ++i) {
+        for (int j = 0; j < frame.data[0].size(); ++j) {
+            if (!currentGameMap->data[j + start_x][i + start_y].z
+                && currentGameMap->data[j + start_x][i + start_y].visible) {
+
+                if (frame.data[i][j].bg_color > frame.data[i][j].fg_color) {
+                    const Color buffer_color = frame.data[i][j].fg_color;
+                    frame.data[i][j].fg_color =
+                            frame.data[i][j].bg_color;
+                    frame.data[i][j].bg_color = buffer_color;
+
+                }
+            }
+        }
+
+    }
+
+    return frame;
+}
+
 Frame LightSystem::addPointLight(Frame frame, Position light_pos, Light light, int start_y, int start_x) {
     pair<int, int> frame_size = {frame.data.size(), frame.data[0].size()};
     vector<unordered_set<Position, PositionHash>> cast_groups(10);
@@ -275,17 +318,20 @@ Frame LightSystem::addPointLight(Frame frame, Position light_pos, Light light, i
                     lit_colors.first &= frame.data[frame_coords.y][frame_coords.x].bg_color;
                     lit_colors.first &= frame.data[frame_coords.y][frame_coords.x].bg_color;
                     frame.data[frame_coords.y][frame_coords.x].bg_color &= lit_colors.first;
+
                 } else {
-                    frame.data[frame_coords.y][frame_coords.x].fg_color *= lit_colors.first;
+                    frame.data[frame_coords.y][frame_coords.x].fg_color += lit_colors.first;
+                    frame.data[frame_coords.y][frame_coords.x].fg_color &= lit_colors.first;
                     frame.data[frame_coords.y][frame_coords.x].bg_color &= lit_colors.second;
+
                 }
 
             }
         }
     }
 
-    return
-            frame;
+
+    return frame;
 }
 
 Frame LightSystem::addAmbientLight(Frame frame, Position light_pos, Color color, int start_y, int start_x) {
@@ -308,7 +354,7 @@ Frame
 LightSystem::renderLighting2D(Frame frame, Position player_pos, int player_light_radius, int start_y, int start_x,
                               int end_y, int end_x) {
     Light player_light = {{250, 181, 82}, 'w', static_cast<unsigned short>(player_light_radius), 0.88, 0.7, 0.7};
-    Color ambient_color = {1, 1, 1};
+    Color ambient_color = {12,3,6};//
 
 
     frame = addAmbientLight(frame, player_pos, ambient_color, start_y, start_x);
@@ -318,10 +364,21 @@ LightSystem::renderLighting2D(Frame frame, Position player_pos, int player_light
             if (currentGameMap->data[j][i].emissive) {
                 frame = addPointLight(frame, {j, i}, emissiveLight, start_y, start_x);
             }
+            for (const auto& entity_ref:currentEntityMap->data[j][i]) {
+                if (entity_ref.emissive) {
+                    Light this_light = emissiveLight;
+                    this_light.color = entity_ref.color;
+                    frame = addPointLight(frame, {j, i}, this_light, start_y, start_x);
+
+                }
+            }
         }
     }
 
     frame = addPointLight(frame, player_pos, player_light, start_y, start_x);
+
+    //frame = flipZtileColors(frame, start_y,start_x);
+    frame = flipNonZtileColors(frame, start_y,start_x);
 
 
     return frame;

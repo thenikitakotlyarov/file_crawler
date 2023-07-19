@@ -4,6 +4,8 @@ struct Entity {
     unsigned long id;
 
     bool transient;
+    bool emissive;
+    Color color;
 
 
     bool operator<(const Entity &rhs) const {

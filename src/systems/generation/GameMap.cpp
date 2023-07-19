@@ -193,9 +193,9 @@ GameMap *MapSystem::genCave(int height, int width) {
             {
                     "Cave",
                     {
-                            getPotionTemplate(),
-                            getSerumTemplate(),
-                            getSalveTemplate(),
+                            getSmallPotionTemplate(),
+                            getSmallSerumTemplate(),
+                            getSmallSalveTemplate(),
                             getVitalityOrbTemplate(),
                             getPowerOrbTemplate(),
                             getAgiltyOrbTemplate(),

@@ -18,18 +18,18 @@ Sprite standard_player_sprite = {
 
         },
         {
-                {NCOLOR_MGREY, NCOLOR_MGREY, NCOLOR_MGREY, NCOLOR_MGREY, NCOLOR_MGREY},
-                {NCOLOR_MGREY, NCOLOR_MGREY, NCOLOR_MGREY, NCOLOR_MGREY, NCOLOR_MGREY},
-                {NCOLOR_MGREY, NCOLOR_MGREY, NCOLOR_MGREY, NCOLOR_MGREY, NCOLOR_MGREY},
-                {NCOLOR_MGREY, NCOLOR_MGREY, NCOLOR_MGREY, NCOLOR_MGREY, NCOLOR_MGREY},
-                {NCOLOR_MGREY, NCOLOR_MGREY, NCOLOR_MGREY, NCOLOR_MGREY, NCOLOR_MGREY}
+                {NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_LGREY, NCOLOR_BLACK, NCOLOR_BLACK},
+                {NCOLOR_BLACK, NCOLOR_MGREY, NCOLOR_MGREY, NCOLOR_MGREY, NCOLOR_BLACK},
+                {NCOLOR_BLACK, NCOLOR_DGREY, NCOLOR_MGREY, NCOLOR_DGREY, NCOLOR_BLACK},
+                {NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_MGREY, NCOLOR_BLACK, NCOLOR_BLACK},
+                {NCOLOR_BLACK, NCOLOR_DGREY, NCOLOR_BLACK, NCOLOR_DGREY, NCOLOR_BLACK}
 
         }
 
 };
 Player getAdventurerTemplate() {
     return {
-            "Beb", "Adventurer", NCOLOR_MGREY,
+            "Link", "Adventurer", NCOLOR_MGREY,
             standard_player_sprite, 1, 0,
             100, 100, 100,
             100, 100, 100,
@@ -43,7 +43,7 @@ Player getAdventurerTemplate() {
 
 Player getBarbarianTemplate() {
     return {
-            "", "Barbarian", NCOLOR_RED,
+            "Conan", "Barbarian", NCOLOR_RED,
             standard_player_sprite, 1, 0,
             100, 100, 100,
             100, 100, 100,
@@ -58,7 +58,7 @@ Player getBarbarianTemplate() {
 
 Player getDuelistTemplate() {
     return {
-            "", "Duelist", NCOLOR_ORANGE,
+            "Geralt", "Duelist", NCOLOR_ORANGE,
             standard_player_sprite, 1, 0,
             100, 100, 100,
             100, 100, 100,
@@ -72,7 +72,7 @@ Player getDuelistTemplate() {
 
 Player getFighterTemplate() {
     return {
-            "", "Fighter", NCOLOR_YELLOW,
+            "Ryu", "Fighter", NCOLOR_YELLOW,
             standard_player_sprite, 1, 0,
             100, 100, 100,
             100, 100, 100,
@@ -86,7 +86,7 @@ Player getFighterTemplate() {
 
 Player getRogueTemplate() {
     return {
-            "", "Rogue", NCOLOR_LGREEN,
+            "Garrett", "Rogue", NCOLOR_LGREEN,
             standard_player_sprite, 1, 0,
             100, 100, 100,
             100, 100, 100,
@@ -99,7 +99,7 @@ Player getRogueTemplate() {
 
 Player getRangerTemplate() {
     return {
-            "", "Ranger", NCOLOR_GREEN,
+            "Artemis", "Ranger", NCOLOR_GREEN,
             standard_player_sprite, 1, 0,
             100, 100, 100,
             100, 100, 100,
@@ -113,7 +113,7 @@ Player getRangerTemplate() {
 
 Player getDruidTemplate() {
     return {
-            "", "Druid", NCOLOR_CYAN,
+            "Malfurion", "Druid", NCOLOR_CYAN,
             standard_player_sprite, 1, 0,
             100, 100, 100,
             100, 100, 100,
@@ -127,7 +127,7 @@ Player getDruidTemplate() {
 
 Player getSorcererTemplate() {
     return {
-            "", "Sorcerer", NCOLOR_AMARINE,
+            "Gandalf", "Sorcerer", NCOLOR_AMARINE,
             standard_player_sprite, 1, 0,
             100, 100, 100,
             100, 100, 100,
@@ -141,7 +141,7 @@ Player getSorcererTemplate() {
 
 Player getBardTemplate() {
     return {
-            "", "Bard", NCOLOR_LBLUE,
+            "Garrick", "Bard", NCOLOR_LBLUE,
             standard_player_sprite, 1, 0,
             100, 100, 100,
             100, 100, 100,
@@ -155,7 +155,7 @@ Player getBardTemplate() {
 
 Player getWizardTemplate() {
     return {
-            "", "Wizard", NCOLOR_BLUE,
+            "Merlin", "Wizard", NCOLOR_BLUE,
             standard_player_sprite, 1, 0,
             100, 100, 100,
             100, 100, 100,
@@ -168,7 +168,7 @@ Player getWizardTemplate() {
 
 Player getMonkTemplate() {
     return {
-            "", "Monk", NCOLOR_PURPLE,
+            "Sabin", "Monk", NCOLOR_PURPLE,
             standard_player_sprite, 1, 0,
             100, 100, 100,
             100, 100, 100,
@@ -182,7 +182,7 @@ Player getMonkTemplate() {
 
 Player getClericTemplate() {
     return {
-            "", "Cleric", NCOLOR_PINK,
+            "Alistair", "Cleric", NCOLOR_PINK,
             standard_player_sprite, 1, 0,
             100, 100, 100,
             100, 100, 100,
@@ -196,7 +196,7 @@ Player getClericTemplate() {
 
 Player getPaladinTemplate() {
     return {
-            "", "Paladin", NCOLOR_MAGENTA,
+            "Tyrael", "Paladin", NCOLOR_MAGENTA,
             standard_player_sprite, 1, 0,
             100, 100, 100,
             100, 100, 100,

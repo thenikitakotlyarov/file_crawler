@@ -7,11 +7,11 @@
 struct Item;
 struct Player;
 
-Item getPotionTemplate();
+Item getSmallPotionTemplate();
 
-Item getSerumTemplate();
+Item getSmallSerumTemplate();
 
-Item getSalveTemplate();
+Item getSmallSalveTemplate();
 
 Item getVitalityOrbTemplate();
 

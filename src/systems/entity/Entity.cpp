@@ -23,7 +23,6 @@ bool EntitySystem::Initialize() {
 }
 
 
-
 set<pair<int, int>> EntitySystem::calculate_fov(
         int center_x, int center_y,
         int radius) {
@@ -58,7 +57,6 @@ set<pair<int, int>> EntitySystem::calculate_fov(
 }
 
 
-
 // Use std::move to avoid copying
 void EntitySystem::setPlayer(Player &player) {
     currentPlayer = player;
@@ -78,9 +76,12 @@ void EntitySystem::setGameMap(GameMap *game_map) {
 
 
 // Use reserve for known size vectors
-Entity EntitySystem::createEntity(Position pos, bool transience) {
+Entity
+EntitySystem::createEntity(const Position pos, const bool transience, const bool emissiveness, const Color color) {
     Entity entity = {nextEntityId,
-                     transience};
+                     transience,
+                     emissiveness,
+                     color};
     nextEntityId++;
     entityMap->data[pos.x][pos.y].push_back(entity);
     positionMap[entity] = pos;
@@ -115,7 +116,7 @@ void EntitySystem::spawnPlayer() {
 
     Position playerPosition = {x, y};
     currentPlayerPosition = playerPosition;
-    createEntity(playerPosition, false);
+    createEntity(playerPosition, false, true, currentPlayer.color);
 
 
 }
@@ -138,7 +139,7 @@ void EntitySystem::spawnMonsters() {
                 x = get_random_int(0, WIDTH - 1);
                 y = get_random_int(0, HEIGHT - 1);
             } while (!currentMap->data[x][y].z);
-            Entity monsterEntity = createEntity(Position{x, y}, monster.transient);
+            Entity monsterEntity = createEntity(Position{x, y}, monster.transient, false, monster.color);
             monsters[monsterEntity] = monster;
         }
     }
@@ -156,7 +157,7 @@ void EntitySystem::spawnItems() {
                 x = get_random_int(0, WIDTH - 1);
                 y = get_random_int(0, HEIGHT - 1);
             } while (currentMap->data[x][y].z);
-            Entity itemEntity = createEntity(Position{x, y}, true);
+            Entity itemEntity = createEntity(Position{x, y}, true, item.emissive, item.color);
             items[itemEntity] = item;
         }
     }
@@ -233,7 +234,7 @@ map<Entity, Monster> &EntitySystem::getMonsters() {
 }
 
 
-map<Entity, Item> EntitySystem::getItems() {
+map<Entity, Item> &EntitySystem::getItems() {
     return items;
 }
 

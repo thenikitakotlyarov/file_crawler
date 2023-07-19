@@ -62,5 +62,9 @@ private:
     Light overworldLight = {{248, 248, 248}, 'n', 1, 1.0, 1.0, 0.7};
     Light underworldLight = {{32, 0, 0}, 'n', 0, 0.3, 0.0, 0.3};
     Light emissiveLight = {{32, 64, 128}, 'n', 3, 0.3, 0.0, 0.1};
+
+    Frame flipZtileColors(Frame frame, const int start_y, const int start_x);
+    Frame flipNonZtileColors(Frame frame, const int start_y, const int start_x);
+
 };
 
