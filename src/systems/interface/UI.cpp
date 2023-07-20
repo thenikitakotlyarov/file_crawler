@@ -65,7 +65,7 @@ UISystem::BlankFrame(const int y, const int x, unsigned long frame_count) {
 
 
 Frame &
-UISystem::addBar(Frame &frame, const int y, const int x, const int length, float level,
+UISystem::addBar(Frame &frame, const int y, const int x, const int length, const double level,
                  const wstring &icon, Color fg_color, Color bg_color) {
     for (int i = 0; i <= length; i++) {
         if (x + i >= frame.data[0].size()) break;
@@ -563,9 +563,15 @@ UISystem::getHud(Frame frame, const Player &player, const int c_fps) {
     const int slot_size = 7;
     const int orb_size = 10;
 
-    const int health_level = static_cast<int>(static_cast<float>(player.current_health) / player.max_health * 100);
-    const int energy_level = static_cast<int>(static_cast<float>(player.current_energy) / player.max_energy * 100);
-    const float stamina_level = static_cast<float>(static_cast<float>(player.current_stamina) / player.max_stamina);
+    const int health_level = static_cast<int>(static_cast<double>(player.current_health) / player.max_health * 100);
+    const int energy_level = static_cast<int>(static_cast<double>(player.current_energy) / player.max_energy * 100);
+    const double stamina_level = static_cast<double>(static_cast<double>(player.current_stamina) / player.max_stamina);
+    const double exp_level = (static_cast<double>
+                              (
+                                      player.vitality + player.power + player.agility
+                                      + player.focus + player.insight + player.belief
+                              ) - 30 - player.level * (29.0 + player.level))
+                             / (29.0 + player.level);
 
     int y, x;
     //sections are drawn (generally) back->forward, bottom->top, left->right
@@ -622,7 +628,7 @@ UISystem::getHud(Frame frame, const Player &player, const int c_fps) {
     //draw level bar
     y = 2, x = 1;
     frame = addBar(frame, y, x,
-                   min((int) frame.data.size(), 14) - 2, 0.1f, L"☆",
+                   min((int) frame.data.size(), 14) - 2, exp_level, L"☆",
                    NCOLOR_WHITE, NCOLOR_BLACK);
 
     //draw stamina bar

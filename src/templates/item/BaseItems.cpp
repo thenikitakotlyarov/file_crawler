@@ -92,8 +92,8 @@ Item getSmallSalveTemplate() {
              }},
             0.25,
             [](Player &stats) {
-                stats.current_energy =
-                        min(stats.max_energy, stats.current_energy + 25);
+                stats.current_stamina =
+                        min(stats.max_stamina, stats.current_stamina + 25);
             }
     };
 }

@@ -29,43 +29,28 @@ void RenderSystem::Update() {
     // Update systems
 }
 
-
 Sprite RenderSystem::charToSprite(EntitySystem &entitySystem, const Position pos,
                                   const wstring this_char, const Color fg_color, const Color bg_color) {
     Sprite this_sprite;
 
-
     const auto *entityMap = entitySystem.getEntities();
-    const auto &monsters = entitySystem.getMonsters();
-    const auto &items = entitySystem.getItems();
+     auto &monsters = entitySystem.getMonsters();
+     auto &items = entitySystem.getItems();
     const auto &player = entitySystem.getCurrentPlayer();
 
     if (this_char == L"@") {
         this_sprite = player.sprite;
-//    } else if (this_char == L",") {
-//        vector<vector<wstring>> this_texture = {
-//                5, {5, L" "}
-//        };
-//        for (int i = 0; i < 5 ; ++i) {
-//            for (int j = 0; j < 5; ++j) {
-//                this_texture[i][j] = get_random_character({L",", L"⚘", L"\"", L"🜈", L"'"});
-//            }
-//
-//        }
-//        this_sprite = {this_texture,
-//                       vector<vector<Color>>(5, vector<Color>(5, fg_color)),
-//                       vector<vector<Color>>(5, vector<Color>(5, bg_color))};
     } else if (check_if_in(MONSTER_TILES, this_char)) {
         for (const auto &entity_ref: entityMap->data[pos.x][pos.y]) {
             if (!entity_ref.transient) {
-                this_sprite = monsters.at(entity_ref).sprite;
+                this_sprite = monsters[entity_ref].sprite;
                 break;
             }
         }
     } else if (check_if_in(ITEM_TILES, this_char)) {
         for (const auto &entity_ref: entityMap->data[pos.x][pos.y]) {
             if (entity_ref.transient) {
-                this_sprite = items.at(entity_ref).sprite;
+                this_sprite = items[entity_ref].sprite;
                 break;
             }
         }
@@ -73,9 +58,9 @@ Sprite RenderSystem::charToSprite(EntitySystem &entitySystem, const Position pos
         vector<vector<wstring>> upscaled_texture;
 
         if (upres_map.find(this_char) != upres_map.end()) {
-            upscaled_texture = upres_map.at(this_char);
+            upscaled_texture = upres_map[this_char];
         } else {
-            upscaled_texture = upres_map.at(L"?");
+            upscaled_texture = upres_map[L"?"];
         }
         this_sprite = {
                 upscaled_texture,
@@ -86,6 +71,7 @@ Sprite RenderSystem::charToSprite(EntitySystem &entitySystem, const Position pos
     int I_AM_A_DEBUG = break_point();
     return this_sprite;
 }
+
 
 
 Frame RenderSystem::ppUpscale(const Frame &frame, EntitySystem &entitySystem,

@@ -25,7 +25,7 @@ public:
 
 
     static Frame &
-    addBar(Frame &frame, const int y, const int x, const int length, float level,
+    addBar(Frame &frame, const int y, const int x, const int length, const double level,
            const wstring &icon, Color fg_color, Color bg_color);
 
     static Frame &

@@ -33,6 +33,7 @@ public:
 
     void Update(int player_input);
 
+    int get_player_level();
 
     void CARD_TITLE(int y, int x);
 
@@ -64,4 +65,5 @@ private:
     GameMap *CURRENT_MAP;
 
 
+    void movePlayer(pair<int, int> delta, const int speed);
 };

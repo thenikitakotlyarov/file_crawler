@@ -57,9 +57,9 @@ public:
 
     void spawnPlayer();
 
-    void spawnMonsters();
+    void spawnMonsters(const int count, const float difficulty);
 
-    void spawnItems();
+    void spawnItems(const int count);
 
     map<Entity, Monster> &getMonsters();
 

@@ -122,8 +122,7 @@ void EntitySystem::spawnPlayer() {
 }
 
 
-void EntitySystem::spawnMonsters() {
-    int count = round(0.001333 * (currentMap->data.size() * currentMap->data[0].size()));
+void EntitySystem::spawnMonsters(const int count, const float difficulty) {
     vector<Monster> monsterTemplates = {
             getBasicMonster(),
             getBasicMonster(),
@@ -147,8 +146,7 @@ void EntitySystem::spawnMonsters() {
 }
 
 
-void EntitySystem::spawnItems() {
-    int count = round(0.001333 * (currentMap->data.size() * currentMap->data[0].size()));
+void EntitySystem::spawnItems(const int count) {
 
     for (const auto &item: currentMap->meta.itemTemplates) {
         for (int i = 0; i < item.rarity * count; ++i) {
