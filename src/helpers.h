@@ -41,7 +41,7 @@ wstring int_to_hex_str(int i);
 
 int get_random_int(int min, int max);
 
-wstring get_random_character(const vector<wstring> &char_array);
+wstring get_random_character(const unordered_set<wstring> &char_array);
 
 bool check_if_in(const vector<wstring> &char_array, const wstring& compare);
 

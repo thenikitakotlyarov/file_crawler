@@ -354,7 +354,7 @@ Frame
 LightSystem::renderLighting2D(Frame frame, Position player_pos, int player_light_radius, int start_y, int start_x,
                               int end_y, int end_x) {
     Light player_light = {{250, 181, 82}, 'w', static_cast<unsigned short>(player_light_radius), 0.88, 0.7, 0.7};
-    Color ambient_color = {12,3,6};//
+    Color ambient_color = {12,03,6};//
 
 
     frame = addAmbientLight(frame, player_pos, ambient_color, start_y, start_x);

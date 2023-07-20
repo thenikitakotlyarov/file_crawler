@@ -28,50 +28,43 @@ void RenderSystem::CleanUp() {
 void RenderSystem::Update() {
     // Update systems
 }
-
-Sprite RenderSystem::charToSprite(EntitySystem &entitySystem, const Position pos,
+Sprite RenderSystem::charToSprite(EntitySystem& entitySystem, const Position pos,
                                   const wstring this_char, const Color fg_color, const Color bg_color) {
     Sprite this_sprite;
 
-    const auto *entityMap = entitySystem.getEntities();
-     auto &monsters = entitySystem.getMonsters();
-     auto &items = entitySystem.getItems();
-    const auto &player = entitySystem.getCurrentPlayer();
+    const auto& entityMap = entitySystem.getEntities();
+    const auto& monsters = entitySystem.getMonsters();
+    const auto& items = entitySystem.getItems();
+    const auto& player = entitySystem.getCurrentPlayer();
 
     if (this_char == L"@") {
         this_sprite = player.sprite;
-    } else if (check_if_in(MONSTER_TILES, this_char)) {
-        for (const auto &entity_ref: entityMap->data[pos.x][pos.y]) {
-            if (!entity_ref.transient) {
-                this_sprite = monsters[entity_ref].sprite;
+    } else if (MONSTER_TILES.count(this_char)) {
+        for (const auto& entity_ref : entityMap->data[pos.x][pos.y]) {
+            if (monsters.count(entity_ref)) {
+                this_sprite = monsters.at(entity_ref).sprite;
                 break;
             }
         }
-    } else if (check_if_in(ITEM_TILES, this_char)) {
-        for (const auto &entity_ref: entityMap->data[pos.x][pos.y]) {
-            if (entity_ref.transient) {
-                this_sprite = items[entity_ref].sprite;
+    } else if (ITEM_TILES.count(this_char)) {
+        for (const auto& entity_ref : entityMap->data[pos.x][pos.y]) {
+            if (items.count(entity_ref)) {
+                this_sprite = items.at(entity_ref).sprite;
                 break;
             }
         }
     } else {
-        vector<vector<wstring>> upscaled_texture;
-
-        if (upres_map.find(this_char) != upres_map.end()) {
-            upscaled_texture = upres_map[this_char];
-        } else {
-            upscaled_texture = upres_map[L"?"];
-        }
+        const auto it = upres_map.find(this_char);
+        const vector<vector<wstring>>& upscaled_texture = (it != upres_map.end()) ? it->second : upres_map.at(L"?");
         this_sprite = {
                 upscaled_texture,
                 vector<vector<Color>>(5, vector<Color>(5, fg_color)),
                 vector<vector<Color>>(5, vector<Color>(5, bg_color))
         };
     }
-    int I_AM_A_DEBUG = break_point();
+
     return this_sprite;
 }
-
 
 
 Frame RenderSystem::ppUpscale(const Frame &frame, EntitySystem &entitySystem,
@@ -157,7 +150,6 @@ Frame RenderSystem::ppUpscale(const Frame &frame, EntitySystem &entitySystem,
     return new_frame;
 }
 
-
 Frame RenderSystem::ppBlurLight(const Frame &frame, const unsigned short scale, const float amount) {
 
     const unsigned short kernel_scale = 1 + 2 * scale;
@@ -209,39 +201,33 @@ Frame RenderSystem::ppBlurLight(const Frame &frame, const unsigned short scale, 
 }
 
 // Render frame on screen
-void RenderSystem::render(const Frame &frame) {
+void RenderSystem::render(const Frame& frame) {
+    const int frameHeight = frame.data.size();
+    const int frameWidth = frame.data[0].size();
 
-    //clear();
+    // Construct the output string
+    wstring output;
+    for (int i = 0; i < frameHeight; ++i) {
+        for (int j = 0; j < frameWidth; ++j) {
+            const Pixel& pixel = frame.data[i][j];
+            const wstring& pixel_char = pixel.ch;
+            const uint8_t& fg_r = pixel.fg_color.red;
+            const uint8_t& fg_g = pixel.fg_color.green;
+            const uint8_t& fg_b = pixel.fg_color.blue;
+            const uint8_t& bg_r = pixel.bg_color.red;
+            const uint8_t& bg_g = pixel.bg_color.green;
+            const uint8_t& bg_b = pixel.bg_color.blue;
 
-    for (int i = 0; i < frame.data.size(); ++i) {
-        for (int j = 0; j < frame.data[0].size(); ++j) {
-            const wstring &pixel_char = frame.data[i][j].ch;
-            const uint8_t &fg_r = frame.data[i][j].fg_color.red;
-            const uint8_t &fg_g = frame.data[i][j].fg_color.green;
-            const uint8_t &fg_b = frame.data[i][j].fg_color.blue;
-            const uint8_t &bg_r = frame.data[i][j].bg_color.red;
-            const uint8_t &bg_g = frame.data[i][j].bg_color.green;
-            const uint8_t &bg_b = frame.data[i][j].bg_color.blue;
-
-//            wchar_t pixel_ch[256];
-//            swprintf(pixel_ch, 256, L"%s",
-//                     pixel_char);
-
-            for (const wchar_t &wc: pixel_char) {
-                wprintf(L"\033[%d;%dH\033[38;2;%d;%d;%d;48;2;%d;%d;%dm%lc",
-                        i + 1, j + 1,
-                        fg_r, fg_g, fg_b,
-                        bg_r, bg_g, bg_b,
-                        wc);
-                //fflush(stdout);
+            for (const wchar_t& wc : pixel_char) {
+                output += L"\033[" + to_wstring(i + 1) + L";" + to_wstring(j + 1) +
+                          L"H\033[38;2;" + to_wstring(fg_r) + L";" + to_wstring(fg_g) + L";" +
+                          to_wstring(fg_b) + L";48;2;" + to_wstring(bg_r) + L";" +
+                          to_wstring(bg_g) + L";" + to_wstring(bg_b) + L"m" + wc;
             }
-
         }
     }
 
-
-
-    //wnoutrefresh(stdscr);
-    //doupdate();
+    // Print the output string once
+    wprintf(L"%ls", output.c_str());
     fflush(stdout);
 }

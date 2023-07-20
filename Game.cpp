@@ -178,12 +178,12 @@ void Game::Update(int player_input) {
             } else {// we running bois; take the player's input as commands for the player character
 
                 int player_level = get_player_level();
-                if (player_level > CURRENT_PLAYER.level) {// player just leveled up
-                    CURRENT_PLAYER.level = player_level;
-                    SysEntity.setPlayer(CURRENT_PLAYER);
-                    const int item_count = pow(round(0.001333 * (HEIGHT * WIDTH)), (10 + CURRENT_PLAYER.level) / 10);
-                    const int monster_count = pow(round(0.00125 * (HEIGHT * WIDTH)), (10 + CURRENT_PLAYER.level) / 10);
-                    const float monster_difficulty = pow(1.1, (10 + CURRENT_PLAYER.level) / 10);
+                if (player_level > SysEntity.getCurrentPlayer().level) {// player just leveled up
+                    SysEntity.getCurrentPlayer().level = player_level;
+                    SysEntity.setPlayer(SysEntity.getCurrentPlayer());
+                    const int item_count = pow(round(0.001333 * (HEIGHT * WIDTH)), (10 + SysEntity.getCurrentPlayer().level) / 10);
+                    const int monster_count = pow(round(0.00125 * (HEIGHT * WIDTH)), (10 + SysEntity.getCurrentPlayer().level) / 10);
+                    const float monster_difficulty = pow(1.1, (10 + SysEntity.getCurrentPlayer().level) / 10);
 
                     SysEntity.spawnItems(item_count);
                     SysEntity.spawnMonsters(monster_count, monster_difficulty);//congrats the player with friends!
@@ -196,36 +196,36 @@ void Game::Update(int player_input) {
                     if (getmouse(&event) == OK) {
                         if (event.bstate & BUTTON1_PRESSED) {
                             Position playerPosition = SysEntity.getPlayerPosition();
-                            pair<int, vector<Intent>> strike = CURRENT_PLAYER.primarySkill->Use(
-                                    CURRENT_PLAYER, playerPosition,
+                            pair<int, vector<Intent>> strike = SysEntity.getCurrentPlayer().primarySkill->Use(
+                                    SysEntity.getCurrentPlayer(), playerPosition,
                                     SysEntity.calculate_fov(playerPosition.x,
                                                             playerPosition.y,
-                                                            CURRENT_PLAYER.agility),
+                                                            SysEntity.getCurrentPlayer().agility),
                                     SysEntity.getMonsters(), SysEntity.getPositions()
                             );
-                            CURRENT_PLAYER.current_energy -= strike.first;
+                            SysEntity.getCurrentPlayer().current_energy -= strike.first;
                             for (auto &combat: strike.second) { SysEntity.combatEntities(combat); }
                         } else if (event.bstate & BUTTON3_PRESSED) {
                             Position playerPosition = SysEntity.getPlayerPosition();
-                            pair<int, vector<Intent>> strike = CURRENT_PLAYER.secondarySkill->Use(
-                                    CURRENT_PLAYER, playerPosition,
+                            pair<int, vector<Intent>> strike = SysEntity.getCurrentPlayer().secondarySkill->Use(
+                                    SysEntity.getCurrentPlayer(), playerPosition,
                                     SysEntity.calculate_fov(playerPosition.x,
                                                             playerPosition.y,
-                                                            CURRENT_PLAYER.agility),
+                                                            SysEntity.getCurrentPlayer().agility),
                                     SysEntity.getMonsters(), SysEntity.getPositions()
                             );
-                            CURRENT_PLAYER.current_energy -= strike.first;
+                            SysEntity.getCurrentPlayer().current_energy -= strike.first;
                             for (auto &combat: strike.second) { SysEntity.combatEntities(combat); }
                         } else if (event.bstate & BUTTON2_PRESSED) {
                             Position playerPosition = SysEntity.getPlayerPosition();
-                            pair<int, vector<Intent>> strike = CURRENT_PLAYER.secondarySkill->Use(
-                                    CURRENT_PLAYER, playerPosition,
+                            pair<int, vector<Intent>> strike = SysEntity.getCurrentPlayer().secondarySkill->Use(
+                                    SysEntity.getCurrentPlayer(), playerPosition,
                                     SysEntity.calculate_fov(playerPosition.x,
                                                             playerPosition.y,
-                                                            CURRENT_PLAYER.agility),
+                                                            SysEntity.getCurrentPlayer().agility),
                                     SysEntity.getMonsters(), SysEntity.getPositions()
                             );
-                            CURRENT_PLAYER.current_energy -= strike.first;
+                            SysEntity.getCurrentPlayer().current_energy -= strike.first;
                             for (auto &combat: strike.second) { SysEntity.combatEntities(combat); }
                         }
                     }
@@ -234,36 +234,36 @@ void Game::Update(int player_input) {
                     //repeat code from above, but only here. doesn't make sense to strip out into a method of Game
                     if (player_input == KEY_F(1)) {
                         Position playerPosition = SysEntity.getPlayerPosition();
-                        pair<int, vector<Intent>> strike = CURRENT_PLAYER.primarySkill->Use(
-                                CURRENT_PLAYER, playerPosition,
+                        pair<int, vector<Intent>> strike = SysEntity.getCurrentPlayer().primarySkill->Use(
+                                SysEntity.getCurrentPlayer(), playerPosition,
                                 SysEntity.calculate_fov(playerPosition.x,
                                                         playerPosition.y,
-                                                        CURRENT_PLAYER.agility),
+                                                        SysEntity.getCurrentPlayer().agility),
                                 SysEntity.getMonsters(), SysEntity.getPositions()
                         );
-                        CURRENT_PLAYER.current_energy -= strike.first;
+                        SysEntity.getCurrentPlayer().current_energy -= strike.first;
                         for (auto &combat: strike.second) { SysEntity.combatEntities(combat); }
                     } else if (player_input == KEY_F(2)) {
                         Position playerPosition = SysEntity.getPlayerPosition();
-                        pair<int, vector<Intent>> strike = CURRENT_PLAYER.secondarySkill->Use(
-                                CURRENT_PLAYER, playerPosition,
+                        pair<int, vector<Intent>> strike = SysEntity.getCurrentPlayer().secondarySkill->Use(
+                                SysEntity.getCurrentPlayer(), playerPosition,
                                 SysEntity.calculate_fov(playerPosition.x,
                                                         playerPosition.y,
-                                                        CURRENT_PLAYER.agility),
+                                                        SysEntity.getCurrentPlayer().agility),
                                 SysEntity.getMonsters(), SysEntity.getPositions()
                         );
-                        CURRENT_PLAYER.current_energy -= strike.first;
+                        SysEntity.getCurrentPlayer().current_energy -= strike.first;
                         for (auto &combat: strike.second) { SysEntity.combatEntities(combat); }
                     } else if (player_input == KEY_F(3)) {
                         Position playerPosition = SysEntity.getPlayerPosition();
-                        pair<int, vector<Intent>> strike = CURRENT_PLAYER.secondarySkill->Use(
-                                CURRENT_PLAYER, playerPosition,
+                        pair<int, vector<Intent>> strike = SysEntity.getCurrentPlayer().secondarySkill->Use(
+                                SysEntity.getCurrentPlayer(), playerPosition,
                                 SysEntity.calculate_fov(playerPosition.x,
                                                         playerPosition.y,
-                                                        CURRENT_PLAYER.agility),
+                                                        SysEntity.getCurrentPlayer().agility),
                                 SysEntity.getMonsters(), SysEntity.getPositions()
                         );
-                        CURRENT_PLAYER.current_energy -= strike.first;
+                        SysEntity.getCurrentPlayer().current_energy -= strike.first;
                         for (auto &combat: strike.second) { SysEntity.combatEntities(combat); }
                     } else if (player_input == 'w') {
                         movePlayer({0, -1}, 1);
@@ -282,48 +282,48 @@ void Game::Update(int player_input) {
                     } else if (player_input == 'q') {
                         movePlayer({-1, -1}, 1);
                     } else if (player_input == 'W') {
-                        movePlayer({0, -1}, 1 + CURRENT_PLAYER.agility / 10);
+                        movePlayer({0, -1}, 1 + SysEntity.getCurrentPlayer().agility / 10);
                     } else if (player_input == 'E') {
-                        movePlayer({1, -1}, 1 + CURRENT_PLAYER.agility / 10);
+                        movePlayer({1, -1}, 1 + SysEntity.getCurrentPlayer().agility / 10);
                     } else if (player_input == 'D') {
-                        movePlayer({1, 0}, 1 + CURRENT_PLAYER.agility / 10);
+                        movePlayer({1, 0}, 1 + SysEntity.getCurrentPlayer().agility / 10);
                     } else if (player_input == 'C') {
-                        movePlayer({1, 1}, 1 + CURRENT_PLAYER.agility / 10);
+                        movePlayer({1, 1}, 1 + SysEntity.getCurrentPlayer().agility / 10);
                     } else if (player_input == 'X') {
-                        movePlayer({0, 1}, 1 + CURRENT_PLAYER.agility / 10);
+                        movePlayer({0, 1}, 1 + SysEntity.getCurrentPlayer().agility / 10);
                     } else if (player_input == 'Z') {
-                        movePlayer({-1, 1}, 1 + CURRENT_PLAYER.agility / 10);
+                        movePlayer({-1, 1}, 1 + SysEntity.getCurrentPlayer().agility / 10);
                     } else if (player_input == 'A') {
-                        movePlayer({-1, 0}, 1 + CURRENT_PLAYER.agility / 10);
+                        movePlayer({-1, 0}, 1 + SysEntity.getCurrentPlayer().agility / 10);
                     } else if (player_input == 'Q') {
-                        movePlayer({-1, -1}, 1 + CURRENT_PLAYER.agility / 10);
+                        movePlayer({-1, -1}, 1 + SysEntity.getCurrentPlayer().agility / 10);
                     } else if (player_input == ' ') {
                         Position player_pos = SysEntity.getPlayerPosition();
                         const map<Entity, Item> &items = SysEntity.getItems();
                         EntityMap *entityMap = SysEntity.getEntities();
                         for (const auto &entity: entityMap->data[player_pos.x][player_pos.y]) {
                             if (items.find(entity) != items.end()) {
-                                items.find(entity)->second.effect(CURRENT_PLAYER);
+                                items.find(entity)->second.effect(SysEntity.getCurrentPlayer());
                                 SysEntity.destroyEntity(entity);
                                 break;
                             }
                         }
                     } else if (player_input == 0) {
                         if (!get_random_int(0, 99)) {// 1/100 chance of occurring
-                            CURRENT_PLAYER.current_health = min(CURRENT_PLAYER.max_health,
-                                                                CURRENT_PLAYER.current_health + 1 +
-                                                                CURRENT_PLAYER.vitality / 10);
+                            SysEntity.getCurrentPlayer().current_health = min(SysEntity.getCurrentPlayer().max_health,
+                                                                SysEntity.getCurrentPlayer().current_health + 1 +
+                                                                SysEntity.getCurrentPlayer().vitality / 10);
                         }
 
                         if (!get_random_int(0, 24)) {// 1/25 chance of occurring
-                            CURRENT_PLAYER.current_energy = min(CURRENT_PLAYER.max_energy,
-                                                                CURRENT_PLAYER.current_energy + 3 +
-                                                                CURRENT_PLAYER.focus / 10);
+                            SysEntity.getCurrentPlayer().current_energy = min(SysEntity.getCurrentPlayer().max_energy,
+                                                                SysEntity.getCurrentPlayer().current_energy + 3 +
+                                                                SysEntity.getCurrentPlayer().focus / 10);
 
                         }
 
-                        CURRENT_PLAYER.current_stamina = min(CURRENT_PLAYER.max_stamina,
-                                                             CURRENT_PLAYER.current_stamina + 1);
+                        SysEntity.getCurrentPlayer().current_stamina = min(SysEntity.getCurrentPlayer().max_stamina,
+                                                             SysEntity.getCurrentPlayer().current_stamina + 1);
                     }
                 }
             }
@@ -333,7 +333,7 @@ void Game::Update(int player_input) {
 
         }
 
-        SysEntity.getCurrentPlayer() = CURRENT_PLAYER;
+        CURRENT_PLAYER = SysEntity.getCurrentPlayer();
     }
 
 
@@ -408,7 +408,7 @@ void Game::GAME_OVER(int y, int x) {
 void Game::PLAY_GAME(int y, int x, const int c_fps) {
     unsigned short resolution = 5;
 
-    CURRENT_PLAYER = CURRENT_PLAYER;
+    SysEntity.setPlayer(CURRENT_PLAYER);
     if (CURRENT_PLAYER.current_health <= 0) {
         running = 999;
     }
@@ -460,7 +460,7 @@ void Game::PLAY_GAME(int y, int x, const int c_fps) {
     frame = SysUI.getHud(frame, CURRENT_PLAYER, c_fps);
 
 
-    frame = SysRender.ppBlurLight(frame, 1, 1.0);
+    frame = SysRender.ppBlurLight(frame, 1, 1.5);
 
     if (paused) {
         for (int i = 0; i < y; i++) {

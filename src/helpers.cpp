@@ -17,10 +17,12 @@ int get_random_int(const int min, const int max) {
     return distr(gen);
 }
 
-
-wstring get_random_character(const vector<wstring> &vec) {
-    return vec[get_random_int(0, vec.size() - 1)];
+wstring get_random_character(const unordered_set<wstring>& vec) {
+    auto it = vec.begin();
+    std::advance(it, get_random_int(0, vec.size() - 1));
+    return *it;
 }
+
 
 
 template<typename T, class Container>
@@ -33,18 +35,8 @@ bool is_position_in_fov(const Position position, const set<pair<int, int>> &fov)
     pair<int, int> element = make_pair(position.x, position.y);
     return is_in_set(element, fov);
 }
-
-
-bool check_if_in(const vector<wstring> &char_array, const wstring &compare) {
-    bool found = false;
-    for (const std::wstring &str: char_array) {
-        if (str == compare) {
-            found = true;
-            break;
-        }
-    }
-
-    return found;
+bool check_if_in(const unordered_set<wstring>& char_array, const wstring& compare) {
+    return char_array.count(compare) > 0;
 }
 
 

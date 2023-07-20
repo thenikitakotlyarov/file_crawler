@@ -5,6 +5,7 @@ using namespace std;
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include "components/graphics/Color.h"
 //#include "components/graphics/RawColor.h"
 
@@ -248,9 +249,9 @@ const Color NCOLOR_BROWN = {
 //        L"ـ", L"ف", L"ق", L"ك", L"ل", L"م", L"ن"};
 
 
-const vector<wstring> VOID_TILES = {L" "};
-const vector<wstring> GROUND_TILES = {L","};
-const vector<wstring> WALL_TILES = {L"▓"};
-const vector<wstring> TRAP_TILES = {L"‽"};
-const vector<wstring> MONSTER_TILES = {L"M"};
-const vector<wstring> ITEM_TILES = {L"o",L"⍟"};
+const unordered_set<wstring> VOID_TILES = {L" "};
+const unordered_set<wstring> GROUND_TILES = {L","};
+const unordered_set<wstring> WALL_TILES = {L"▓"};
+const unordered_set<wstring> TRAP_TILES = {L"‽"};
+const unordered_set<wstring> MONSTER_TILES = {L"M"};
+const unordered_set<wstring> ITEM_TILES = {L"o",L"⍟"};
