@@ -68,6 +68,10 @@ public:
 private:
     bool Initialize();
 
+
+
+
+
     vector<vector<wstring>> EMPTY_ICON = {};
 
 

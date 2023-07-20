@@ -39,6 +39,15 @@ bool Game::Initialize() {
     SysRender = RenderSystem();
     if (!SysRender.running) return false;
 
+
+    settings_graphics_upscale = true;
+    settings_graphics_3D = true;
+    settings_graphics_lighting = true;
+    settings_graphics_bloom = true;
+    settings_ui_tags = true;
+    settings_ui_hud = true;
+
+
     return true;
 
 }
@@ -181,8 +190,10 @@ void Game::Update(int player_input) {
                 if (player_level > SysEntity.getCurrentPlayer().level) {// player just leveled up
                     SysEntity.getCurrentPlayer().level = player_level;
                     SysEntity.setPlayer(SysEntity.getCurrentPlayer());
-                    const int item_count = pow(round(0.001333 * (HEIGHT * WIDTH)), (10 + SysEntity.getCurrentPlayer().level) / 10);
-                    const int monster_count = pow(round(0.00125 * (HEIGHT * WIDTH)), (10 + SysEntity.getCurrentPlayer().level) / 10);
+                    const int item_count = pow(round(0.001333 * (HEIGHT * WIDTH)),
+                                               (10 + SysEntity.getCurrentPlayer().level) / 10);
+                    const int monster_count = pow(round(0.00125 * (HEIGHT * WIDTH)),
+                                                  (10 + SysEntity.getCurrentPlayer().level) / 10);
                     const float monster_difficulty = pow(1.1, (10 + SysEntity.getCurrentPlayer().level) / 10);
 
                     SysEntity.spawnItems(item_count);
@@ -311,19 +322,23 @@ void Game::Update(int player_input) {
                     } else if (player_input == 0) {
                         if (!get_random_int(0, 99)) {// 1/100 chance of occurring
                             SysEntity.getCurrentPlayer().current_health = min(SysEntity.getCurrentPlayer().max_health,
-                                                                SysEntity.getCurrentPlayer().current_health + 1 +
-                                                                SysEntity.getCurrentPlayer().vitality / 10);
+                                                                              SysEntity.getCurrentPlayer().current_health +
+                                                                              1 +
+                                                                              SysEntity.getCurrentPlayer().vitality /
+                                                                              10);
                         }
 
                         if (!get_random_int(0, 24)) {// 1/25 chance of occurring
                             SysEntity.getCurrentPlayer().current_energy = min(SysEntity.getCurrentPlayer().max_energy,
-                                                                SysEntity.getCurrentPlayer().current_energy + 3 +
-                                                                SysEntity.getCurrentPlayer().focus / 10);
+                                                                              SysEntity.getCurrentPlayer().current_energy +
+                                                                              3 +
+                                                                              SysEntity.getCurrentPlayer().focus / 10);
 
                         }
 
                         SysEntity.getCurrentPlayer().current_stamina = min(SysEntity.getCurrentPlayer().max_stamina,
-                                                             SysEntity.getCurrentPlayer().current_stamina + 1);
+                                                                           SysEntity.getCurrentPlayer().current_stamina +
+                                                                           1);
                     }
                 }
             }
@@ -340,7 +355,8 @@ void Game::Update(int player_input) {
 }
 
 
-void Game::CARD_TITLE(int y, int x) {
+void Game::CARD_TITLE() {
+    const int y = LINES, x = COLS;
     Frame frame = UISystem::BlankFrame(y, x, 0);
 
     frame = SysUI.getTitleCard(frame);
@@ -349,7 +365,8 @@ void Game::CARD_TITLE(int y, int x) {
 }
 
 
-void Game::MENU_MAIN(int y, int x) {
+void Game::MENU_MAIN() {
+    const int y = LINES, x = COLS;
     Frame frame = UISystem::BlankFrame(y, x, 0);
 
     frame = SysUI.getMainMenu(frame);
@@ -358,7 +375,8 @@ void Game::MENU_MAIN(int y, int x) {
 }
 
 
-void Game::MENU_NEW_GAME(int y, int x) {
+void Game::MENU_NEW_GAME() {
+    const int y = LINES, x = COLS;
     Frame frame = UISystem::BlankFrame(y, x, 0);
 
     READY_TO_PLAY = false;
@@ -369,7 +387,8 @@ void Game::MENU_NEW_GAME(int y, int x) {
 }
 
 
-void Game::MENU_LOAD_GAME(int y, int x) {
+void Game::MENU_LOAD_GAME() {
+    const int y = LINES, x = COLS;
     Frame frame = UISystem::BlankFrame(y, x, 0);
 
     frame = SysUI.getLoadCard(frame);
@@ -378,7 +397,8 @@ void Game::MENU_LOAD_GAME(int y, int x) {
 }
 
 
-void Game::MENU_SETTINGS(int y, int x) {
+void Game::MENU_SETTINGS() {
+    const int y = LINES, x = COLS;
     Frame frame = UISystem::BlankFrame(y, x, 0);
 
     frame = SysUI.getSettingsMenu(frame);
@@ -387,7 +407,8 @@ void Game::MENU_SETTINGS(int y, int x) {
 }
 
 
-void Game::DEBUG_COLOR(int y, int x) {
+void Game::DEBUG_COLOR() {
+    const int y = LINES, x = COLS;
     Frame frame = UISystem::BlankFrame(y, x, 0);
 
     frame = SysUI.getColorDebug(frame);
@@ -396,7 +417,8 @@ void Game::DEBUG_COLOR(int y, int x) {
 }
 
 
-void Game::GAME_OVER(int y, int x) {
+void Game::GAME_OVER() {
+    const int y = LINES, x = COLS;
     Frame frame = UISystem::BlankFrame(y, x, 0);
 
     frame = SysUI.getGameOverCard(frame);
@@ -405,8 +427,10 @@ void Game::GAME_OVER(int y, int x) {
 }
 
 
-void Game::PLAY_GAME(int y, int x, const int c_fps) {
-    unsigned short resolution = 5;
+void Game::PLAY_GAME(const int c_fps) {
+    const int y = LINES, x = COLS;
+    unsigned short resolution = 1;
+    if (settings_graphics_upscale) resolution = 5;
 
     SysEntity.setPlayer(CURRENT_PLAYER);
     if (CURRENT_PLAYER.current_health <= 0) {
@@ -438,43 +462,59 @@ void Game::PLAY_GAME(int y, int x, const int c_fps) {
     frame = MapSystem::renderMap2D(frame, CURRENT_MAP,
                                    start_y, start_x, end_y, end_x);
 
-
-    frame = SysLight.renderLighting2D(frame, player_pos, player_fov_radius,
-                                      start_y, start_x, end_y, end_x);
+    if (settings_graphics_lighting) {
+        frame = SysLight.renderLighting2D(frame, player_pos, player_fov_radius,
+                                          start_y, start_x, end_y, end_x);
+    }
 
     frame = SysEntity.renderEntities2D(frame, view_fov,
                                        start_y, start_x, end_y, end_x);
 
-    frame = MapSystem::renderMap3D(frame, CURRENT_MAP,
-                                   start_y, start_x, end_y, end_x);
+    if (settings_graphics_3D) {
+        frame = MapSystem::renderMap3D(frame, CURRENT_MAP,
+                                       start_y, start_x, end_y, end_x);
+    }
 
 
     SysMap.veilMap(CURRENT_MAP, veil_fov);
     SysMap.forgetMap(CURRENT_MAP, make_pair(player_pos.x, player_pos.y),
                      CURRENT_PLAYER.insight);
 
+    if (settings_graphics_upscale) {
+        frame = SysRender.ppUpscale(frame, SysEntity, start_x, start_y, resolution);
+    }
 
-    frame = SysRender.ppUpscale(frame, SysEntity, start_x, start_y, resolution);
+    if (settings_ui_tags) {
+        frame = SysUI.getTags(frame, SysEntity, start_x, start_y, resolution);
+    }
 
-    frame = SysUI.getTags(frame, SysEntity, start_x, start_y, resolution);
-    frame = SysUI.getHud(frame, CURRENT_PLAYER, c_fps);
+    if (settings_ui_hud) {
+        frame = SysUI.getHud(frame, CURRENT_PLAYER, c_fps);
+    }
 
-
-    frame = SysRender.ppBlurLight(frame, 1, 1.5);
+    if (settings_graphics_bloom) {
+        frame = SysRender.ppBlurLight(frame, 1, 1.5);
+    }
 
     if (paused) {
         for (int i = 0; i < y; i++) {
             for (int j = 0; j < x; j++) {
                 if (i > y / 10 && i < y * 4 / 5 && j > x / 3 && j < x * 2 / 3) {
-                    frame.data[i][j].ch = ' ';
-                    frame.data[i][j].fg_color = {0, 0, 0};
-                    frame.data[i][j].bg_color = {0, 0, 0};
+                    if (i >= LINES || j >= COLS) continue;
+                    frame.data[i][j].ch = '.';
+                    frame.data[i][j].fg_color = {8, 8, 8};
+                    frame.data[i][j].bg_color *= {8, 8, 8};
                 } else {
+                    if (i >= LINES || i >= frame.data.size()
+                        || j >= COLS || j >= frame.data[0].size())
+                        continue;
                     frame.data[i][j].fg_color = {127, 127, 127};
-                    frame.data[i][j].bg_color = {0, 0, 0};
+                    frame.data[i][j].bg_color *= {8, 8, 8};
                 }
             }
         }
+        frame = SysRender.ppBlurLight(frame, 3, 1.5);
+        frame = SysUI.addButton(frame, y / 10, x / 3, y * 7 / 10, x * 1 / 3, NCOLOR_MGREY, NCOLOR_BLACK);
     } else {
         SysEntity.Update();
 

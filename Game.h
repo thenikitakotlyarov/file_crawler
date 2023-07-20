@@ -14,7 +14,6 @@
 using namespace std;
 
 
-
 class Game {
 public:
     explicit Game();
@@ -35,21 +34,21 @@ public:
 
     int get_player_level();
 
-    void CARD_TITLE(int y, int x);
+    void CARD_TITLE();
 
-    void MENU_MAIN(int y, int x);
+    void MENU_MAIN();
 
-    void MENU_NEW_GAME(int y, int x);
+    void MENU_NEW_GAME();
 
-    void MENU_LOAD_GAME(int y, int x);
+    void MENU_LOAD_GAME();
 
-    void MENU_SETTINGS(int y, int x);
+    void MENU_SETTINGS();
 
-    void DEBUG_COLOR(int y, int x);
+    void DEBUG_COLOR();
 
-    void GAME_OVER(int y, int x);
+    void GAME_OVER();
 
-    void PLAY_GAME(int y, int x, const int c_fps);
+    void PLAY_GAME(const int c_fps);
 
 
 private:
@@ -63,6 +62,14 @@ private:
 
     Player CURRENT_PLAYER;
     GameMap *CURRENT_MAP;
+
+
+    bool settings_graphics_upscale;
+    bool settings_graphics_3D;
+    bool settings_graphics_lighting;
+    bool settings_graphics_bloom;
+    bool settings_ui_tags;
+    bool settings_ui_hud;
 
 
     void movePlayer(pair<int, int> delta, const int speed);

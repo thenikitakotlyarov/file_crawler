@@ -9,8 +9,8 @@ pair<bool, unique_ptr<Game>> init() {
     initscr();
     keypad(stdscr, TRUE);
     mousemask(ALL_MOUSE_EVENTS, nullptr);
-    start_color();
-    init_all_color_pairs();
+    //start_color();
+    //init_all_color_pairs();
     curs_set(0);
     noecho();
     nodelay(stdscr, TRUE);
@@ -42,15 +42,15 @@ int main() {
 
         // Update all GAME to GAME-> in the following code
         if (GAME->running == 1) {
-            GAME->CARD_TITLE(LINES, COLS);
+            GAME->CARD_TITLE();
         } else if (GAME->running == 2) {
-            GAME->MENU_MAIN(LINES, COLS);
+            GAME->MENU_MAIN();
         } else if (GAME->running == 3) {
-            GAME->MENU_NEW_GAME(LINES, COLS);
+            GAME->MENU_NEW_GAME();
         } else if (GAME->running == 4) {
-            GAME->MENU_LOAD_GAME(LINES, COLS);
+            GAME->MENU_LOAD_GAME();
         } else if (GAME->running == 8) {
-            GAME->DEBUG_COLOR(LINES, COLS);
+            GAME->DEBUG_COLOR();
             int key = getch();
             while (key != '0') {
                 key = getch();
@@ -58,12 +58,12 @@ int main() {
             }
             GAME->running = 2;
         } else if (GAME->running == 9) {
-            GAME->MENU_SETTINGS(LINES, COLS);
+            GAME->MENU_SETTINGS();
         } else if (GAME->running == 999) {
-            GAME->GAME_OVER(LINES, COLS);
+            GAME->GAME_OVER();
         } else if (GAME->running >= 10) {
-            if (!GAME->READY_TO_PLAY) GAME->MENU_LOAD_GAME(LINES, COLS);
-            else GAME->PLAY_GAME(LINES, COLS, fps);
+            if (!GAME->READY_TO_PLAY) GAME->MENU_LOAD_GAME();
+            else GAME->PLAY_GAME(fps);
         }
 
         GAME->Update(get_input());
