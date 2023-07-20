@@ -421,7 +421,7 @@ void Game::PLAY_GAME(int y, int x, const int c_fps) {
     frame = SysUI.getHud(frame, SysEntity.getCurrentPlayer(), c_fps);
 
 
-    frame = SysRender.ppBlurLight(frame, 1, 1.5);
+    frame = SysRender.ppBlurLight(frame, 1, 1.0);
 
     if (paused) {
         for (int i = 0; i < y; i++) {
