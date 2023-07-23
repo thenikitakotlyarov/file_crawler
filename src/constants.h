@@ -7,6 +7,7 @@ using namespace std;
 #include <unordered_map>
 #include <unordered_set>
 #include "components/graphics/Color.h"
+#include "components/graphics/Pixel.h"
 //#include "components/graphics/RawColor.h"
 
 #define FPS 60
@@ -255,3 +256,6 @@ const unordered_set<wstring> WALL_TILES = {L"▓"};
 const unordered_set<wstring> TRAP_TILES = {L"‽"};
 const unordered_set<wstring> MONSTER_TILES = {L"M"};
 const unordered_set<wstring> ITEM_TILES = {L"o",L"⍟"};
+
+
+const Pixel empty_pixel = {L"?", NCOLOR_RED,NCOLOR_BLACK};

@@ -20,18 +20,19 @@ Monster getBasicMonster() {
             "Monster",
             get_random_character(MONSTER_TILES),
             NCOLOR_RED,
+            //TODO:generateSprite(EntityType:Monster,the,rest,of,the,monster);
             {{
-                     {L" ", L"{", L"C", L" ", L" "},
+                     {L"?", L"{", L"C", L"?", L"?"},
                      {L"/", L"O", L"o", L"=", L"="},
-                     {L"\\", L"=", L"=", L"=", L" "},
-                     {L"/", L"P", L"Q", L"\\", L" "},
-                     {L"/", L"/", L" ", L"/", L"/"}},
+                     {L"\\", L"=", L"=", L"=", L"?"},
+                     {L"/", L"P", L"Q", L"\\", L"?"},
+                     {L"/", L"/", L"?", L"/", L"/"}},
              {
-                     {NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_DYELLOW, NCOLOR_BLACK, NCOLOR_BLACK},
+                     {NCOLOR_RED, NCOLOR_BLACK, NCOLOR_DYELLOW, NCOLOR_RED, NCOLOR_RED},
                      {NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_MRED, NCOLOR_LRED},
-                     {NCOLOR_BLACK, NCOLOR_MRED, NCOLOR_LRED, NCOLOR_LRED, NCOLOR_BLACK},
-                     {NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK},
-                     {NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK}
+                     {NCOLOR_BLACK, NCOLOR_MRED, NCOLOR_LRED, NCOLOR_LRED, NCOLOR_RED},
+                     {NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_RED},
+                     {NCOLOR_BLACK, NCOLOR_BLACK, NCOLOR_RED, NCOLOR_BLACK, NCOLOR_BLACK}
              },
              {
                      {NCOLOR_BLACK, NCOLOR_DRED, NCOLOR_RED, NCOLOR_BLACK, NCOLOR_BLACK},

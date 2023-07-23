@@ -79,7 +79,7 @@ public:
             int center_x, int center_y,
             int radius);
 
-    Frame renderEntities2D(Frame frame,
+    Frame renderEntities2D(Frame frame, Frame &compare,
                            const set<pair<int, int>> current_fov,
                            int start_y, int start_x,
                            int end_y, int end_x);

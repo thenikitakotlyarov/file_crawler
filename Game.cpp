@@ -75,8 +75,8 @@ void Game::movePlayer(pair<int, int> delta, const int speed) {
     Entity playerEntity = SysEntity.getPlayer();
     for (int i = 0; i < speed; ++i) {
         Intent playerIntent = {playerEntity, IntentType::Move, delta};
-        if (CURRENT_PLAYER.current_stamina > 0) {
-            if (speed > 1) CURRENT_PLAYER.current_stamina = max(0, CURRENT_PLAYER.current_stamina - 2);
+        if (SysEntity.getCurrentPlayer().current_stamina > 0) {
+            if (speed > 1) SysEntity.getCurrentPlayer().current_stamina = max(0, SysEntity.getCurrentPlayer().current_stamina - 2);
             SysEntity.moveEntity(playerIntent);
         }
 
@@ -310,7 +310,7 @@ void Game::Update(int player_input) {
                         movePlayer({-1, -1}, 1 + SysEntity.getCurrentPlayer().agility / 10);
                     } else if (player_input == ' ') {
                         Position player_pos = SysEntity.getPlayerPosition();
-                        const map<Entity, Item> &items = SysEntity.getItems();
+                        const map <Entity, Item> &items = SysEntity.getItems();
                         EntityMap *entityMap = SysEntity.getEntities();
                         for (const auto &entity: entityMap->data[player_pos.x][player_pos.y]) {
                             if (items.find(entity) != items.end()) {
@@ -436,7 +436,11 @@ void Game::PLAY_GAME(const int c_fps) {
     if (CURRENT_PLAYER.current_health <= 0) {
         running = 999;
     }
-    Frame frame = UISystem::BlankFrame(y / resolution, x / resolution, 0);
+    Frame frame = UISystem::BlankFrame(y, x, 0);
+    Frame layer_map = UISystem::BlankFrame(y / resolution, x / resolution, 0);
+    Frame layer_entity = UISystem::BlankFrame(y / resolution, x / resolution, 0);
+    Frame layer_ui = UISystem::BlankFrame(y, x, 0);
+
     Position player_pos = SysEntity.getPlayerPosition();
 
     int start_x = max(0, player_pos.x - COLS / resolution / 2);
@@ -449,31 +453,31 @@ void Game::PLAY_GAME(const int c_fps) {
 
     int player_fov_radius = PLAYER_FOV_RADIUS + PLAYER_FOV_RADIUS * CURRENT_PLAYER.focus / 100;
 
-    set<pair<int, int>> veil_fov = SysEntity.calculate_fov(
+    set <pair<int, int>> veil_fov = SysEntity.calculate_fov(
             player_pos.x, player_pos.y, 2 * player_fov_radius
     );
 
-    set<pair<int, int>> view_fov = SysEntity.calculate_fov(
+    set <pair<int, int>> view_fov = SysEntity.calculate_fov(
             player_pos.x, player_pos.y, player_fov_radius
     );
 
     SysMap.unveilMap(CURRENT_MAP, veil_fov);
 
-    frame = MapSystem::renderMap2D(frame, CURRENT_MAP,
-                                   start_y, start_x, end_y, end_x);
+    layer_map = MapSystem::renderMap2D(layer_map, CURRENT_MAP,
+                                       start_y, start_x, end_y, end_x);
 
     if (settings_graphics_lighting) {
-        frame = SysLight.renderLighting2D(frame, player_pos, player_fov_radius,
-                                          start_y, start_x, end_y, end_x);
+        layer_map = SysLight.renderLighting2D(layer_map, player_pos, player_fov_radius,
+                                              start_y, start_x, end_y, end_x);
     }
-
-    frame = SysEntity.renderEntities2D(frame, view_fov,
-                                       start_y, start_x, end_y, end_x);
 
     if (settings_graphics_3D) {
-        frame = MapSystem::renderMap3D(frame, CURRENT_MAP,
-                                       start_y, start_x, end_y, end_x);
+        layer_map = MapSystem::renderMap3D(layer_map, CURRENT_MAP,
+                                           start_y, start_x, end_y, end_x);
     }
+
+    layer_entity = SysEntity.renderEntities2D(layer_entity, layer_map, view_fov,
+                                              start_y, start_x, end_y, end_x);
 
 
     SysMap.veilMap(CURRENT_MAP, veil_fov);
@@ -481,20 +485,26 @@ void Game::PLAY_GAME(const int c_fps) {
                      CURRENT_PLAYER.insight);
 
     if (settings_graphics_upscale) {
-        frame = SysRender.ppUpscale(frame, SysEntity, start_x, start_y, resolution);
-    }
-
-    if (settings_ui_tags) {
-        frame = SysUI.getTags(frame, SysEntity, start_x, start_y, resolution);
-    }
-
-    if (settings_ui_hud) {
-        frame = SysUI.getHud(frame, CURRENT_PLAYER, c_fps);
+        layer_map = SysRender.ppUpscale(layer_map, SysEntity, start_x, start_y, resolution,2);
+        layer_entity = SysRender.ppUpscale(layer_entity, SysEntity, start_x, start_y, resolution,1);
     }
 
     if (settings_graphics_bloom) {
-        frame = SysRender.ppBlurLight(frame, 1, 1.5);
+        layer_map = SysRender.ppBlurLight(layer_map, 2, 1.2);
     }
+
+
+
+    if (settings_ui_tags) {
+        layer_ui = SysUI.getTags(layer_ui, SysEntity, start_x, start_y, resolution);
+    }
+
+    if (settings_ui_hud) {
+        layer_ui = SysUI.getHud(layer_ui, CURRENT_PLAYER, c_fps);
+    }
+
+
+    frame = SysRender.compositeLayers(frame, layer_map, layer_entity, layer_ui);
 
     if (paused) {
         for (int i = 0; i < y; i++) {

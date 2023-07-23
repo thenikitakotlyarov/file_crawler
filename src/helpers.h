@@ -43,7 +43,7 @@ int get_random_int(int min, int max);
 
 wstring get_random_character(const unordered_set<wstring> &char_array);
 
-bool check_if_in(const vector<wstring> &char_array, const wstring& compare);
+bool check_if_in(const unordered_set<wstring> &char_array, const wstring& compare);
 
 template<typename T, class Container>
 bool is_in_set(const T &element, const Container &set);

@@ -362,29 +362,31 @@ void EntitySystem::combatEntities(const Intent &intent) {
 
 
 Frame
-EntitySystem::renderEntities2D(Frame frame, const set<pair<int, int>> current_fov, int start_y,
+EntitySystem::renderEntities2D(Frame frame, Frame &compare,const set<pair<int, int>> current_fov, int start_y,
                                int start_x, int end_y, int end_x) {
     for (int i = start_y; i < end_y; i++) {
         for (int j = start_x; j < end_x; j++) {
             Position this_pos = {j, i};
-            if (is_position_in_fov(this_pos, current_fov)
-                && !currentMap->data[j][i].z) {
+            Position frame_pos = {this_pos.x-start_x,this_pos.y-start_y};
+                if (is_position_in_fov(this_pos, current_fov)
+                && !currentMap->data[j][i].z
+                && !check_if_in(WALL_TILES,compare.data[frame_pos.y][frame_pos.x].ch)) {
                 vector<Entity> &entity_refs = entityMap->data[j][i];
                 for (Entity &entity_ref: entity_refs) {
                     if (entity_ref.id == 1) {//tis the player
-                        frame.data[i - start_y][j - start_x].ch = L"@";
-                        frame.data[i - start_y][j - start_x].fg_color = NCOLOR_BLACK;
-                        frame.data[i - start_y][j - start_x].bg_color = currentPlayer.color;
+                        frame.data[frame_pos.y][frame_pos.x].ch = L"@";
+                        frame.data[frame_pos.y][frame_pos.x].fg_color = NCOLOR_BLACK;
+                        frame.data[frame_pos.y][frame_pos.x].bg_color = currentPlayer.color;
                     } else if (items.find(entity_ref) != items.end()) {
-                        frame.data[i - start_y][j - start_x].ch = items[entity_ref].character;
-                        frame.data[i - start_y][j - start_x].fg_color = NCOLOR_BLACK;
-                        frame.data[i - start_y][j - start_x].bg_color = items[entity_ref].color;
+                        frame.data[frame_pos.y][frame_pos.x].ch = items[entity_ref].character;
+                        frame.data[frame_pos.y][frame_pos.x].fg_color = NCOLOR_BLACK;
+                        frame.data[frame_pos.y][frame_pos.x].bg_color = items[entity_ref].color;
 
 
                     } else if (monsters.find(entity_ref) != monsters.end()) {
-                        frame.data[i - start_y][j - start_x].ch = monsters[entity_ref].character;
-                        frame.data[i - start_y][j - start_x].fg_color = NCOLOR_BLACK;
-                        frame.data[i - start_y][j - start_x].bg_color = monsters[entity_ref].color;
+                        frame.data[frame_pos.y][frame_pos.x].ch = monsters[entity_ref].character;
+                        frame.data[frame_pos.y][frame_pos.x].fg_color = NCOLOR_BLACK;
+                        frame.data[frame_pos.y][frame_pos.x].bg_color = monsters[entity_ref].color;
 
                     } else {
                         //literally who the fuck?

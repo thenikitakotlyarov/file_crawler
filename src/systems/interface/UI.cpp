@@ -45,11 +45,7 @@ UISystem::BlankFrame(const int y, const int x, unsigned long frame_count) {
     vector<vector<Pixel>> frame_data(
             y,
             vector<Pixel>(
-                    x, {
-                            L" ",
-                            NCOLOR_RED,
-                            NCOLOR_BLACK
-                    }
+                    x, empty_pixel
             )
     );
 
@@ -628,7 +624,7 @@ UISystem::getHud(Frame frame, const Player &player, const int c_fps) {
     //draw level bar
     y = 2, x = 1;
     frame = addBar(frame, y, x,
-                   min((int) frame.data.size(), 14) - 2, exp_level, L"☆",
+                   min((int) frame.data.size() - 2, 14), exp_level, L"☆",
                    NCOLOR_WHITE, NCOLOR_BLACK);
 
     //draw stamina bar

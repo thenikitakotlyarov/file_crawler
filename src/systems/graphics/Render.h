@@ -19,19 +19,23 @@ public:
 
     void Update();
 
-    Sprite charToSprite(EntitySystem &entitySystem, const Position pos, const wstring this_char,
-                        const Color fg_color, const Color bg_color);
+    Sprite
+    charToSprite(EntitySystem &entitySystem, const Position pos, const unsigned short scale,
+                 const wstring this_char, const Color fg_color, const Color bg_color);
 
-    Frame ppUpscale(const Frame &frame, EntitySystem &entitySystem,
-                    const int start_x, const int start_y, const unsigned short scale);
+    Frame ppUpscale(const Frame &old_frame, EntitySystem &entitySystem,
+                    const int start_x, const int start_y, const unsigned short scale, const unsigned short depth);
 
     Frame ppBlurLight(const Frame &frame, const unsigned short scale, const float amount);
+
+    Frame compositeLayers(Frame frame, const Frame map_layer, const Frame entity_layer, const Frame ui_layer);
 
     void render(const Frame &frame);
 
 
 private:
     bool Initialize();
+
 
     unordered_map<wstring, vector<vector<wstring>>> upres_map = {
 //            {L"@",

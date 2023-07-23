@@ -29,7 +29,7 @@ void RenderSystem::Update() {
     // Update systems
 }
 
-Sprite RenderSystem::charToSprite(EntitySystem &entitySystem, const Position pos,
+Sprite RenderSystem::charToSprite(EntitySystem &entitySystem, const Position pos, const unsigned short scale,
                                   const wstring this_char, const Color fg_color, const Color bg_color) {
     Sprite this_sprite;
 
@@ -59,8 +59,8 @@ Sprite RenderSystem::charToSprite(EntitySystem &entitySystem, const Position pos
         const vector<vector<wstring>> &upscaled_texture = (it != upres_map.end()) ? it->second : upres_map.at(L"?");
         this_sprite = {
                 upscaled_texture,
-                vector<vector<Color>>(5, vector<Color>(5, fg_color)),
-                vector<vector<Color>>(5, vector<Color>(5, bg_color))
+                vector<vector<Color>>(scale, vector<Color>(scale, fg_color)),
+                vector<vector<Color>>(scale, vector<Color>(scale, bg_color))
         };
     }
 
@@ -68,36 +68,46 @@ Sprite RenderSystem::charToSprite(EntitySystem &entitySystem, const Position pos
 }
 
 
-Frame RenderSystem::ppUpscale(const Frame &frame, EntitySystem &entitySystem,
-                              const int start_x, const int start_y, const unsigned short scale) {
+Frame RenderSystem::ppUpscale(const Frame &old_frame, EntitySystem &entitySystem,
+                              const int start_x, const int start_y, const unsigned short scale,
+                              const unsigned short depth) {
     //ups the resolution of a frame to a pixel resolution of input:output::1:scale
-    Position frame_size = {
-            (int) frame.data[0].size(),
-            (int) frame.data.size()
+    Position old_frame_size = {
+            (int) old_frame.data[0].size(),
+            (int) old_frame.data.size()
+    };
+
+    Position new_frame_size = {
+            (int) old_frame_size.x * scale,
+            (int) old_frame_size.y * scale
     };
 
     Frame new_frame = {
-            frame.meta,
-            vector<vector<Pixel>>(frame_size.y * scale,
-                                  vector<Pixel>(frame_size.x * scale,
-                                                Pixel{L"?", NCOLOR_RED, NCOLOR_BLACK}
+            old_frame.meta,
+            vector<vector<Pixel>>(new_frame_size.y,
+                                  vector<Pixel>(new_frame_size.x,
+                                                empty_pixel
                                   )
             )
     };
 
 
-    for (int i = 0; i < frame_size.y; ++i) {
-        for (int j = 0; j < frame_size.x; ++j) {
-            const wstring this_char = frame.data[i][j].ch;
-            const Sprite this_sprite = charToSprite(entitySystem, {j + start_x, i + start_y},
-                                                    this_char, frame.data[i][j].fg_color, frame.data[i][j].bg_color);
+    for (int i = 0; i < old_frame_size.y; ++i) {
+        for (int j = 0; j < old_frame_size.x; ++j) {
+            if (old_frame.data[i][j] == empty_pixel) continue;
+            const wstring this_char = old_frame.data[i][j].ch;
+            const Sprite this_sprite = charToSprite(entitySystem, {j + start_x, i + start_y}, scale,
+                                                    this_char, old_frame.data[i][j].fg_color,
+                                                    old_frame.data[i][j].bg_color);
 
-
-            for (int _i = 0; _i < scale; ++_i) {
-                for (int _j = 0; _j < scale; ++_j) {
-                    Position this_pos = {j * scale + _j,
-                                         i * scale + _i};
-                    new_frame.data[this_pos.y][this_pos.x] = frame.data[i][j];
+            const Position this_sprite_size = {(int) this_sprite.texture[0].size(),
+                                               (int) this_sprite.texture.size()};
+            for (int _i = 0; _i < this_sprite_size.y; ++_i) {
+                for (int _j = 0; _j < this_sprite_size.x; ++_j) {
+                    Position this_pos = {
+                            max(0, min(new_frame_size.x - 1, j * scale + scale / 2 - this_sprite_size.x / 2 + _j)),
+                            max(0, min(new_frame_size.y - 1, i * scale + scale / 2 - this_sprite_size.y / 2 + _i))};
+                    new_frame.data[this_pos.y][this_pos.x] = old_frame.data[i][j];
                     new_frame.data[this_pos.y][this_pos.x].ch = this_sprite.texture[_i][_j];
                     new_frame.data[this_pos.y][this_pos.x].fg_color = this_sprite.fg_colors[_i][_j];
                     new_frame.data[this_pos.y][this_pos.x].bg_color = this_sprite.bg_colors[_i][_j];
@@ -108,30 +118,30 @@ Frame RenderSystem::ppUpscale(const Frame &frame, EntitySystem &entitySystem,
                         Color new_subpixel_color;
                         Position offset = {0, 0};
                         bool stop = false;
-                        int depth = 0;
+                        int this_depth = 0;
                         do {
-                            if (_i < scale / 3) {
+                            if (_i < this_sprite_size.y / 3) {
                                 offset.y -= 1;
-                            } else if (_i > scale * 2 / 3) {
+                            } else if (_i > this_sprite_size.y * 2 / 3) {
                                 offset.y += 1;
                             }
-                            if (_j < scale / 3) {
+                            if (_j < this_sprite_size.x / 3) {
                                 offset.x -= 1;
-                            } else if (_j > scale * 2 / 3) {
+                            } else if (_j > this_sprite_size.x * 2 / 3) {
                                 offset.x += 1;
                             }
 
                             Position new_pos = {
-                                    max(0, min(frame_size.x - 1, j + offset.x)),
-                                    max(0, min(frame_size.y - 1, i + offset.y))
+                                    max(0, min(old_frame_size.x - 1, j + offset.x)),
+                                    max(0, min(old_frame_size.y - 1, i + offset.y))
                             };
 
-                            new_subpixel_color = frame.data[new_pos.y][new_pos.x].bg_color;
+                            new_subpixel_color = old_frame.data[new_pos.y][new_pos.x].bg_color;
 
 
                             if (new_subpixel_color != old_subpixel_color) stop = true;
-                            depth++;
-                        } while (!stop && depth < 2);
+                            this_depth++;
+                        } while (!stop && this_depth < depth);
 
 
                         if (new_subpixel_color < new_frame.data[this_pos.y][this_pos.x].bg_color) {
@@ -207,6 +217,31 @@ Frame RenderSystem::ppBlurLight(const Frame &frame, const unsigned short scale, 
     return new_frame;
 }
 
+
+Frame
+RenderSystem::compositeLayers(Frame frame, const Frame map_layer, const Frame entity_layer, const Frame ui_layer) {
+    const Position frame_size = {(int) frame.data[0].size(), (int) frame.data.size()};
+    const Position map_size = {(int) map_layer.data[0].size(), (int) map_layer.data.size()};
+    const Position entity_size = {(int) entity_layer.data[0].size(), (int) entity_layer.data.size()};
+    const Position ui_size = {(int) ui_layer.data[0].size(), (int) ui_layer.data.size()};
+
+    for (int i = 0; i < frame_size.y; ++i) {
+        for (int j = 0; j < frame_size.x; ++j) {
+            if (i < map_size.y && j < map_size.x)
+                frame.data[i][j] = map_layer.data[i][j];
+
+            if (i < entity_size.y && j < entity_size.x && entity_layer.data[i][j] != empty_pixel)
+                frame.data[i][j] = entity_layer.data[i][j];
+
+            if (i < ui_size.y && j < ui_size.x && ui_layer.data[i][j] != empty_pixel)
+                frame.data[i][j] = ui_layer.data[i][j];
+        }
+    }
+    const int I_AM_A_DEBUG = break_point();
+    return frame;
+};
+
+
 void RenderSystem::render(const Frame &frame) {
     const int frameHeight = frame.data.size();
     const int frameWidth = frame.data[0].size();
@@ -217,7 +252,9 @@ void RenderSystem::render(const Frame &frame) {
         if (i >= LINES) continue;
         for (int j = 0; j < frameWidth; ++j) {
             if (j >= COLS) continue;
-            const Pixel &pixel = frame.data[i][j];
+            Pixel pixel = frame.data[i][j];
+            if (pixel == empty_pixel) continue;
+            if (pixel.ch == L"?") pixel.ch = L" ";
             const wstring &pixel_char = pixel.ch;
             const uint8_t &fg_r = pixel.fg_color.red;
             const uint8_t &fg_g = pixel.fg_color.green;
