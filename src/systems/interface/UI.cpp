@@ -469,7 +469,7 @@ UISystem::getSlot(Frame &frame, const int y, const int x, const int height, cons
         }
     }
 
-    frame = addText(frame, y, x, hotkey, mg_color, bg_color);
+    frame = addText(frame, y, x, hotkey, fg_color, bg_color);
     frame = addText(frame, y + height - 1, x, label, fg_color, bg_color);
 
     return frame;
@@ -590,13 +590,13 @@ UISystem::getHud(Frame frame, const Player &player, const int c_fps) {
     //draw 3 potion slots
     y = frame.data.size() - slot_size - 1, x = orb_size + 3;
     frame = getSlot(frame, max(0, y), max(0, x), slot_size, slot_size,
-                    L"1", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_MGREY, NCOLOR_BLACK);
+                    L"1", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
     x += slot_size;
     frame = getSlot(frame, max(0, y), max(0, x), slot_size, slot_size,
-                    L"2", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_MGREY, NCOLOR_BLACK);
+                    L"2", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
     x += slot_size;
     frame = getSlot(frame, max(0, y), max(0, x), slot_size, slot_size,
-                    L"3", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_MGREY, NCOLOR_BLACK);
+                    L"3", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
 
 
     //draw 3 skill slots
@@ -604,13 +604,13 @@ UISystem::getHud(Frame frame, const Player &player, const int c_fps) {
                                                                  (int) frame.data[0].size() - orb_size - slot_size * 3 -
                                                                  3);
     frame = getSlot(frame, max(0, y), max(0, x), slot_size, slot_size,
-                    L"M1/F1", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
+                    L"4/M1", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
     x += slot_size;
     frame = getSlot(frame, max(0, y), max(0, x), slot_size, slot_size,
-                    L"M2/F2", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
+                    L"5/M2", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
     x += slot_size;
     frame = getSlot(frame, max(0, y), max(0, x), slot_size, slot_size,
-                    L"M3/F3", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
+                    L"6/M3", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
 
 
 

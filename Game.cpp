@@ -261,7 +261,13 @@ void Game::Update(int player_input) {
 
                 } else {
                     //repeat code from above, but only here. doesn't make sense to strip out into a method of Game
-                    if (player_input == KEY_F(1)) {
+                    if (player_input == '1') {
+                       //TODO: implement potion use on slot 1
+                    } else if (player_input == '2') {
+                        //TODO: implement potion use on slot 2
+                    } else if (player_input == '3') {
+                        //TODO: implement potion use on slot 3
+                    } else if (player_input == '4') {
                         Position playerPosition = SysEntity.getPlayerPosition();
                         pair<int, vector<Intent>> strike = SysEntity.getCurrentPlayer().primarySkill->Use(
                                 SysEntity.getCurrentPlayer(), playerPosition,
@@ -272,7 +278,7 @@ void Game::Update(int player_input) {
                         );
                         SysEntity.getCurrentPlayer().current_energy -= strike.first;
                         for (auto &combat: strike.second) { SysEntity.combatEntities(combat); }
-                    } else if (player_input == KEY_F(2)) {
+                    } else if (player_input == '5') {
                         Position playerPosition = SysEntity.getPlayerPosition();
                         pair<int, vector<Intent>> strike = SysEntity.getCurrentPlayer().secondarySkill->Use(
                                 SysEntity.getCurrentPlayer(), playerPosition,
@@ -283,7 +289,7 @@ void Game::Update(int player_input) {
                         );
                         SysEntity.getCurrentPlayer().current_energy -= strike.first;
                         for (auto &combat: strike.second) { SysEntity.combatEntities(combat); }
-                    } else if (player_input == KEY_F(3)) {
+                    } else if (player_input == '6') {
                         Position playerPosition = SysEntity.getPlayerPosition();
                         pair<int, vector<Intent>> strike = SysEntity.getCurrentPlayer().secondarySkill->Use(
                                 SysEntity.getCurrentPlayer(), playerPosition,
@@ -326,7 +332,7 @@ void Game::Update(int player_input) {
                         movePlayer({-1, 0}, 1 + SysEntity.getCurrentPlayer().agility / 10);
                     } else if (player_input == 'Q') {
                         movePlayer({-1, -1}, 1 + SysEntity.getCurrentPlayer().agility / 10);
-                    } else if (player_input == ' ') {
+                    } else if (player_input == ' ' || player_input == '\n') {
                         Position player_pos = SysEntity.getPlayerPosition();
                         const map<Entity, Item> &items = SysEntity.getItems();
                         EntityMap *entityMap = SysEntity.getEntities();
