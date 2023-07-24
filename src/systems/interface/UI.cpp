@@ -652,8 +652,9 @@ Frame UISystem::getTags(Frame frame, EntitySystem &entity_system,
     const Player &player = entity_system.getCurrentPlayer();
     Position frame_size = {(int) frame.data[0].size(), (int) frame.data.size()};
 
-    for (int i = start_y; i < frame_size.y / raster_scale + start_y; ++i) {
-        for (int j = start_x; j < frame_size.x / raster_scale + start_x; ++j) {
+    for (int i = player_pos.y - (7 * raster_scale); i < player_pos.y + (7 * raster_scale); ++i) {
+        for (int j = player_pos.x - (7 * raster_scale); j < player_pos.y + (7 * raster_scale); ++j) {
+            if (i < 0 || i >= frame_size.y || j < 0 || j >= frame_size.x) continue;
             for (const auto &entity_ref: entity_map->data[j][i]) {
                 if (entity_ref.id == 1) {//pass the player
                 } else if (items.find(entity_ref) != items.end()) {
@@ -672,4 +673,53 @@ Frame UISystem::getTags(Frame frame, EntitySystem &entity_system,
 
 
     return frame;
+}
+
+Frame UISystem::overlayPause(Frame frame, const vector<pair<wstring, bool &>> menu) {
+
+    const Position frame_size = {(int) frame.data[0].size(), (int) frame.data.size()};
+    const Position menu_start = {frame_size.x / 3, frame_size.y / 10};
+    const Position menu_end = {frame_size.x * 2 / 3, frame_size.y * 7 / 10};
+
+
+    for (int i = 0; i < frame_size.y; i++) {
+        for (int j = 0; j < frame_size.x; j++) {
+
+            frame.data[i][j].fg_color &= NCOLOR_DGREY;
+            frame.data[i][j].fg_color &= NCOLOR_DGREY;
+            frame.data[i][j].fg_color &= NCOLOR_DGREY;
+
+            frame.data[i][j].bg_color &= NCOLOR_BLACK;
+            frame.data[i][j].bg_color &= NCOLOR_BLACK;
+            frame.data[i][j].bg_color &= NCOLOR_BLACK;
+
+        }
+    }
+
+    frame = addButton(frame, menu_start.y, menu_start.x,
+                      menu_end.y - menu_start.y, menu_end.x - menu_start.x,
+                      NCOLOR_MGREY, NCOLOR_BLACK);
+
+    int i = 0;
+    for (auto &entry: menu) {
+        Color fg;
+        if (entry.second) fg = NCOLOR_WHITE;
+        else fg = NCOLOR_MGREY;
+        frame = addText(frame, menu_start.y + 2 + i, menu_start.x + 2,
+                        entry.first,
+                        fg, NCOLOR_BLACK);
+
+        i++;
+    }
+
+
+    for (int j = menu_start.x + 1; j < menu_end.x - 1; ++j) {
+        int y = menu_start.y + 2 + menu_position;
+        if (menu[menu_position].second) frame.data[y][j].bg_color = NCOLOR_WHITE;
+        else frame.data[y][j].bg_color = NCOLOR_MGREY;
+        frame.data[y][j].fg_color = NCOLOR_BLACK;
+    }
+
+    return
+            frame;
 }

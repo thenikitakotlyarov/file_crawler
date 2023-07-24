@@ -15,6 +15,7 @@ public:
     ~UISystem();
 
     int running;
+    int menu_position = 0;
 
     void CleanUp();
 
@@ -64,12 +65,10 @@ public:
     Frame getTags(Frame frame, EntitySystem &entity_system,
                   const int start_x, const int start_y, const unsigned short raster_scale);
 
+    Frame overlayPause(Frame frame, const vector<pair<wstring, bool &>> menu);
 
 private:
     bool Initialize();
-
-
-
 
 
     vector<vector<wstring>> EMPTY_ICON = {};
@@ -81,7 +80,7 @@ private:
 
     static Frame &
     getPlayerTag(Frame &frame, const int y, const int x,
-                 const string& player_name, const string &player_class,
+                 const string &player_name, const string &player_class,
                  Color fg_color, Color bg_color);
 
     static Frame &

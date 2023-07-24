@@ -40,11 +40,11 @@ bool Game::Initialize() {
     if (!SysRender.running) return false;
 
 
-    settings_graphics_upscale = true;
+    settings_graphics_upscale = false;
     settings_graphics_3D = true;
     settings_graphics_lighting = true;
-    settings_graphics_bloom = true;
-    settings_ui_tags = true;
+    settings_graphics_bloom = false;
+    settings_ui_tags = false;
     settings_ui_hud = true;
 
 
@@ -76,7 +76,10 @@ void Game::movePlayer(pair<int, int> delta, const int speed) {
     for (int i = 0; i < speed; ++i) {
         Intent playerIntent = {playerEntity, IntentType::Move, delta};
         if (SysEntity.getCurrentPlayer().current_stamina > 0) {
-            if (speed > 1) SysEntity.getCurrentPlayer().current_stamina = max(0, SysEntity.getCurrentPlayer().current_stamina - 2);
+            if (speed > 1)
+                SysEntity.getCurrentPlayer().current_stamina = max(0,
+                                                                   SysEntity.getCurrentPlayer().current_stamina -
+                                                                   2);
             SysEntity.moveEntity(playerIntent);
         }
 
@@ -183,13 +186,28 @@ void Game::Update(int player_input) {
         } else {
             if (player_input == 27) paused = !paused;
             if (paused) {
-                if (player_input == '0') running = 2;
+                if (player_input == '0') {
+                    running = 2;
+                } else if (tolower(player_input) == 'w' || player_input == KEY_UP) {
+                    SysUI.menu_position = (6+SysUI.menu_position - 1) % 6;
+                } else if (tolower(player_input) == 'x' || player_input == KEY_DOWN) {
+                    SysUI.menu_position = (SysUI.menu_position + 1) % 6;
+                } else if (tolower(player_input) == 'd' || player_input == KEY_RIGHT
+                           || tolower(player_input) == 'a' || player_input == KEY_LEFT) {
+                    pause_menu[SysUI.menu_position].second = !pause_menu[SysUI.menu_position].second;
+                }
+
             } else {// we running bois; take the player's input as commands for the player character
 
                 int player_level = get_player_level();
                 if (player_level > SysEntity.getCurrentPlayer().level) {// player just leveled up
                     SysEntity.getCurrentPlayer().level = player_level;
-                    SysEntity.setPlayer(SysEntity.getCurrentPlayer());
+
+                    SysEntity.getCurrentPlayer().current_health = SysEntity.getCurrentPlayer().max_health;
+                    SysEntity.getCurrentPlayer().current_energy = SysEntity.getCurrentPlayer().max_energy;
+                    SysEntity.getCurrentPlayer().current_stamina = SysEntity.getCurrentPlayer().max_stamina;
+
+                    //SysEntity.setPlayer(SysEntity.getCurrentPlayer());
                     const int item_count = pow(round(0.001333 * (HEIGHT * WIDTH)),
                                                (10 + SysEntity.getCurrentPlayer().level) / 10);
                     const int monster_count = pow(round(0.00125 * (HEIGHT * WIDTH)),
@@ -310,7 +328,7 @@ void Game::Update(int player_input) {
                         movePlayer({-1, -1}, 1 + SysEntity.getCurrentPlayer().agility / 10);
                     } else if (player_input == ' ') {
                         Position player_pos = SysEntity.getPlayerPosition();
-                        const map <Entity, Item> &items = SysEntity.getItems();
+                        const map<Entity, Item> &items = SysEntity.getItems();
                         EntityMap *entityMap = SysEntity.getEntities();
                         for (const auto &entity: entityMap->data[player_pos.x][player_pos.y]) {
                             if (items.find(entity) != items.end()) {
@@ -453,11 +471,11 @@ void Game::PLAY_GAME(const int c_fps) {
 
     int player_fov_radius = PLAYER_FOV_RADIUS + PLAYER_FOV_RADIUS * CURRENT_PLAYER.focus / 100;
 
-    set <pair<int, int>> veil_fov = SysEntity.calculate_fov(
+    set<pair<int, int>> veil_fov = SysEntity.calculate_fov(
             player_pos.x, player_pos.y, 2 * player_fov_radius
     );
 
-    set <pair<int, int>> view_fov = SysEntity.calculate_fov(
+    set<pair<int, int>> view_fov = SysEntity.calculate_fov(
             player_pos.x, player_pos.y, player_fov_radius
     );
 
@@ -485,14 +503,13 @@ void Game::PLAY_GAME(const int c_fps) {
                      CURRENT_PLAYER.insight);
 
     if (settings_graphics_upscale) {
-        layer_map = SysRender.ppUpscale(layer_map, SysEntity, start_x, start_y, resolution,2);
-        layer_entity = SysRender.ppUpscale(layer_entity, SysEntity, start_x, start_y, resolution,1);
+        layer_map = SysRender.ppUpscale(layer_map, SysEntity, start_x, start_y, resolution, 2);
+        layer_entity = SysRender.ppUpscale(layer_entity, SysEntity, start_x, start_y, resolution, 1);
     }
 
     if (settings_graphics_bloom) {
         layer_map = SysRender.ppBlurLight(layer_map, 2, 1.2);
     }
-
 
 
     if (settings_ui_tags) {
@@ -507,24 +524,7 @@ void Game::PLAY_GAME(const int c_fps) {
     frame = SysRender.compositeLayers(frame, layer_map, layer_entity, layer_ui);
 
     if (paused) {
-        for (int i = 0; i < y; i++) {
-            for (int j = 0; j < x; j++) {
-                if (i > y / 10 && i < y * 4 / 5 && j > x / 3 && j < x * 2 / 3) {
-                    if (i >= LINES || j >= COLS) continue;
-                    frame.data[i][j].ch = '.';
-                    frame.data[i][j].fg_color = {8, 8, 8};
-                    frame.data[i][j].bg_color *= {8, 8, 8};
-                } else {
-                    if (i >= LINES || i >= frame.data.size()
-                        || j >= COLS || j >= frame.data[0].size())
-                        continue;
-                    frame.data[i][j].fg_color = {127, 127, 127};
-                    frame.data[i][j].bg_color *= {8, 8, 8};
-                }
-            }
-        }
-        frame = SysRender.ppBlurLight(frame, 3, 1.5);
-        frame = SysUI.addButton(frame, y / 10, x / 3, y * 7 / 10, x * 1 / 3, NCOLOR_MGREY, NCOLOR_BLACK);
+        frame = SysUI.overlayPause(frame, pause_menu);
     } else {
         SysEntity.Update();
 

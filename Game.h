@@ -71,6 +71,14 @@ private:
     bool settings_ui_tags;
     bool settings_ui_hud;
 
+    const vector<pair<wstring, bool &>> pause_menu = {
+            {L"Upscale",settings_graphics_upscale},
+            {L"Pseudo3D",settings_graphics_3D},
+            {L"Lighting",settings_graphics_lighting},
+            {L"Bloom",settings_graphics_bloom},
+            {L"Tags",settings_ui_tags},
+            {L"UI",settings_ui_hud},
+    };
 
     void movePlayer(pair<int, int> delta, const int speed);
 };
