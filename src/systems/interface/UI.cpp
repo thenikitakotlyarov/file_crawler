@@ -643,7 +643,7 @@ UISystem::getHud(Frame frame, const Player &player, const int c_fps) {
     return frame;
 }
 
-Frame UISystem::getTags(Frame frame, EntitySystem &entity_system,
+Frame UISystem::getTags(Frame frame, EntitySystem &entity_system, const set<pair<int, int>> view_fov,
                         const int start_x, const int start_y, const unsigned short raster_scale) {
     EntityMap *entity_map = entity_system.getEntities();
     const auto &monsters = entity_system.getMonsters();
@@ -652,22 +652,21 @@ Frame UISystem::getTags(Frame frame, EntitySystem &entity_system,
     const Player &player = entity_system.getCurrentPlayer();
     Position frame_size = {(int) frame.data[0].size(), (int) frame.data.size()};
 
-    for (int i = player_pos.y - (16 * raster_scale); i < player_pos.y + (16 * raster_scale); ++i) {
-        for (int j = player_pos.x - (16 * raster_scale); j < player_pos.x + (16 * raster_scale); ++j) {
-            if (i-start_y < 0 || i-start_y >= start_y+frame_size.y || j < 0-start_x || j >= start_x+frame_size.x) continue;
-            for (const auto &entity_ref: entity_map->data[j][i]) {
-                if (entity_ref.id == 1) {//pass the player
-                } else if (items.find(entity_ref) != items.end()) {
-                    const string &this_item = items.at(entity_ref).name;
-                    frame = addTag(frame, j - start_x, i - start_y - 1, raster_scale, this_item);
-                } else if (monsters.find(entity_ref) != monsters.end()) {
-                    const string &this_monster = monsters.at(entity_ref).name;
-                    frame = addTag(frame, j - start_x, i - start_y - 1, raster_scale, this_monster);
-                }
-
+    int i, j;
+    for (const auto &position: view_fov) {
+        i = position.second, j = position.first;
+        for (const auto &entity_ref: entity_map->data[j][i]) {
+            if (entity_ref.id == 1) {//pass the player
+            } else if (items.find(entity_ref) != items.end()) {
+                const string &this_item = items.at(entity_ref).name;
+                frame = addTag(frame, j - start_x, i - start_y - 1, raster_scale, this_item);
+            } else if (monsters.find(entity_ref) != monsters.end()) {
+                const string &this_monster = monsters.at(entity_ref).name;
+                frame = addTag(frame, j - start_x, i - start_y - 1, raster_scale, this_monster);
             }
         }
     }
+
 
     frame = addTag(frame, player_pos.x - start_x, player_pos.y - start_y - 1, raster_scale, player.name);
 

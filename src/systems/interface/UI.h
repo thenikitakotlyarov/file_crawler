@@ -62,7 +62,7 @@ public:
 
     Frame getHud(Frame frame, const Player &player, const int c_fps);
 
-    Frame getTags(Frame frame, EntitySystem &entity_system,
+    Frame getTags(Frame frame, EntitySystem &entity_system,const set<pair<int, int>> view_fov,
                   const int start_x, const int start_y, const unsigned short raster_scale);
 
     Frame overlayPause(Frame frame, const vector<pair<wstring, bool &>> menu);

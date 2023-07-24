@@ -189,7 +189,7 @@ void Game::Update(int player_input) {
                 if (player_input == '0') {
                     running = 2;
                 } else if (tolower(player_input) == 'w' || player_input == KEY_UP) {
-                    SysUI.menu_position = (6+SysUI.menu_position - 1) % 6;
+                    SysUI.menu_position = (6 + SysUI.menu_position - 1) % 6;
                 } else if (tolower(player_input) == 'x' || player_input == KEY_DOWN) {
                     SysUI.menu_position = (SysUI.menu_position + 1) % 6;
                 } else if (tolower(player_input) == 'd' || player_input == KEY_RIGHT
@@ -262,7 +262,7 @@ void Game::Update(int player_input) {
                 } else {
                     //repeat code from above, but only here. doesn't make sense to strip out into a method of Game
                     if (player_input == '1') {
-                       //TODO: implement potion use on slot 1
+                        //TODO: implement potion use on slot 1
                     } else if (player_input == '2') {
                         //TODO: implement potion use on slot 2
                     } else if (player_input == '3') {
@@ -465,23 +465,21 @@ void Game::PLAY_GAME(const int c_fps) {
     Frame layer_entity = UISystem::BlankFrame(y / resolution, x / resolution, 0);
     Frame layer_ui = UISystem::BlankFrame(y, x, 0);
 
-    Position player_pos = SysEntity.getPlayerPosition();
+    const Position player_pos = SysEntity.getPlayerPosition();
 
-    int start_x = max(0, player_pos.x - COLS / resolution / 2);
-    start_x = min(start_x, WIDTH - COLS / resolution);
-    int end_x = start_x + COLS / resolution;
-    int start_y = max(0, player_pos.y - (LINES / resolution - 3) / 2);
-    start_y = min(start_y, HEIGHT - LINES / resolution - 3);
-    int end_y = start_y + LINES / resolution - 3;
+    const int start_x = max(0, min(player_pos.x - COLS / resolution / 2, WIDTH - COLS / resolution)),
+            end_x = start_x + COLS / resolution;
+    const int start_y = max(0, min(player_pos.y - LINES / resolution / 2, HEIGHT - LINES / resolution)),
+            end_y = start_y + LINES / resolution;
 
 
-    int player_fov_radius = PLAYER_FOV_RADIUS + PLAYER_FOV_RADIUS * CURRENT_PLAYER.focus / 100;
+    const int player_fov_radius = PLAYER_FOV_RADIUS + PLAYER_FOV_RADIUS * CURRENT_PLAYER.focus / 100;
 
-    set<pair<int, int>> veil_fov = SysEntity.calculate_fov(
+    const set<pair<int, int>> veil_fov = SysEntity.calculate_fov(
             player_pos.x, player_pos.y, 2 * player_fov_radius
     );
 
-    set<pair<int, int>> view_fov = SysEntity.calculate_fov(
+    const set<pair<int, int>> view_fov = SysEntity.calculate_fov(
             player_pos.x, player_pos.y, player_fov_radius
     );
 
@@ -519,7 +517,7 @@ void Game::PLAY_GAME(const int c_fps) {
 
 
     if (settings_ui_tags) {
-        layer_ui = SysUI.getTags(layer_ui, SysEntity, start_x, start_y, resolution);
+        layer_ui = SysUI.getTags(layer_ui, SysEntity,view_fov, start_x, start_y, resolution);
     }
 
     if (settings_ui_hud) {
