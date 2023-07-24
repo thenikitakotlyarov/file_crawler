@@ -652,9 +652,9 @@ Frame UISystem::getTags(Frame frame, EntitySystem &entity_system,
     const Player &player = entity_system.getCurrentPlayer();
     Position frame_size = {(int) frame.data[0].size(), (int) frame.data.size()};
 
-    for (int i = player_pos.y - (7 * raster_scale); i < player_pos.y + (7 * raster_scale); ++i) {
-        for (int j = player_pos.x - (7 * raster_scale); j < player_pos.y + (7 * raster_scale); ++j) {
-            if (i < 0 || i >= frame_size.y || j < 0 || j >= frame_size.x) continue;
+    for (int i = player_pos.y - (16 * raster_scale); i < player_pos.y + (16 * raster_scale); ++i) {
+        for (int j = player_pos.x - (16 * raster_scale); j < player_pos.x + (16 * raster_scale); ++j) {
+            if (i-start_y < 0 || i-start_y >= start_y+frame_size.y || j < 0-start_x || j >= start_x+frame_size.x) continue;
             for (const auto &entity_ref: entity_map->data[j][i]) {
                 if (entity_ref.id == 1) {//pass the player
                 } else if (items.find(entity_ref) != items.end()) {
