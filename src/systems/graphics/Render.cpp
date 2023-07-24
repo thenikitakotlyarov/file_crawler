@@ -253,7 +253,7 @@ void RenderSystem::render(const Frame &frame) {
         for (int j = 0; j < frameWidth; ++j) {
             if (j >= COLS) continue;
             Pixel pixel = frame.data[i][j];
-1            if (pixel.ch == L"?") pixel.ch = L" ";
+            if (pixel.ch == L"?") pixel.ch = L" ";
             const wstring &pixel_char = pixel.ch;
             const uint8_t &fg_r = pixel.fg_color.red;
             const uint8_t &fg_g = pixel.fg_color.green;
