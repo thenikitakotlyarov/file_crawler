@@ -30,6 +30,7 @@
 #include "components/map/Position.h"
 #include "components/map/GameMap.h"
 #include "components/map/Tile.h"
+#include "components/entity/item/Container.h"
 #include "constants.h"
 
 using namespace std;
@@ -99,4 +100,5 @@ vector<Node> aStar(const Position &start, const Position &goal,
 int get_input();
 
 int break_point();
+
 

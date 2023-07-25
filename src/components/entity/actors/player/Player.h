@@ -6,16 +6,18 @@
 #include "components/entity/Entity.h"
 #include "components/action/Intent.h"
 #include "components/entity/actors/enemy/Monster.h"
+#include "components/entity/item/Container.h"
 #include "components/action/skill/Skill.h"
 
 
 using namespace std;
 
 struct Monster;
+struct Container;
 
 struct Player {
-    string name;
-    string class_name;
+    wstring name;
+    wstring class_name;
     Color color;
 
     Sprite sprite;
@@ -43,6 +45,8 @@ struct Player {
 
     Skill* primarySkill;
     Skill* secondarySkill;
+
+    Container inventory;
 
 
 };

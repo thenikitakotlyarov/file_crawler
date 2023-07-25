@@ -15,6 +15,7 @@
 #include "components/entity/actors/player/Player.h"
 #include "components/entity/item/Item.h"
 #include "components/entity/item/ItemTypes.h"
+#include "components/entity/item/Container.h"
 #include "components/entity/Entity.h"
 #include "components/action/skill/Skill.h"
 #include "components/action/Intent.h"

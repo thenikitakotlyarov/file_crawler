@@ -263,10 +263,41 @@ void Game::Update(int player_input) {
                     //repeat code from above, but only here. doesn't make sense to strip out into a method of Game
                     if (player_input == '1') {
                         //TODO: implement potion use on slot 1
+                        if (SysEntity.getCurrentPlayer().inventory.content[0].quantity) {
+                            const int I_AM_A_DEBUG = break_point();
+                            SysEntity.getCurrentPlayer().inventory.content[0].item->effect(
+                                    SysEntity.getCurrentPlayer());
+                            SysEntity.getCurrentPlayer().inventory.content[0].quantity -= 1;
+                            if (SysEntity.getCurrentPlayer().inventory.content[0].quantity <= 0) {
+                                SysEntity.getCurrentPlayer().inventory.content[0].item = new Item(getNullItem());
+                                SysEntity.getCurrentPlayer().inventory.content[0].quantity = 0;
+                            }
+                        }
+
                     } else if (player_input == '2') {
                         //TODO: implement potion use on slot 2
+                        if (SysEntity.getCurrentPlayer().inventory.content[1].quantity) {
+                            const int I_AM_A_DEBUG = break_point();
+                            SysEntity.getCurrentPlayer().inventory.content[1].item->effect(
+                                    SysEntity.getCurrentPlayer());
+                            SysEntity.getCurrentPlayer().inventory.content[1].quantity -= 1;
+                            if (SysEntity.getCurrentPlayer().inventory.content[1].quantity <= 0) {
+                                SysEntity.getCurrentPlayer().inventory.content[1].item = new Item(getNullItem());
+                                SysEntity.getCurrentPlayer().inventory.content[1].quantity = 0;
+                            }
+                        }
                     } else if (player_input == '3') {
                         //TODO: implement potion use on slot 3
+                        if (SysEntity.getCurrentPlayer().inventory.content[2].quantity) {
+                            const int I_AM_A_DEBUG = break_point();
+                            SysEntity.getCurrentPlayer().inventory.content[2].item->effect(
+                                    SysEntity.getCurrentPlayer());
+                            SysEntity.getCurrentPlayer().inventory.content[2].quantity -= 1;
+                            if (SysEntity.getCurrentPlayer().inventory.content[2].quantity <= 0) {
+                                SysEntity.getCurrentPlayer().inventory.content[2].item = new Item(getNullItem());
+                                SysEntity.getCurrentPlayer().inventory.content[2].quantity = 0;
+                            }
+                        }
                     } else if (player_input == '4') {
                         Position playerPosition = SysEntity.getPlayerPosition();
                         pair<int, vector<Intent>> strike = SysEntity.getCurrentPlayer().primarySkill->Use(
@@ -335,12 +366,21 @@ void Game::Update(int player_input) {
                     } else if (player_input == ' ' || player_input == '\n') {
                         Position player_pos = SysEntity.getPlayerPosition();
                         const map<Entity, Item> &items = SysEntity.getItems();
-                        EntityMap *entityMap = SysEntity.getEntities();
-                        for (const auto &entity: entityMap->data[player_pos.x][player_pos.y]) {
+                        for (const auto &entity: SysEntity.getEntities()->data[player_pos.x][player_pos.y]) {
                             if (items.find(entity) != items.end()) {
-                                items.find(entity)->second.effect(SysEntity.getCurrentPlayer());
-                                SysEntity.destroyEntity(entity);
-                                break;
+                                for (auto &slot: SysEntity.getCurrentPlayer().inventory.content) {
+                                    if (slot.item->type == items.find(entity)->second.type) {
+                                        slot.quantity++;
+                                        SysEntity.destroyEntity(entity);
+                                        break;
+                                    } else if (slot.quantity == 0) {
+                                        slot.item = new Item{items.find(entity)->second};
+                                        slot.quantity = 1;
+                                        SysEntity.destroyEntity(entity);
+                                        break;
+
+                                    }
+                                }
                             }
                         }
                     } else if (player_input == 0) {
@@ -517,7 +557,7 @@ void Game::PLAY_GAME(const int c_fps) {
 
 
     if (settings_ui_tags) {
-        layer_ui = SysUI.getTags(layer_ui, SysEntity,view_fov, start_x, start_y, resolution);
+        layer_ui = SysUI.getTags(layer_ui, SysEntity, view_fov, start_x, start_y, resolution);
     }
 
     if (settings_ui_hud) {

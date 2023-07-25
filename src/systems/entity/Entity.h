@@ -97,6 +97,10 @@ private:
     map<Entity, Monster> monsters;
     map<Entity, Item> items;
 
+
+
+
+
     unsigned long nextEntityId = 1;
 
 

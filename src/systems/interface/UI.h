@@ -37,7 +37,7 @@ public:
     addText(Frame &frame, const int y, const int x, wstring text,
             Color fg_color, Color bg_color);
 
-    Frame addTag(Frame frame, const int x, const int y, const unsigned short raster_scale, const string &tag) const;
+    Frame addTag(Frame frame, const int x, const int y, const unsigned short raster_scale, const wstring &tag) const;
 
 
     Frame getFpsLabel(Frame &frame, const int y, const int x,
@@ -80,7 +80,7 @@ private:
 
     static Frame &
     getPlayerTag(Frame &frame, const int y, const int x,
-                 const string &player_name, const string &player_class,
+                 const wstring &player_name, const wstring &player_class,
                  Color fg_color, Color bg_color);
 
     static Frame &

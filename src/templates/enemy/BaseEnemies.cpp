@@ -17,7 +17,7 @@ Monster getBasicMonster() {
 
 
     return {
-            "Monster",
+            L"Monster",
             get_random_character(MONSTER_TILES),
             NCOLOR_RED,
             //TODO:generateSprite(EntityType:Monster,the,rest,of,the,monster);

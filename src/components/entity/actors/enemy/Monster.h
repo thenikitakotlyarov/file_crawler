@@ -17,7 +17,7 @@ struct Player;
 struct GameMap;
 
 struct Monster {
-    string name;
+    wstring name;
     wstring character;
     Color color;
 

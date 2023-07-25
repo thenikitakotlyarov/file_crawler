@@ -7,6 +7,8 @@
 struct Item;
 struct Player;
 
+Item getNullItem();
+
 Item getSmallPotionTemplate();
 
 Item getSmallSerumTemplate();

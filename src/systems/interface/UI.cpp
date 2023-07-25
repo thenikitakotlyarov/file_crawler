@@ -141,14 +141,10 @@ UISystem::addText(Frame &frame, const int y, const int x, wstring text,
 
 
 Frame
-UISystem::addTag(Frame frame, const int x, const int y, const unsigned short raster_scale, const string &tag) const {
-    wchar_t name_tag_buffer[256];
-    swprintf(name_tag_buffer, 256, L"%s", tag.c_str());
-    const wstring name_tag = name_tag_buffer;
-
+UISystem::addTag(Frame frame, const int x, const int y, const unsigned short raster_scale, const wstring &tag) const {
     const Position name_tag_pos = {
-            max(0, min((int) frame.data[0].size() - (int) name_tag.size() - 1,
-                       x * raster_scale - (int) name_tag.size() / 2 + raster_scale / 2)
+            max(0, min((int) frame.data[0].size() - (int) tag.size() - 1,
+                       x * raster_scale - (int) tag.size() / 2 + raster_scale / 2)
             ),
 
             max(0, min((int) frame.data.size() - 1,
@@ -156,7 +152,7 @@ UISystem::addTag(Frame frame, const int x, const int y, const unsigned short ras
             )
     };
 
-    frame = addText(frame, name_tag_pos.y, name_tag_pos.x, name_tag, NCOLOR_WHITE, NCOLOR_BLACK);
+    frame = addText(frame, name_tag_pos.y, name_tag_pos.x, tag, NCOLOR_WHITE, NCOLOR_BLACK);
     return frame;
 }
 
@@ -366,21 +362,13 @@ Frame &UISystem::getUiBg(Frame &frame, const int dock_height, Color fg_color, Co
 
 Frame &
 UISystem::getPlayerTag(Frame &frame, const int y, const int x,
-                       const string &player_name, const string &player_class,
+                       const wstring &player_name, const wstring &player_class,
                        Color fg_color, Color bg_color) {
-    wchar_t class_tag_buffer[256];
-    wstring class_tag;
 
-    wchar_t name_tag_buffer[256];
-    wstring name_tag;
+    frame = addText(frame, y, x, player_name, fg_color, bg_color);
 
-    swprintf(class_tag_buffer, 256, L"%s", player_class.c_str());
-    class_tag = class_tag_buffer;
-    frame = addText(frame, y, x, class_tag, fg_color, bg_color);
 
-    swprintf(name_tag_buffer, 256, L"%s", player_name.c_str());
-    name_tag = name_tag_buffer;
-    frame = addText(frame, y, x + class_tag.size() + 1, name_tag, NCOLOR_WHITE, NCOLOR_BLACK);
+    frame = addText(frame, y, x + player_name.size() + 1, player_class, NCOLOR_WHITE, NCOLOR_BLACK);
 
     return frame;
 }
@@ -590,13 +578,19 @@ UISystem::getHud(Frame frame, const Player &player, const int c_fps) {
     //draw 3 potion slots
     y = frame.data.size() - slot_size - 1, x = orb_size + 3;
     frame = getSlot(frame, max(0, y), max(0, x), slot_size, slot_size,
-                    L"1", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
+                    L"1",
+                    player.inventory.content[0].item->name, player.inventory.content[0].item->sprite.texture,
+                    NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
     x += slot_size;
     frame = getSlot(frame, max(0, y), max(0, x), slot_size, slot_size,
-                    L"2", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
+                    L"2",
+                    player.inventory.content[1].item->name, player.inventory.content[1].item->sprite.texture,
+                    NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
     x += slot_size;
     frame = getSlot(frame, max(0, y), max(0, x), slot_size, slot_size,
-                    L"3", L"", EMPTY_ICON, NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
+                    L"3",
+                    player.inventory.content[2].item->name, player.inventory.content[2].item->sprite.texture,
+                    NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
 
 
     //draw 3 skill slots
@@ -658,10 +652,10 @@ Frame UISystem::getTags(Frame frame, EntitySystem &entity_system, const set<pair
         for (const auto &entity_ref: entity_map->data[j][i]) {
             if (entity_ref.id == 1) {//pass the player
             } else if (items.find(entity_ref) != items.end()) {
-                const string &this_item = items.at(entity_ref).name;
+                const wstring &this_item = items.at(entity_ref).name;
                 frame = addTag(frame, j - start_x, i - start_y - 1, raster_scale, this_item);
             } else if (monsters.find(entity_ref) != monsters.end()) {
-                const string &this_monster = monsters.at(entity_ref).name;
+                const wstring &this_monster = monsters.at(entity_ref).name;
                 frame = addTag(frame, j - start_x, i - start_y - 1, raster_scale, this_monster);
             }
         }

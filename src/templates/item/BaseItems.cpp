@@ -14,10 +14,24 @@ const vector<vector<wstring>> orb_texture = {
 };
 
 
+Item getNullItem() {
+    return Item{
+            ItemType::NullItem,
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+
+    };
+}
+
 Item getSmallPotionTemplate() {
     return {
             ItemType::SmallHealthPotion, //< identifier
-            "Small Potion", L"o", NCOLOR_RED, false,
+            L"Small Potion", L"o", NCOLOR_RED, false,
             {potion_texture,
              {
                      {NCOLOR_LGREY, NCOLOR_LYELLOW, NCOLOR_WHITE},
@@ -40,7 +54,7 @@ Item getSmallPotionTemplate() {
 Item getSmallSerumTemplate() {
     return {
             ItemType::SmallEnergyPotion, //< identifier
-            "Small Serum", L"o", NCOLOR_BLUE, false,
+            L"Small Serum", L"o", NCOLOR_BLUE, false,
             {potion_texture,
              {
                      {NCOLOR_LGREY, NCOLOR_LYELLOW, NCOLOR_WHITE},
@@ -63,7 +77,7 @@ Item getSmallSerumTemplate() {
 Item getSmallSalveTemplate() {
     return {
             ItemType::SmallStaminaPotion, //< identifier
-            "Small Salve", L"o", NCOLOR_GREEN, false,
+            L"Small Salve", L"o", NCOLOR_GREEN, false,
             {potion_texture,
              {
                      {NCOLOR_LGREY, NCOLOR_LYELLOW, NCOLOR_WHITE},
@@ -86,7 +100,7 @@ Item getSmallSalveTemplate() {
 Item getVitalityOrbTemplate() {
     return {
             ItemType::VitalityOrb, //< identifier
-            "Vitality Orb", L"⍟", NCOLOR_RED, true,
+            L"Vitality Orb", L"⍟", NCOLOR_RED, true,
             {orb_texture,
              {
                      {NCOLOR_LGREY, NCOLOR_LGREY, NCOLOR_WHITE},
@@ -108,7 +122,7 @@ Item getVitalityOrbTemplate() {
 Item getPowerOrbTemplate() {
     return {
             ItemType::PowerOrb, //< identifier
-            "Power Orb", L"⍟", NCOLOR_YELLOW, true,
+            L"Power Orb", L"⍟", NCOLOR_YELLOW, true,
             {orb_texture,
              {
                      {NCOLOR_LGREY, NCOLOR_LGREY, NCOLOR_WHITE},
@@ -130,7 +144,7 @@ Item getPowerOrbTemplate() {
 Item getAgiltyOrbTemplate() {
     return {
             ItemType::AgilityOrb, //< identifier
-            "Agility Orb", L"⍟", NCOLOR_GREEN, true,
+            L"Agility Orb", L"⍟", NCOLOR_GREEN, true,
             {orb_texture,
              {
                      {NCOLOR_LGREY, NCOLOR_LGREY, NCOLOR_WHITE},
@@ -152,7 +166,7 @@ Item getAgiltyOrbTemplate() {
 Item getFocusOrbTemplate() {
     return {
             ItemType::FocusOrb, //< identifier
-            "Focus Orb", L"⍟", NCOLOR_CYAN, true,
+            L"Focus Orb", L"⍟", NCOLOR_CYAN, true,
             {orb_texture,
              {
                      {NCOLOR_LGREY, NCOLOR_LGREY, NCOLOR_WHITE},
@@ -174,7 +188,7 @@ Item getFocusOrbTemplate() {
 Item getInsightOrbTemplate() {
     return {
             ItemType::InsightOrb, //< identifier
-            "Insight Orb", L"⍟", NCOLOR_BLUE, true,
+            L"Insight Orb", L"⍟", NCOLOR_BLUE, true,
             {orb_texture,
              {
                      {NCOLOR_LGREY, NCOLOR_LGREY, NCOLOR_WHITE},
@@ -196,7 +210,7 @@ Item getInsightOrbTemplate() {
 Item getFaithOrbTemplate() {
     return {
             ItemType::BeliefOrb, //< identifier
-            "Belief Orb", L"⍟", NCOLOR_MAGENTA, true,
+            L"Belief Orb", L"⍟", NCOLOR_MAGENTA, true,
             {orb_texture,
              {
                      {NCOLOR_LGREY, NCOLOR_LGREY, NCOLOR_WHITE},
@@ -219,7 +233,7 @@ Item getFaithOrbTemplate() {
 Item getSpecialOrbTemplate() {
     return {
             ItemType::SpecialOrb, //< identifier
-            "Special Orb", L"⍟", NCOLOR_LGREY, true,
+            L"Special Orb", L"⍟", NCOLOR_LGREY, true,
             {orb_texture,
              {
                      {NCOLOR_LGREY, NCOLOR_LGREY, NCOLOR_WHITE},

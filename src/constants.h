@@ -259,3 +259,4 @@ const unordered_set<wstring> ITEM_TILES = {L"o",L"⍟"};
 
 
 const Pixel empty_pixel = {L"?", NCOLOR_RED,NCOLOR_BLACK};
+
