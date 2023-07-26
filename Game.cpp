@@ -371,14 +371,20 @@ void Game::Update(int player_input) {
                                 const auto &this_item = items.find(entity);
                                 ItemType this_type = this_item->second.type;
                                 if (is_in_set(this_type, PotionType)) {
+                                    bool acquired = false;
 
                                     for (auto &slot: SysEntity.getCurrentPlayer().potion_belt.content) {
                                         if (slot.item->type == this_type
                                             && slot.quantity + 1 <= slot.size) {
                                             slot.quantity++;
                                             SysEntity.destroyEntity(entity);
+                                            acquired = true;
                                             break;
-                                        } else if (slot.quantity == 0) {
+                                        }
+                                    }
+                                    if (acquired) break;
+                                    for (auto &slot: SysEntity.getCurrentPlayer().potion_belt.content) {
+                                        if (slot.quantity == 0) {
                                             slot.item = new Item{this_item->second};
                                             slot.quantity = 1;
                                             SysEntity.destroyEntity(entity);
