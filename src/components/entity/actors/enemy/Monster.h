@@ -20,12 +20,18 @@ struct Monster {
     wstring name;
     wstring character;
     Color color;
-
     Sprite sprite;
 
     int rarity;
 
     bool transient;
+
+//    int vitality;
+//    int power;
+//    int agility;
+//    int focus;
+//    int insight;
+//    int belief;
 
     int attackPower;
     int attackRadius;

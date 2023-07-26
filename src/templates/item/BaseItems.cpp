@@ -31,7 +31,7 @@ Item getNullItem() {
 Item getSmallPotionTemplate() {
     return {
             ItemType::SmallHealthPotion, //< identifier
-            L"Small Potion", L"o", NCOLOR_RED, false,
+            L"Potion", L"o", NCOLOR_RED, false,
             {potion_texture,
              {
                      {NCOLOR_LGREY, NCOLOR_LYELLOW, NCOLOR_WHITE},
@@ -45,8 +45,8 @@ Item getSmallPotionTemplate() {
              }},
             0.5,
             [](Player &stats) {
-                stats.current_health =
-                        min(stats.max_health, stats.current_health + 25);
+                stats.health.first =
+                        min(stats.health.second, stats.health.first + 25);
             }
     };
 }
@@ -54,7 +54,7 @@ Item getSmallPotionTemplate() {
 Item getSmallSerumTemplate() {
     return {
             ItemType::SmallEnergyPotion, //< identifier
-            L"Small Serum", L"o", NCOLOR_BLUE, false,
+            L"Serum", L"o", NCOLOR_BLUE, false,
             {potion_texture,
              {
                      {NCOLOR_LGREY, NCOLOR_LYELLOW, NCOLOR_WHITE},
@@ -68,8 +68,8 @@ Item getSmallSerumTemplate() {
              }},
             0.25,
             [](Player &stats) {
-                stats.current_energy =
-                        min(stats.max_energy, stats.current_energy + 25);
+                stats.energy.first =
+                        min(stats.energy.second, stats.energy.first + 25);
             }
     };
 }
@@ -77,7 +77,7 @@ Item getSmallSerumTemplate() {
 Item getSmallSalveTemplate() {
     return {
             ItemType::SmallStaminaPotion, //< identifier
-            L"Small Salve", L"o", NCOLOR_GREEN, false,
+            L"Salve", L"o", NCOLOR_GREEN, false,
             {potion_texture,
              {
                      {NCOLOR_LGREY, NCOLOR_LYELLOW, NCOLOR_WHITE},
@@ -91,8 +91,8 @@ Item getSmallSalveTemplate() {
              }},
             0.25,
             [](Player &stats) {
-                stats.current_stamina =
-                        min(stats.max_stamina, stats.current_stamina + 25);
+                stats.stamina.first =
+                        min(stats.stamina.second, stats.stamina.first + 25);
             }
     };
 }
@@ -114,7 +114,7 @@ Item getVitalityOrbTemplate() {
              }},
             0.1,
             [](Player &stats) {
-                stats.vitality += 3;
+                stats.vitality += 1;
             }
     };
 }
@@ -122,7 +122,7 @@ Item getVitalityOrbTemplate() {
 Item getPowerOrbTemplate() {
     return {
             ItemType::PowerOrb, //< identifier
-            L"Power Orb", L"⍟", NCOLOR_YELLOW, true,
+            L"POW Orb", L"⍟", NCOLOR_YELLOW, true,
             {orb_texture,
              {
                      {NCOLOR_LGREY, NCOLOR_LGREY, NCOLOR_WHITE},
@@ -136,7 +136,7 @@ Item getPowerOrbTemplate() {
              }},
             0.1,
             [](Player &stats) {
-                stats.power += 3;
+                stats.power += 1;
             }
     };
 }
@@ -144,7 +144,7 @@ Item getPowerOrbTemplate() {
 Item getAgiltyOrbTemplate() {
     return {
             ItemType::AgilityOrb, //< identifier
-            L"Agility Orb", L"⍟", NCOLOR_GREEN, true,
+            L"AGI Orb", L"⍟", NCOLOR_GREEN, true,
             {orb_texture,
              {
                      {NCOLOR_LGREY, NCOLOR_LGREY, NCOLOR_WHITE},
@@ -158,7 +158,7 @@ Item getAgiltyOrbTemplate() {
              }},
             0.1,
             [](Player &stats) {
-                stats.agility += 3;
+                stats.agility += 1;
             }
     };
 }
@@ -166,7 +166,7 @@ Item getAgiltyOrbTemplate() {
 Item getFocusOrbTemplate() {
     return {
             ItemType::FocusOrb, //< identifier
-            L"Focus Orb", L"⍟", NCOLOR_CYAN, true,
+            L"FOC Orb", L"⍟", NCOLOR_CYAN, true,
             {orb_texture,
              {
                      {NCOLOR_LGREY, NCOLOR_LGREY, NCOLOR_WHITE},
@@ -180,7 +180,7 @@ Item getFocusOrbTemplate() {
              }},
             0.1,
             [](Player &stats) {
-                stats.focus += 3;
+                stats.focus += 1;
             }
     };
 }
@@ -188,7 +188,7 @@ Item getFocusOrbTemplate() {
 Item getInsightOrbTemplate() {
     return {
             ItemType::InsightOrb, //< identifier
-            L"Insight Orb", L"⍟", NCOLOR_BLUE, true,
+            L"INS Orb", L"⍟", NCOLOR_BLUE, true,
             {orb_texture,
              {
                      {NCOLOR_LGREY, NCOLOR_LGREY, NCOLOR_WHITE},
@@ -202,7 +202,7 @@ Item getInsightOrbTemplate() {
              }},
             0.1,
             [](Player &stats) {
-                stats.insight += 3;
+                stats.insight += 1;
             }
     };
 }
@@ -210,7 +210,7 @@ Item getInsightOrbTemplate() {
 Item getFaithOrbTemplate() {
     return {
             ItemType::BeliefOrb, //< identifier
-            L"Belief Orb", L"⍟", NCOLOR_MAGENTA, true,
+            L"BEL Orb", L"⍟", NCOLOR_MAGENTA, true,
             {orb_texture,
              {
                      {NCOLOR_LGREY, NCOLOR_LGREY, NCOLOR_WHITE},
@@ -224,7 +224,7 @@ Item getFaithOrbTemplate() {
              }},
             0.1,
             [](Player &stats) {
-                stats.belief += 3;
+                stats.belief += 1;
             }
     };
 }
@@ -233,7 +233,7 @@ Item getFaithOrbTemplate() {
 Item getSpecialOrbTemplate() {
     return {
             ItemType::SpecialOrb, //< identifier
-            L"Special Orb", L"⍟", NCOLOR_LGREY, true,
+            L"??? Orb", L"⍟", NCOLOR_LGREY, true,
             {orb_texture,
              {
                      {NCOLOR_LGREY, NCOLOR_LGREY, NCOLOR_WHITE},

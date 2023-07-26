@@ -24,11 +24,6 @@ wstring get_random_character(const unordered_set<wstring> &vec) {
 }
 
 
-template<typename T, class Container>
-bool is_in_set(const T &element, const Container &set) {
-    return set.find(element) != set.end();
-}
-
 
 bool is_position_in_fov(const Position position, const set<pair<int, int>> &fov) {
     pair<int, int> element = make_pair(position.x, position.y);

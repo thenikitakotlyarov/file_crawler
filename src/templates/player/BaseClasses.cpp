@@ -65,8 +65,8 @@ Sprite getGarb(Sprite player_sprite, const Color player_color) {
     return player_sprite;
 }
 
-Sprite getStandardPlayerSprite() {
-    return Sprite{
+Sprite getStandardPlayerSprite(const Color garb) {
+    Sprite this_sprite = {
             {
                     {L"?",         L"@",         L"?"},
                     {L"!",         L"W",         L"!"},
@@ -88,26 +88,30 @@ Sprite getStandardPlayerSprite() {
                     {NCOLOR_DGREY, NCOLOR_MGREY, NCOLOR_DGREY},
                     {NCOLOR_BLACK, NCOLOR_MGREY, NCOLOR_BLACK},
                     {NCOLOR_DGREY, NCOLOR_BLACK, NCOLOR_DGREY}
-
             }
     };
+
+    if (garb != NCOLOR_LGREY) {
+        this_sprite = getGarb(this_sprite,garb);
+    }
+
+    return this_sprite;
 
 }
 
 Container getEmptyInventory(const int size) {
-    Item *this_item = new Item(getNullItem());
-    ContainerSlot slot = {this_item, 0};
+    ContainerSlot slot = {new Item(getNullItem()), 3, 0};
     return Container{0, vector<ContainerSlot>(size, slot)};
 }
 
 Player getAdventurerTemplate() {
     return {
             L"Link", L"Adventurer", NCOLOR_LGREY,
-            getStandardPlayerSprite(),
-            1, 0,
-            100, 100, 100,
-            100, 100, 100,
+            getStandardPlayerSprite(NCOLOR_LGREY),
+            1,
+            {100, 100}, {100, 100}, {100, 100},
             10, 10, 10, 10, 10, 10,
+            13,
 
             getBasicAttack(),
             getAVGBoostedAttack(),
@@ -119,11 +123,11 @@ Player getAdventurerTemplate() {
 Player getBarbarianTemplate() {
     return {
             L"Conan", L"Barbarian", NCOLOR_RED,
-            getGarb(getStandardPlayerSprite(), NCOLOR_RED),
-            1, 0,
-            100, 100, 100,
-            100, 100, 100,
+            getStandardPlayerSprite(NCOLOR_RED),
+            1,
+            {130, 130}, {85, 85}, {85, 85},
             15, 12, 7, 7, 7, 12,
+            10,
 
             getBasicAttack(),
             getVITBoostedAttack(),
@@ -136,11 +140,11 @@ Player getBarbarianTemplate() {
 Player getDuelistTemplate() {
     return {
             L"Geralt", L"Duelist", NCOLOR_ORANGE,
-            getGarb(getStandardPlayerSprite(), NCOLOR_ORANGE),
-            1, 0,
-            100, 100, 100,
-            100, 100, 100,
+            getStandardPlayerSprite(NCOLOR_ORANGE),
+            1,
+            {120, 120}, {100, 100}, {80, 80},
             13, 13, 10, 7, 7, 10,
+            10,
 
             getBasicAttack(),
             getPOWVITBoostedAttack(),
@@ -152,11 +156,11 @@ Player getDuelistTemplate() {
 Player getFighterTemplate() {
     return {
             L"Ryu", L"Fighter", NCOLOR_YELLOW,
-            getGarb(getStandardPlayerSprite(), NCOLOR_YELLOW),
-            1, 0,
-            100, 100, 100,
-            100, 100, 100,
+            getStandardPlayerSprite(NCOLOR_YELLOW),
+            1,
+            {115, 115}, {115, 115}, {70, 70},
             12, 15, 12, 7, 7, 7,
+            10,
 
             getBasicAttack(),
             getPOWBoostedAttack(),
@@ -168,11 +172,11 @@ Player getFighterTemplate() {
 Player getRogueTemplate() {
     return {
             L"Garrett", L"Rogue", NCOLOR_LGREEN,
-            getGarb(getStandardPlayerSprite(), NCOLOR_LGREEN),
-            1, 0,
-            100, 100, 100,
-            100, 100, 100,
+            getStandardPlayerSprite(NCOLOR_LGREEN),
+            1,
+            {100, 100}, {120, 120}, {80, 80},
             10, 13, 13, 10, 7, 7,
+            10,
 
             getBasicAttack(),
             getAGIPOWBoostedAttack(),
@@ -183,11 +187,11 @@ Player getRogueTemplate() {
 Player getRangerTemplate() {
     return {
             L"Artemis", L"Ranger", NCOLOR_GREEN,
-            getGarb(getStandardPlayerSprite(), NCOLOR_GREEN),
-            1, 0,
-            100, 100, 100,
-            100, 100, 100,
+            getStandardPlayerSprite(NCOLOR_GREEN),
+            1,
+            {85, 85}, {130, 130}, {85, 85},
             7, 12, 15, 12, 7, 7,
+            10,
 
             getBasicAttack(),
             getAGIBoostedAttack(),
@@ -199,11 +203,11 @@ Player getRangerTemplate() {
 Player getDruidTemplate() {
     return {
             L"Malfurion", L"Druid", NCOLOR_CYAN,
-            getGarb(getStandardPlayerSprite(), NCOLOR_CYAN),
-            1, 0,
-            100, 100, 100,
-            100, 100, 100,
+            getStandardPlayerSprite(NCOLOR_CYAN),
+            1,
+            {80, 80}, {120, 120}, {100, 100},
             7, 10, 13, 13, 10, 7,
+            10,
 
             getBasicAttack(),
             getFOCAGIBoostedAttack(),
@@ -215,11 +219,11 @@ Player getDruidTemplate() {
 Player getSorcererTemplate() {
     return {
             L"Gandalf", L"Sorcerer", NCOLOR_AMARINE,
-            getGarb(getStandardPlayerSprite(), NCOLOR_AMARINE),
-            1, 0,
-            100, 100, 100,
-            100, 100, 100,
+            getStandardPlayerSprite(NCOLOR_AMARINE),
+            1,
+            {70, 70}, {115, 115}, {115, 115},
             7, 7, 12, 15, 12, 7,
+            10,
 
             getBasicAttack(),
             getFOCBoostedAttack(),
@@ -231,11 +235,11 @@ Player getSorcererTemplate() {
 Player getBardTemplate() {
     return {
             L"Garrick", L"Bard", NCOLOR_LBLUE,
-            getGarb(getStandardPlayerSprite(), NCOLOR_LBLUE),
-            1, 0,
-            100, 100, 100,
-            100, 100, 100,
+            getStandardPlayerSprite(NCOLOR_LBLUE),
+            1,
+            {80, 80}, {100, 100}, {120, 120},
             7, 7, 10, 13, 13, 10,
+            10,
 
             getBasicAttack(),
             getINSFOCBoostedAttack(),
@@ -247,11 +251,11 @@ Player getBardTemplate() {
 Player getWizardTemplate() {
     return {
             L"Merlin", L"Wizard", NCOLOR_BLUE,
-            getGarb(getStandardPlayerSprite(), NCOLOR_BLUE),
-            1, 0,
-            100, 100, 100,
-            100, 100, 100,
+            getStandardPlayerSprite(NCOLOR_BLUE),
+            1,
+            {85, 85}, {85, 85}, {135, 135},
             7, 7, 7, 12, 15, 12,
+            10,
 
             getBasicAttack(),
             getINSBoostedAttack(),
@@ -262,11 +266,11 @@ Player getWizardTemplate() {
 Player getMonkTemplate() {
     return {
             L"Sabin", L"Monk", NCOLOR_PURPLE,
-            getGarb(getStandardPlayerSprite(), NCOLOR_PURPLE),
-            1, 0,
-            100, 100, 100,
-            100, 100, 100,
+            getStandardPlayerSprite(NCOLOR_PURPLE),
+            1,
+            {100, 100}, {80, 80}, {120, 120},
             10, 7, 7, 10, 13, 13,
+            10,
 
             getBasicAttack(),
             getBELINSBoostedAttack(),
@@ -278,11 +282,11 @@ Player getMonkTemplate() {
 Player getClericTemplate() {
     return {
             L"Alistair", L"Cleric", NCOLOR_PINK,
-            getGarb(getStandardPlayerSprite(), NCOLOR_PINK),
-            1, 0,
-            100, 100, 100,
-            100, 100, 100,
+            getStandardPlayerSprite(NCOLOR_PINK),
+            1,
+            {115, 115}, {70, 70}, {115, 115},
             12, 7, 7, 7, 12, 15,
+            10,
 
             getBasicAttack(),
             getBELBoostedAttack(),
@@ -294,11 +298,11 @@ Player getClericTemplate() {
 Player getPaladinTemplate() {
     return {
             L"Tyrael", L"Paladin", NCOLOR_MAGENTA,
-            getGarb(getStandardPlayerSprite(), NCOLOR_MAGENTA),
-            1, 0,
-            100, 100, 100,
-            100, 100, 100,
-            12, 10, 7, 7, 10, 13,
+            getStandardPlayerSprite(NCOLOR_MAGENTA),
+            1,
+            {120, 120}, {80, 80}, {100, 100},
+            13, 10, 7, 7, 10, 13,
+            10,
 
             getBasicAttack(),
             getVITBELBoostedAttack(),

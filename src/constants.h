@@ -10,7 +10,7 @@ using namespace std;
 #include "components/graphics/Pixel.h"
 //#include "components/graphics/RawColor.h"
 
-#define FPS 60
+#define FPS 30
 #define DEV_LOG_FILE "dev_log.txt"
 #define GAME_LOG_FILE = "game_log.txt"
 #define UI_LOG_COUNT 7

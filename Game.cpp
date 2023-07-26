@@ -75,11 +75,11 @@ void Game::movePlayer(pair<int, int> delta, const int speed) {
     Entity playerEntity = SysEntity.getPlayer();
     for (int i = 0; i < speed; ++i) {
         Intent playerIntent = {playerEntity, IntentType::Move, delta};
-        if (SysEntity.getCurrentPlayer().current_stamina > 0) {
+        if (SysEntity.getCurrentPlayer().stamina.first > 0) {
             if (speed > 1)
-                SysEntity.getCurrentPlayer().current_stamina = max(0,
-                                                                   SysEntity.getCurrentPlayer().current_stamina -
-                                                                   2);
+                SysEntity.getCurrentPlayer().stamina.first = max(0,
+                                                                 SysEntity.getCurrentPlayer().stamina.first -
+                                                                 2);
             SysEntity.moveEntity(playerIntent);
         }
 
@@ -203,9 +203,9 @@ void Game::Update(int player_input) {
                 if (player_level > SysEntity.getCurrentPlayer().level) {// player just leveled up
                     SysEntity.getCurrentPlayer().level = player_level;
 
-                    SysEntity.getCurrentPlayer().current_health = SysEntity.getCurrentPlayer().max_health;
-                    SysEntity.getCurrentPlayer().current_energy = SysEntity.getCurrentPlayer().max_energy;
-                    SysEntity.getCurrentPlayer().current_stamina = SysEntity.getCurrentPlayer().max_stamina;
+                    SysEntity.getCurrentPlayer().health.second = SysEntity.getCurrentPlayer().health.first;
+                    SysEntity.getCurrentPlayer().energy.first = SysEntity.getCurrentPlayer().energy.second;
+                    SysEntity.getCurrentPlayer().stamina.first = SysEntity.getCurrentPlayer().stamina.second;
 
                     //SysEntity.setPlayer(SysEntity.getCurrentPlayer());
                     const int item_count = pow(round(0.001333 * (HEIGHT * WIDTH)),
@@ -232,7 +232,7 @@ void Game::Update(int player_input) {
                                                             SysEntity.getCurrentPlayer().agility),
                                     SysEntity.getMonsters(), SysEntity.getPositions()
                             );
-                            SysEntity.getCurrentPlayer().current_energy -= strike.first;
+                            SysEntity.getCurrentPlayer().energy.first -= strike.first;
                             for (auto &combat: strike.second) { SysEntity.combatEntities(combat); }
                         } else if (event.bstate & BUTTON3_PRESSED) {
                             Position playerPosition = SysEntity.getPlayerPosition();
@@ -243,7 +243,7 @@ void Game::Update(int player_input) {
                                                             SysEntity.getCurrentPlayer().agility),
                                     SysEntity.getMonsters(), SysEntity.getPositions()
                             );
-                            SysEntity.getCurrentPlayer().current_energy -= strike.first;
+                            SysEntity.getCurrentPlayer().energy.first -= strike.first;
                             for (auto &combat: strike.second) { SysEntity.combatEntities(combat); }
                         } else if (event.bstate & BUTTON2_PRESSED) {
                             Position playerPosition = SysEntity.getPlayerPosition();
@@ -254,7 +254,7 @@ void Game::Update(int player_input) {
                                                             SysEntity.getCurrentPlayer().agility),
                                     SysEntity.getMonsters(), SysEntity.getPositions()
                             );
-                            SysEntity.getCurrentPlayer().current_energy -= strike.first;
+                            SysEntity.getCurrentPlayer().energy.first -= strike.first;
                             for (auto &combat: strike.second) { SysEntity.combatEntities(combat); }
                         }
                     }
@@ -263,39 +263,39 @@ void Game::Update(int player_input) {
                     //repeat code from above, but only here. doesn't make sense to strip out into a method of Game
                     if (player_input == '1') {
                         //TODO: implement potion use on slot 1
-                        if (SysEntity.getCurrentPlayer().inventory.content[0].quantity) {
+                        if (SysEntity.getCurrentPlayer().potion_belt.content[0].quantity) {
                             const int I_AM_A_DEBUG = break_point();
-                            SysEntity.getCurrentPlayer().inventory.content[0].item->effect(
+                            SysEntity.getCurrentPlayer().potion_belt.content[0].item->effect(
                                     SysEntity.getCurrentPlayer());
-                            SysEntity.getCurrentPlayer().inventory.content[0].quantity -= 1;
-                            if (SysEntity.getCurrentPlayer().inventory.content[0].quantity <= 0) {
-                                SysEntity.getCurrentPlayer().inventory.content[0].item = new Item(getNullItem());
-                                SysEntity.getCurrentPlayer().inventory.content[0].quantity = 0;
+                            SysEntity.getCurrentPlayer().potion_belt.content[0].quantity -= 1;
+                            if (SysEntity.getCurrentPlayer().potion_belt.content[0].quantity <= 0) {
+                                SysEntity.getCurrentPlayer().potion_belt.content[0].item = new Item(getNullItem());
+                                SysEntity.getCurrentPlayer().potion_belt.content[0].quantity = 0;
                             }
                         }
 
                     } else if (player_input == '2') {
                         //TODO: implement potion use on slot 2
-                        if (SysEntity.getCurrentPlayer().inventory.content[1].quantity) {
+                        if (SysEntity.getCurrentPlayer().potion_belt.content[1].quantity) {
                             const int I_AM_A_DEBUG = break_point();
-                            SysEntity.getCurrentPlayer().inventory.content[1].item->effect(
+                            SysEntity.getCurrentPlayer().potion_belt.content[1].item->effect(
                                     SysEntity.getCurrentPlayer());
-                            SysEntity.getCurrentPlayer().inventory.content[1].quantity -= 1;
-                            if (SysEntity.getCurrentPlayer().inventory.content[1].quantity <= 0) {
-                                SysEntity.getCurrentPlayer().inventory.content[1].item = new Item(getNullItem());
-                                SysEntity.getCurrentPlayer().inventory.content[1].quantity = 0;
+                            SysEntity.getCurrentPlayer().potion_belt.content[1].quantity -= 1;
+                            if (SysEntity.getCurrentPlayer().potion_belt.content[1].quantity <= 0) {
+                                SysEntity.getCurrentPlayer().potion_belt.content[1].item = new Item(getNullItem());
+                                SysEntity.getCurrentPlayer().potion_belt.content[1].quantity = 0;
                             }
                         }
                     } else if (player_input == '3') {
                         //TODO: implement potion use on slot 3
-                        if (SysEntity.getCurrentPlayer().inventory.content[2].quantity) {
+                        if (SysEntity.getCurrentPlayer().potion_belt.content[2].quantity) {
                             const int I_AM_A_DEBUG = break_point();
-                            SysEntity.getCurrentPlayer().inventory.content[2].item->effect(
+                            SysEntity.getCurrentPlayer().potion_belt.content[2].item->effect(
                                     SysEntity.getCurrentPlayer());
-                            SysEntity.getCurrentPlayer().inventory.content[2].quantity -= 1;
-                            if (SysEntity.getCurrentPlayer().inventory.content[2].quantity <= 0) {
-                                SysEntity.getCurrentPlayer().inventory.content[2].item = new Item(getNullItem());
-                                SysEntity.getCurrentPlayer().inventory.content[2].quantity = 0;
+                            SysEntity.getCurrentPlayer().potion_belt.content[2].quantity -= 1;
+                            if (SysEntity.getCurrentPlayer().potion_belt.content[2].quantity <= 0) {
+                                SysEntity.getCurrentPlayer().potion_belt.content[2].item = new Item(getNullItem());
+                                SysEntity.getCurrentPlayer().potion_belt.content[2].quantity = 0;
                             }
                         }
                     } else if (player_input == '4') {
@@ -307,7 +307,7 @@ void Game::Update(int player_input) {
                                                         SysEntity.getCurrentPlayer().agility),
                                 SysEntity.getMonsters(), SysEntity.getPositions()
                         );
-                        SysEntity.getCurrentPlayer().current_energy -= strike.first;
+                        SysEntity.getCurrentPlayer().energy.first -= strike.first;
                         for (auto &combat: strike.second) { SysEntity.combatEntities(combat); }
                     } else if (player_input == '5') {
                         Position playerPosition = SysEntity.getPlayerPosition();
@@ -318,7 +318,7 @@ void Game::Update(int player_input) {
                                                         SysEntity.getCurrentPlayer().agility),
                                 SysEntity.getMonsters(), SysEntity.getPositions()
                         );
-                        SysEntity.getCurrentPlayer().current_energy -= strike.first;
+                        SysEntity.getCurrentPlayer().energy.first -= strike.first;
                         for (auto &combat: strike.second) { SysEntity.combatEntities(combat); }
                     } else if (player_input == '6') {
                         Position playerPosition = SysEntity.getPlayerPosition();
@@ -329,7 +329,7 @@ void Game::Update(int player_input) {
                                                         SysEntity.getCurrentPlayer().agility),
                                 SysEntity.getMonsters(), SysEntity.getPositions()
                         );
-                        SysEntity.getCurrentPlayer().current_energy -= strike.first;
+                        SysEntity.getCurrentPlayer().energy.first -= strike.first;
                         for (auto &combat: strike.second) { SysEntity.combatEntities(combat); }
                     } else if (player_input == 'w') {
                         movePlayer({0, -1}, 1);
@@ -368,41 +368,51 @@ void Game::Update(int player_input) {
                         const map<Entity, Item> &items = SysEntity.getItems();
                         for (const auto &entity: SysEntity.getEntities()->data[player_pos.x][player_pos.y]) {
                             if (items.find(entity) != items.end()) {
-                                for (auto &slot: SysEntity.getCurrentPlayer().inventory.content) {
-                                    if (slot.item->type == items.find(entity)->second.type) {
-                                        slot.quantity++;
-                                        SysEntity.destroyEntity(entity);
-                                        break;
-                                    } else if (slot.quantity == 0) {
-                                        slot.item = new Item{items.find(entity)->second};
-                                        slot.quantity = 1;
-                                        SysEntity.destroyEntity(entity);
-                                        break;
+                                const auto &this_item = items.find(entity);
+                                ItemType this_type = this_item->second.type;
+                                if (is_in_set(this_type, PotionType)) {
 
+                                    for (auto &slot: SysEntity.getCurrentPlayer().potion_belt.content) {
+                                        if (slot.item->type == this_type
+                                            && slot.quantity + 1 <= slot.size) {
+                                            slot.quantity++;
+                                            SysEntity.destroyEntity(entity);
+                                            break;
+                                        } else if (slot.quantity == 0) {
+                                            slot.item = new Item{this_item->second};
+                                            slot.quantity = 1;
+                                            SysEntity.destroyEntity(entity);
+                                            break;
+
+                                        }
                                     }
+                                } else if (is_in_set(this_type, OrbType)) {
+                                    this_item->second.effect(SysEntity.getCurrentPlayer());
+                                    SysEntity.destroyEntity(entity);
                                 }
+
                             }
                         }
                     } else if (player_input == 0) {
                         if (!get_random_int(0, 99)) {// 1/100 chance of occurring
-                            SysEntity.getCurrentPlayer().current_health = min(SysEntity.getCurrentPlayer().max_health,
-                                                                              SysEntity.getCurrentPlayer().current_health +
-                                                                              1 +
-                                                                              SysEntity.getCurrentPlayer().vitality /
-                                                                              10);
+                            SysEntity.getCurrentPlayer().health.second = min(SysEntity.getCurrentPlayer().health.second,
+                                                                             SysEntity.getCurrentPlayer().health.first +
+                                                                             1 +
+                                                                             SysEntity.getCurrentPlayer().vitality /
+                                                                             10);
                         }
 
                         if (!get_random_int(0, 24)) {// 1/25 chance of occurring
-                            SysEntity.getCurrentPlayer().current_energy = min(SysEntity.getCurrentPlayer().max_energy,
-                                                                              SysEntity.getCurrentPlayer().current_energy +
-                                                                              3 +
-                                                                              SysEntity.getCurrentPlayer().focus / 10);
+                            SysEntity.getCurrentPlayer().energy.first = min(SysEntity.getCurrentPlayer().energy.second,
+                                                                            SysEntity.getCurrentPlayer().energy.first +
+                                                                            1 +
+                                                                            SysEntity.getCurrentPlayer().focus / 10);
 
                         }
 
-                        SysEntity.getCurrentPlayer().current_stamina = min(SysEntity.getCurrentPlayer().max_stamina,
-                                                                           SysEntity.getCurrentPlayer().current_stamina +
-                                                                           1);
+                        SysEntity.getCurrentPlayer().stamina.first = min(SysEntity.getCurrentPlayer().stamina.second,
+                                                                         SysEntity.getCurrentPlayer().stamina.first +
+                                                                         1);
                     }
                 }
             }
@@ -497,7 +507,7 @@ void Game::PLAY_GAME(const int c_fps) {
     if (settings_graphics_upscale) resolution = 5;
 
     SysEntity.setPlayer(CURRENT_PLAYER);
-    if (CURRENT_PLAYER.current_health <= 0) {
+    if (CURRENT_PLAYER.health.second <= 0) {
         running = 999;
     }
     Frame frame = UISystem::BlankFrame(y, x, 0);

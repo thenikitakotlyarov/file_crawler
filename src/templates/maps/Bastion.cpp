@@ -114,6 +114,7 @@ GameMap getTown() {
             data[i][j] = {
                     tile_data[i][j],
                     color_data[i][j],
+                    color_data[i][j],
                     false,
                     false,
                     z_data[i][j]

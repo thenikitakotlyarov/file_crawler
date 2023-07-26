@@ -366,8 +366,6 @@ UISystem::getPlayerTag(Frame &frame, const int y, const int x,
                        Color fg_color, Color bg_color) {
 
     frame = addText(frame, y, x, player_name, fg_color, bg_color);
-
-
     frame = addText(frame, y, x + player_name.size() + 1, player_class, NCOLOR_WHITE, NCOLOR_BLACK);
 
     return frame;
@@ -547,9 +545,9 @@ UISystem::getHud(Frame frame, const Player &player, const int c_fps) {
     const int slot_size = 7;
     const int orb_size = 10;
 
-    const int health_level = static_cast<int>(static_cast<double>(player.current_health) / player.max_health * 100);
-    const int energy_level = static_cast<int>(static_cast<double>(player.current_energy) / player.max_energy * 100);
-    const double stamina_level = static_cast<double>(static_cast<double>(player.current_stamina) / player.max_stamina);
+    const int health_level = static_cast<int>(static_cast<double>(player.health.first) / player.health.second * 100);
+    const int energy_level = static_cast<int>(static_cast<double>(player.energy.first) / player.energy.second * 100);
+    const double stamina_level = static_cast<double>(static_cast<double>(player.stamina.first) / player.stamina.second);
     const double exp_level = (static_cast<double>
                               (
                                       player.vitality + player.power + player.agility
@@ -579,17 +577,17 @@ UISystem::getHud(Frame frame, const Player &player, const int c_fps) {
     y = frame.data.size() - slot_size - 1, x = orb_size + 3;
     frame = getSlot(frame, max(0, y), max(0, x), slot_size, slot_size,
                     L"1",
-                    player.inventory.content[0].item->name, player.inventory.content[0].item->sprite.texture,
+                    player.potion_belt.content[0].item->name, player.potion_belt.content[0].item->sprite.texture,
                     NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
     x += slot_size;
     frame = getSlot(frame, max(0, y), max(0, x), slot_size, slot_size,
                     L"2",
-                    player.inventory.content[1].item->name, player.inventory.content[1].item->sprite.texture,
+                    player.potion_belt.content[1].item->name, player.potion_belt.content[1].item->sprite.texture,
                     NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
     x += slot_size;
     frame = getSlot(frame, max(0, y), max(0, x), slot_size, slot_size,
                     L"3",
-                    player.inventory.content[2].item->name, player.inventory.content[2].item->sprite.texture,
+                    player.potion_belt.content[2].item->name, player.potion_belt.content[2].item->sprite.texture,
                     NCOLOR_LGREY, NCOLOR_DGREY, NCOLOR_BLACK);
 
 
@@ -615,17 +613,50 @@ UISystem::getHud(Frame frame, const Player &player, const int c_fps) {
     frame = getPlayerTag(frame, y, x,
                          player.name, player.class_name, player.color, NCOLOR_BLACK);
 
-    //draw level bar
+
+    //draw stat orbs
     y = 2, x = 1;
+    frame = addText(frame,y,x,L"⍟",NCOLOR_RED,NCOLOR_BLACK);
+    y = 2, x = 2;
+    frame = addText(frame,y,x,to_wstring(player.vitality),NCOLOR_LGREY,NCOLOR_BLACK);
+
+    y = 2, x = 6;
+    frame = addText(frame,y,x,L"⍟",NCOLOR_YELLOW,NCOLOR_BLACK);
+    y = 2, x = 7;
+    frame = addText(frame,y,x,to_wstring(player.power),NCOLOR_LGREY,NCOLOR_BLACK);
+
+    y = 2, x = 11;
+    frame = addText(frame,y,x,L"⍟",NCOLOR_GREEN,NCOLOR_BLACK);
+    y = 2, x = 12;
+    frame = addText(frame,y,x,to_wstring(player.agility),NCOLOR_LGREY,NCOLOR_BLACK);
+
+    y = 3, x = 1;
+    frame = addText(frame,y,x,L"⍟",NCOLOR_MAGENTA,NCOLOR_BLACK);
+    y = 3, x = 2;
+    frame = addText(frame,y,x,to_wstring(player.belief),NCOLOR_LGREY,NCOLOR_BLACK);
+
+    y = 3, x = 6;
+    frame = addText(frame,y,x,L"⍟",NCOLOR_BLUE,NCOLOR_BLACK);
+    y = 3, x = 7;
+    frame = addText(frame,y,x,to_wstring(player.insight),NCOLOR_LGREY,NCOLOR_BLACK);
+
+    y = 3, x = 11;
+    frame = addText(frame,y,x,L"⍟",NCOLOR_CYAN,NCOLOR_BLACK);
+    y = 3, x = 12;
+    frame = addText(frame,y,x,to_wstring(player.focus),NCOLOR_LGREY,NCOLOR_BLACK);
+
+    //draw level bar
+    y = 4, x = 1;
     frame = addBar(frame, y, x,
                    min((int) frame.data.size() - 2, 14), exp_level, L"☆",
                    NCOLOR_WHITE, NCOLOR_BLACK);
 
     //draw stamina bar
-    y = 3, x = 1;
+    y = 5, x = 1;
     frame = addBar(frame, y, x,
                    min((int) frame.data.size() - 2, 14), stamina_level, L"ᗢ",
                    NCOLOR_GREEN, NCOLOR_BLACK);
+
 
 
     //draw fps label

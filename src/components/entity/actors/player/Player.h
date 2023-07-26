@@ -24,16 +24,10 @@ struct Player {
 
 
     short level;
-    long exp;
 
-    int max_health;
-    int max_energy;
-    int max_stamina;
-
-    int current_health;
-    int current_energy;
-    int current_stamina;
-
+    pair<int, int> health;
+    pair<int, int> stamina;
+    pair<int, int> energy;
 
     int vitality;
     int power;
@@ -42,11 +36,12 @@ struct Player {
     int insight;
     int belief;
 
+    double luck;
 
-    Skill* primarySkill;
-    Skill* secondarySkill;
+    Skill *primarySkill;
+    Skill *secondarySkill;
 
-    Container inventory;
+    Container potion_belt;
 
 
 };

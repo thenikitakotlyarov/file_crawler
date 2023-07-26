@@ -27,7 +27,7 @@ Skill *getBasicAttack() {
                 vector<Intent> attack_targets;
 
                 // Player primary attack
-                if (self.current_energy > cost) {
+                if (self.energy.first > cost) {
                     for (const auto &entry: monsters) {
                         const int player_max_arc = self.agility / 10;
                         Entity monsterEntity = entry.first;
@@ -37,7 +37,7 @@ Skill *getBasicAttack() {
                         if (abs(player_pos.x - monsterPosition.x) <= self.agility
                             && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
-                            && self.current_energy >= cost + 5) {
+                            && self.energy.first >= cost + 5) {
                             cost += 3;
                             int damage = get_random_int(0, self.power);
                             attack_targets.push_back({
@@ -91,7 +91,7 @@ Skill *getAVGBoostedAttack() {
                 vector<Intent> attack_targets;
 
                 // Player primary attack
-                if (self.current_energy > cost) {
+                if (self.energy.first > cost) {
                     for (const auto &entry: monsters) {
                         const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
@@ -102,7 +102,7 @@ Skill *getAVGBoostedAttack() {
                         if (abs(player_pos.x - monsterPosition.x) <= self.agility
                             && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
-                            && self.current_energy >= cost + 5) {
+                            && self.energy.first >= cost + 5) {
                             cost += 10;
                             int damage = get_random_int(0, self.power);
                             int bonus =
@@ -165,7 +165,7 @@ Skill *getAGIPOWBoostedAttack() {
                 vector<Intent> attack_targets;
 
                 // Player primary attack
-                if (self.current_energy > cost) {
+                if (self.energy.first > cost) {
                     for (const auto &entry: monsters) {
                         const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
@@ -176,7 +176,7 @@ Skill *getAGIPOWBoostedAttack() {
                         if (abs(player_pos.x - monsterPosition.x) <= self.agility
                             && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
-                            && self.current_energy >= cost + 5) {
+                            && self.energy.first >= cost + 5) {
                             cost += 10;
                             int damage = get_random_int(0, self.power);
                             int bonus =
@@ -235,7 +235,7 @@ Skill *getPOWBoostedAttack() {
                 vector<Intent> attack_targets;
 
                 // Player primary attack
-                if (self.current_energy > cost) {
+                if (self.energy.first > cost) {
                     for (const auto &entry: monsters) {
                         const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
@@ -246,7 +246,7 @@ Skill *getPOWBoostedAttack() {
                         if (abs(player_pos.x - monsterPosition.x) <= self.agility
                             && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
-                            && self.current_energy >= cost + 5) {
+                            && self.energy.first >= cost + 5) {
                             cost += 10;
                             int damage = get_random_int(0, self.power);
                             int bonus = self.power;
@@ -302,7 +302,7 @@ Skill *getPOWVITBoostedAttack() {
                 vector<Intent> attack_targets;
 
                 // Player primary attack
-                if (self.current_energy > cost) {
+                if (self.energy.first > cost) {
                     for (const auto &entry: monsters) {
                         const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
@@ -313,7 +313,7 @@ Skill *getPOWVITBoostedAttack() {
                         if (abs(player_pos.x - monsterPosition.x) <= self.agility
                             && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
-                            && self.current_energy >= cost + 5) {
+                            && self.energy.first >= cost + 5) {
                             cost += 10;
                             int damage = get_random_int(0, self.power);
                             int bonus =
@@ -372,7 +372,7 @@ Skill *getVITBoostedAttack() {
                 vector<Intent> attack_targets;
 
                 // Player primary attack
-                if (self.current_energy > cost) {
+                if (self.energy.first > cost) {
                     for (const auto &entry: monsters) {
                         const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
@@ -383,7 +383,7 @@ Skill *getVITBoostedAttack() {
                         if (abs(player_pos.x - monsterPosition.x) <= self.agility
                             && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
-                            && self.current_energy >= cost + 5) {
+                            && self.energy.first >= cost + 5) {
                             cost += 10;
                             int damage = get_random_int(0, self.power);
                             int bonus = self.vitality;
@@ -439,7 +439,7 @@ Skill *getVITBELBoostedAttack() {
                 vector<Intent> attack_targets;
 
                 // Player primary attack
-                if (self.current_energy > cost) {
+                if (self.energy.first > cost) {
                     for (const auto &entry: monsters) {
                         const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
@@ -450,7 +450,7 @@ Skill *getVITBELBoostedAttack() {
                         if (abs(player_pos.x - monsterPosition.x) <= self.agility
                             && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
-                            && self.current_energy >= cost + 5) {
+                            && self.energy.first >= cost + 5) {
                             cost += 10;
                             int damage = get_random_int(0, self.power);
                             int bonus =
@@ -509,7 +509,7 @@ Skill *getBELBoostedAttack() {
                 vector<Intent> attack_targets;
 
                 // Player primary attack
-                if (self.current_energy > cost) {
+                if (self.energy.first > cost) {
                     for (const auto &entry: monsters) {
                         const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
@@ -520,7 +520,7 @@ Skill *getBELBoostedAttack() {
                         if (abs(player_pos.x - monsterPosition.x) <= self.agility
                             && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
-                            && self.current_energy >= cost + 5) {
+                            && self.energy.first >= cost + 5) {
                             cost += 10;
                             int damage = get_random_int(0, self.power);
                             int bonus = self.belief;
@@ -576,7 +576,7 @@ Skill *getBELINSBoostedAttack() {
                 vector<Intent> attack_targets;
 
                 // Player primary attack
-                if (self.current_energy > cost) {
+                if (self.energy.first > cost) {
                     for (const auto &entry: monsters) {
                         const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
@@ -587,7 +587,7 @@ Skill *getBELINSBoostedAttack() {
                         if (abs(player_pos.x - monsterPosition.x) <= self.agility
                             && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
-                            && self.current_energy >= cost + 5) {
+                            && self.energy.first >= cost + 5) {
                             cost += 10;
                             int damage = get_random_int(0, self.power);
                             int bonus =
@@ -646,7 +646,7 @@ Skill *getINSBoostedAttack() {
                 vector<Intent> attack_targets;
 
                 // Player primary attack
-                if (self.current_energy > cost) {
+                if (self.energy.first > cost) {
                     for (const auto &entry: monsters) {
                         const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
@@ -657,7 +657,7 @@ Skill *getINSBoostedAttack() {
                         if (abs(player_pos.x - monsterPosition.x) <= self.agility
                             && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
-                            && self.current_energy >= cost + 5) {
+                            && self.energy.first >= cost + 5) {
                             cost += 10;
                             int damage = get_random_int(0, self.power);
                             int bonus = self.insight;
@@ -713,7 +713,7 @@ Skill *getINSFOCBoostedAttack() {
                 vector<Intent> attack_targets;
 
                 // Player primary attack
-                if (self.current_energy > cost) {
+                if (self.energy.first > cost) {
                     for (const auto &entry: monsters) {
                         const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
@@ -724,7 +724,7 @@ Skill *getINSFOCBoostedAttack() {
                         if (abs(player_pos.x - monsterPosition.x) <= self.agility
                             && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
-                            && self.current_energy >= cost + 5) {
+                            && self.energy.first >= cost + 5) {
                             cost += 10;
                             int damage = get_random_int(0, self.power);
                             int bonus =
@@ -783,7 +783,7 @@ Skill *getFOCBoostedAttack() {
                 vector<Intent> attack_targets;
 
                 // Player primary attack
-                if (self.current_energy > cost) {
+                if (self.energy.first > cost) {
                     for (const auto &entry: monsters) {
                         const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
@@ -794,7 +794,7 @@ Skill *getFOCBoostedAttack() {
                         if (abs(player_pos.x - monsterPosition.x) <= self.agility
                             && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
-                            && self.current_energy >= cost + 5) {
+                            && self.energy.first >= cost + 5) {
                             cost += 10;
                             int damage = get_random_int(0, self.power);
                             int bonus = self.focus;
@@ -850,7 +850,7 @@ Skill *getFOCAGIBoostedAttack() {
                 vector<Intent> attack_targets;
 
                 // Player primary attack
-                if (self.current_energy > cost) {
+                if (self.energy.first > cost) {
                     for (const auto &entry: monsters) {
                         const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
@@ -861,7 +861,7 @@ Skill *getFOCAGIBoostedAttack() {
                         if (abs(player_pos.x - monsterPosition.x) <= self.agility
                             && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
-                            && self.current_energy >= cost + 5) {
+                            && self.energy.first >= cost + 5) {
                             cost += 10;
                             int damage = get_random_int(0, self.power);
                             int bonus =
@@ -920,7 +920,7 @@ Skill *getAGIBoostedAttack() {
                 vector<Intent> attack_targets;
 
                 // Player primary attack
-                if (self.current_energy > cost) {
+                if (self.energy.first > cost) {
                     for (const auto &entry: monsters) {
                         const int player_max_arc = self.agility / 10;
                         int hit_monsters = 0;
@@ -931,7 +931,7 @@ Skill *getAGIBoostedAttack() {
                         if (abs(player_pos.x - monsterPosition.x) <= self.agility
                             && abs(player_pos.y - monsterPosition.y) <= self.agility
                             && is_position_in_fov(monsterPosition, player_fov)
-                            && self.current_energy >= cost + 5) {
+                            && self.energy.first >= cost + 5) {
                             cost += 10;
                             int damage = get_random_int(0, self.power);
                             int bonus = self.agility;
@@ -979,14 +979,14 @@ Skill *getFuriousCharge() {
                 int cost = 2;
                 vector<Intent> intents;
 
-                if (self.current_energy > cost) {
+                if (self.energy.first > cost) {
                     for (const auto &entry: monsters) {
                         Entity monsterEntity = entry.first;
                         Position monsterPosition = positions[monsterEntity];
                         Monster &monster = monsters[monsterEntity];
 
                         if (is_position_in_fov(monsterPosition, player_fov)
-                            && self.current_energy >= cost + 5) {
+                            && self.energy.first >= cost + 5) {
                             cost += 10;
 
                             // Determine direction of the charge

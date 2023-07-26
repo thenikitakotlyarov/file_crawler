@@ -330,8 +330,8 @@ void EntitySystem::moveEntity(const Intent &intent) {
 
 void EntitySystem::damageEntity(const Entity entity, const int attackDamage) {
     if (entity.id == 1) {//player takes damage
-        currentPlayer.current_health -= attackDamage;
-        if (currentPlayer.current_health <= 0) {
+        currentPlayer.health.first -= attackDamage;
+        if (currentPlayer.health.first <= 0) {
             //player game over!
         }
     } else {//monster takes damage

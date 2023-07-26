@@ -9,6 +9,7 @@ struct Item;
 
 struct ContainerSlot {
     Item *item;
+    unsigned short size;
     unsigned short quantity;
 };
 
